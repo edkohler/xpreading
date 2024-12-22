@@ -1,0 +1,33 @@
+{% extends '_base.html' %}
+
+{% block title %}About page{% endblock %}
+
+{% block content %}
+
+<h1>{{ category.name }} Book List</h1>
+<ul>
+  {% for book_category in book_categories %}
+    <li>
+        {{ book_category.year }} -  {{ book_category.book.title }} - {{ book_category.book.author.last_name }}, {{ book_category.book.author.first_name }} - {{ book_category.award_level.name }}
+      <input type="checkbox"
+             data-book-category-id="{{ book_category.id }}"
+             {% if book_category.id in user_book_categories %} checked {% endif %}>
+    </li>
+  {% endfor %}
+</ul>
+<script>
+  document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+      const bookCategoryId = checkbox.dataset.bookCategoryId;
+      const completed = checkbox.checked;
+      fetch(`/toggle-book-category/${bookCategoryId}/`, {
+        method: 'POST',
+        headers: {'X-CSRFToken': '{{ csrf_token }}'},
+        body: JSON.stringify({ completed })
+      });
+    });
+  });
+</script>
+
+
+{% endblock content %}

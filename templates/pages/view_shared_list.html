@@ -1,0 +1,20 @@
+{% extends '_base.html' %}
+
+{% block title %}About page{% endblock %}
+
+{% block content %}
+
+<h1>Shared Book List</h1>
+<p>Shared by: {{ shared_list.owner.username }}</p>
+<ul>
+  {% for user_book_category in user_book_categories %}
+    <li>
+      {{ user_book_category.book_category.book.title }}
+      - {{ user_book_category.book_category.award_level.name if user_book_category.book_category.award_level else "Nominee" }}
+      {% if user_book_category.completed %}(Completed){% endif %}
+    </li>
+  {% endfor %}
+</ul>
+
+
+{% endblock content %}

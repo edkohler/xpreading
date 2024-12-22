@@ -1,0 +1,18 @@
+{% extends '_base.html' %}
+
+{% block title %}About page{% endblock %}
+
+{% block content %}
+
+<h1>Share Your Book List</h1>
+<form method="post">
+  {% csrf_token %}
+  <label for="email">Recipient Email:</label>
+  <input type="email" name="email" required>
+  <label for="expires_in">Expires In (days):</label>
+  <input type="number" name="expires_in" min="1" max="30" value="7">
+  <button type="submit">Share</button>
+</form>
+
+
+{% endblock content %}

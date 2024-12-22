@@ -1,0 +1,80 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}{{ book.title }}{% endblock title %}
+
+{% block content %}
+
+<h1>{{ book.title }}</h1>
+<p>By: {{ book.author.first_name }} {{ book.author.last_name }}</p>
+<hr>
+<h2>Mark as Read</h2>
+<div>
+  {% if first_category %}
+    {% include 'pages/partials/book_read_checkbox.html' with book_category=first_category completed=first_category_completed %}
+  {% else %}
+    <p>No categories available for this book.</p>
+  {% endif %}
+</div>
+
+<hr>
+<h2>Awards</h2>
+<ul>
+  {% for book_category in categories %}
+    <li>
+      <a href="{% url 'category_detail' book_category.category.slug %}">{{ book_category.category.name }}</a>
+      ({{ book_category.year }})
+      {% if book_category.award_level %}
+        - {{ book_category.award_level.name }}
+      {% else %}
+        - Nominee
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+
+<h2>Library Lookup Links</h2>
+<table>
+  <thead>
+    <tr>
+      <th>State</th>
+      <th>Library</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for library in libraries %}
+      <tr>
+        <td>{{ library.state }}</td>
+        <td>
+          <a href="{{ library.url_prefix }}{{ book.title_url_friendly|lower }}+{{ book.first_name_url_friendly|lower }}+{{ book.last_name_url_friendly|lower }}{{ library.url_suffix }}" target="_blank">
+            {{ library.name }}
+          </a>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+
+<script>
+document.getElementById('mark-as-read').addEventListener('change', function() {
+    const bookCategoryId = this.dataset.bookCategoryId;
+    const completed = this.checked;
+    fetch(`/toggle-read-status/${bookCategoryId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ completed }),
+    }).then(response => response.json()).then(data => {
+        console.log('Read status updated:', data.completed);
+    });
+});
+</script>
+
+<hr/>
+<a href="javascript:history.back()">Back</a>
+
+{% endblock content %}
