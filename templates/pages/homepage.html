@@ -1,0 +1,39 @@
+{% extends '_base.html' %}
+
+{% block title %}About page{% endblock %}
+
+{% block content %}
+
+<h1>XP Reading</h1>
+<ul>
+<li>Find great lists of award winning books to read.</li>
+<li>Find what you haven't read at your local libraries, bookstores, or online.</li>
+<li>Keep track of what you've read and what you want to read.</li>
+
+</ul>
+
+<h2>Award Winning Student Book Categories</h2>
+<div class="row">
+{% for category, book_categories in sorted_categories.items %}
+
+
+  <div class="col-sm-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">{{ category.name }}</h5>
+        <p class="card-text">{{ category.description|truncatechars:240}}</p>
+        <a href="{% url 'category_detail' category.slug %}" class="btn btn-primary">Learn More</a>
+      </div>
+    </div>
+  </div>
+
+
+
+
+{% endfor %}
+</div>
+
+<hr>
+
+We aim to help motivated readers stay interested through project based reading. Find a book you like? Find out what awards it has won and use that as your path to more interesting reads. Complete batches of award winning book lists to unlock badges.
+{% endblock content %}

@@ -1,0 +1,75 @@
+<table>
+    <thead>
+      <tr>
+        <th>State/Province</th>
+        <th>Library</th>
+        <th>Favorite</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if favorite_libraries %}
+        {% for library in favorite_libraries %}
+          <tr class="bg-yellow-50">
+            <td>{{ library.state }}</td>
+            <td>
+              <a href="{{ library.url_prefix }}{{ book.title_url_friendly|lower }}+{{ book.first_name_url_friendly|lower }}+{{ book.last_name_url_friendly|lower }}{{ library.url_suffix }}" target="_blank">
+                {{ library.name }}
+              </a>
+            </td>
+            <td>
+              <form hx-post="{% url 'toggle_favorite_library' library.id %}"
+                    hx-target="closest table"
+                    hx-swap="outerHTML">
+                <input type="checkbox" checked
+                       class="form-checkbox h-4 w-4 text-blue-600">
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      {% endif %}
+
+      {% for library in page_obj %}
+        <tr>
+          <td>{{ library.state }}</td>
+          <td>
+            <a href="{{ library.url_prefix }}{{ book.title_url_friendly|lower }}+{{ book.first_name_url_friendly|lower }}+{{ book.last_name_url_friendly|lower }}{{ library.url_suffix }}" target="_blank">
+              {{ library.name }}
+            </a>
+          </td>
+          <td>
+            <form hx-post="{% url 'toggle_favorite_library' library.id %}"
+                  hx-target="closest table"
+                  hx-swap="outerHTML">
+              <input type="checkbox"
+                     class="form-checkbox h-4 w-4 text-blue-600">
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if page_obj.has_other_pages %}
+<div class="pagination mt-4">
+  {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}"
+       class="px-3 py-1 bg-gray-200 rounded"
+       hx-get="?page={{ page_obj.previous_page_number }}"
+       hx-target="closest table"
+       hx-swap="outerHTML">Previous</a>
+  {% endif %}
+
+  <span class="px-3">
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+  </span>
+
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}"
+  class="px-3 py-1 bg-gray-200 rounded"
+  hx-get="?page={{ page_obj.next_page_number }}"
+  hx-target="closest tbody"
+  hx-swap="outerHTML">Next</a>
+
+  {% endif %}
+</div>
+{% endif %}
