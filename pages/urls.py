@@ -15,6 +15,8 @@ urlpatterns = [
     path('categories/<slug:slug>/', views.category_detail, name='category_detail'),
     path('book/<slug:book_slug>/', views.book_detail, name='book_detail'),
     path('toggle-read-status/<int:book_category_id>/', views.toggle_read_status, name='toggle_read_status'),
-    path('toggle-read-status-htmx/<int:book_category_id>/', views.toggle_read_status_htmx, name='toggle_read_status_htmx'),
     path('my-books/', BooksByCategoryView.as_view(), name='my_books'),
+    path('toggle-read-status-htmx/<int:book_id>/', views.toggle_read_status_htmx, name='toggle_read_status_htmx'),
+    path('libraries/', views.library_list, name='library_list'),
+    path('libraries/toggle-favorite/<int:library_id>/', views.toggle_favorite_library, name='toggle_favorite'),
 ]

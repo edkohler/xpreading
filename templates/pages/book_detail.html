@@ -8,9 +8,14 @@
 <h1>{{ book.title }}</h1>
 <p>By: {{ book.author.first_name }} {{ book.author.last_name }}</p>
 <hr>
-<h2>Mark as Read</h2>
 <div>
- 
+  {% with user_book=book.userbook_set.get %}
+    {% include 'pages/partials/book_read_checkbox.html' with book=book completed=user_book.completed %}
+  {% endwith %}
+  I read this!
+</div>
+<div>
+
 </div>
 
 <hr>
@@ -30,6 +35,8 @@
 </ul>
 
 <h2>Library Lookup Links</h2>
+<p>Clicking the links to libraries listed below takes you to each library's search results for this book.</p><p>Add local libraries to your favorites <a href="{%url 'library_list' %}">here</a>.</p>
+
 <table>
   <thead>
     <tr>
@@ -38,16 +45,21 @@
     </tr>
   </thead>
   <tbody>
-    {% for library in libraries %}
-      <tr>
+    {% if favorite_libraries %}
+
+    {% for library in favorite_libraries %}
+      <tr class="bg-yellow-50">
         <td>{{ library.state }}</td>
         <td>
           <a href="{{ library.url_prefix }}{{ book.title_url_friendly|lower }}+{{ book.first_name_url_friendly|lower }}+{{ book.last_name_url_friendly|lower }}{{ library.url_suffix }}" target="_blank">
             {{ library.name }}
           </a>
         </td>
+
       </tr>
     {% endfor %}
+
+  {% endif %}
   </tbody>
 </table>
 

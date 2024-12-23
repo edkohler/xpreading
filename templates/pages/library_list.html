@@ -1,0 +1,62 @@
+{% extends "_base.html" %}
+{% block content %}
+<h1>Libraries</h1>
+<p>Adding libraries to your favorites creates links on book pages to book lookups for those books.</p><p> This makes it quicker to find books at libraries near you.</p>
+
+<h2>Your Favorites</h2>
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Location</th>
+        <th scope="col">Favorites</th>
+
+      </tr>
+    </thead>
+    <tbody>
+    {% for library in favorite_libraries %}
+    <tr>
+        <td><strong>{{ library.name }}</strong></td><td>{{ library.state }}</td>
+        <td>
+        <button
+            hx-post="{% url 'toggle_favorite' library.id %}"
+            hx-swap="outerHTML"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+            class="btn btn-danger btn-sm">
+            Remove from Favorites
+        </button></td></tr>
+    {% endfor %}
+</tbody>
+</table>
+    {% if not favorite_libraries %}
+    <li>No favorite libraries yet.</li>
+    {% endif %}
+
+
+<h2>All Libraries</h2>
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Location</th>
+        <th scope="col">Favorites</th>
+
+      </tr>
+    </thead>
+    <tbody>
+    {% for library in non_favorite_libraries %}
+    <tr>
+        <td><strong>{{ library.name }}</strong></td><td>{{ library.state }}</td><td>
+
+        <button
+            hx-post="{% url 'toggle_favorite' library.id %}"
+            hx-swap="outerHTML"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+            class="btn btn-primary btn-sm">
+            Add to Favorites
+        </button></td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% endblock %}

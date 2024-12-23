@@ -7,26 +7,32 @@
 <h1>Books in {{ category.name }}</h1>
 <p>{{ category.description }}</p>
 
-{% for year, book_categories in books_by_year.items %}
-  <h2>{{ year }}</h2>
-  <ul>
-    {% for book_category in book_categories %}
-      <li>
+{% if books_by_year %}
+  {% for year, book_categories in books_by_year.items %}
+    <h2>{{ year }}</h2>
+    <ul>
+      {% for item in book_categories %}
+        <li>
+          <label>
+            <strong><a href="{% url 'book_detail' item.book_category.book.slug %}">{{ item.book_category.book.title }}</a></strong>
+            by {{ item.book_category.book.author.first_name }} {{ item.book_category.book.author.last_name }}
+            {% if item.book_category.award_level %}
+              - {{ item.book_category.award_level.name }}
+            {% else %}
+              - Nominee
+            {% endif %}
+            {% if item.completed %}
+              - Completed
+            {% endif %}
+          </label>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endfor %}
+{% else %}
+  <p>No books found in this category.</p>
+{% endif %}
 
-
-               <label>
-        <strong>{{ book_category.book.title }}</strong>
-        by {{ book_category.book.author.first_name }} {{ book_category.book.author.last_name }}
-        {% if book_category.award_level %}
-          - {{ book_category.award_level.name }}
-        {% else %}
-          - Nominee
-        {% endif %}
-               </label>
-      </li>
-    {% endfor %}
-  </ul>
-{% endfor %}
 
 <a href="{% url 'category_list_sorted_by_year' %}">Back to Categories</a>
 

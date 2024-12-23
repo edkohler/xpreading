@@ -6,11 +6,20 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-  <title>{% block title %}Reading List Challenge{% endblock title %}</title>
+  <title>{% block title %}XP Reading - Reading List Challenges for Students{% endblock title %}</title>
   <meta name="description" content="Track your award winning book reading progress.">
   <meta name="author" content="">
   <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <script>
+    document.addEventListener('htmx:configRequest', (event) => {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+      if (csrfToken) {
+        event.detail.headers['X-CSRFToken'] = csrfToken;
+      }
+    });
+  </script>
 
   {% block css %}
 
@@ -25,7 +34,7 @@
 <body>
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/">Reading List Challenge</a>
+      <a class="navbar-brand" href="/">XP Reading</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -35,6 +44,11 @@
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="{%url 'my_books' %}">My Books</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{%url 'library_list' %}">Libraries</a>
+          </li>
+
+
           <li class="nav-item">
             <a class="nav-link" href="{% url 'about' %}">About</a>
           </li>

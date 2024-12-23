@@ -20,7 +20,7 @@
   <div class="col-sm-6">
     <div class="card">
       <div class="card-body">
-        <h5 class="card-title">{{ category.name }}</h5>
+        <h5 class="card-title"><a href="{% url 'category_detail' category.slug %}">{{ category.name }}</a></h5>
         <p class="card-text">{{ category.description|truncatechars:240}}</p>
         <a href="{% url 'category_detail' category.slug %}" class="btn btn-primary">Learn More</a>
       </div>

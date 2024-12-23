@@ -1,7 +1,7 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, get_object_or_404, Http404
 from django.contrib.auth.decorators import login_required
-from .models import Category, UserBookCategory, BookCategory, SharedList, Book, Library, UserBook
+from .models import Category, UserBookCategory, BookCategory, SharedList, Book, Library, UserBook, UserFavoriteLibrary
 import uuid
 from django.utils.timezone import now, timedelta
 from django.core.mail import send_mail
@@ -10,9 +10,6 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db.models import Count
 from django.contrib.auth.mixins import LoginRequiredMixin
-
-
-
 import json
 
 class HomePageView(TemplateView):
@@ -94,22 +91,30 @@ def view_shared_list(request, token):
 def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug)
     books = BookCategory.objects.filter(category=category).select_related('book', 'award_level').order_by('-year')
-    user_book_categories = UserBookCategory.objects.filter(user=request.user, book_category__in=books).values_list('book_category_id', flat=True) if request.user.is_authenticated else []
+    user_book_categories = (
+        UserBookCategory.objects.filter(user=request.user, book_category__in=books)
+        .values_list('book_category_id', flat=True)
+        if request.user.is_authenticated else []
+    )
 
+    from collections import defaultdict
     books_by_year = defaultdict(list)
     for book_category in books:
-        # Ensure book_category has a valid ID and book
         if book_category.id and book_category.book:
             books_by_year[book_category.year].append({
                 'book_category': book_category,
                 'completed': book_category.id in user_book_categories,
             })
 
+    # Debug the structure of books_by_year
+    print("Books by Year:", books_by_year)
+
     context = {
         'category': category,
-        'books_by_year': books_by_year,  # Keep as defaultdict for simplicity
+        'books_by_year': dict(books_by_year),  # Convert to a regular dictionary for easier template handling
     }
     return render(request, 'pages/category_detail.html', context)
+
 
 
 
@@ -145,6 +150,19 @@ def book_detail(request, book_slug):
     first_category = categories[0] if categories else None
     first_category_completed = first_category.id in user_book_categories if first_category else False
 
+    favorite_libraries = []
+    other_libraries = []
+
+    if request.user.is_authenticated:
+        favorite_library_ids = UserFavoriteLibrary.objects.filter(
+            user=request.user
+        ).values_list('library_id', flat=True)
+
+        favorite_libraries = Library.objects.filter(id__in=favorite_library_ids)
+        other_libraries = Library.objects.exclude(id__in=favorite_library_ids)
+    else:
+        other_libraries = Library.objects.all()
+
     context = {
         'book': book,
         'categories': categories,
@@ -152,6 +170,7 @@ def book_detail(request, book_slug):
         'first_category': first_category,
         'first_category_completed': first_category_completed,
         'libraries': libraries,
+        'favorite_libraries': favorite_libraries,
     }
     return render(request, 'pages/book_detail.html', context)
 
@@ -179,22 +198,20 @@ def toggle_read_status(request, book_category_id):
 
 
 @login_required
-def toggle_read_status_htmx(request, book_category_id):
-    book_category = get_object_or_404(BookCategory, id=book_category_id)
-    user_book, created = UserBookCategory.objects.get_or_create(
-        user=request.user,
-        book_category=book_category
-    )
-
-    # Toggle the completed status
+def toggle_read_status_htmx(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    user_book, created = UserBook.objects.get_or_create(user=request.user, book=book)
     user_book.completed = not user_book.completed
     user_book.save()
 
-    # Render the checkbox state
-    return render(request, 'pages/partials/book_read_checkbox.html', {
-        'book_category': book_category,
+    context = {
+        'book': book,
         'completed': user_book.completed,
-    })
+    }
+    print("Rendering response with completed =", context['completed'])
+
+    return render(request, 'pages/partials/book_read_checkbox.html', context)
+
 
 class BooksByCategoryView(LoginRequiredMixin, TemplateView):
     template_name = "pages/user_books_by_category.html"
@@ -238,3 +255,30 @@ class BooksByCategoryView(LoginRequiredMixin, TemplateView):
 
         context['books_by_category'] = books_by_category
         return context
+
+
+@login_required
+def library_list(request):
+    user = request.user
+    favorite_library_ids = UserFavoriteLibrary.objects.filter(user=user).values_list('library_id', flat=True)
+    favorite_libraries = Library.objects.filter(id__in=favorite_library_ids)
+    non_favorite_libraries = Library.objects.exclude(id__in=favorite_library_ids)
+
+    context = {
+        'favorite_libraries': favorite_libraries,
+        'non_favorite_libraries': non_favorite_libraries,
+    }
+    return render(request, 'pages/library_list.html', context)
+
+
+@login_required
+def toggle_favorite_library(request, library_id):
+    if request.method == "POST":
+        user = request.user
+        library = get_object_or_404(Library, id=library_id)
+        favorite, created = UserFavoriteLibrary.objects.get_or_create(user=user, library=library)
+        if not created:
+            favorite.delete()
+            return JsonResponse({'status': 'removed'})
+        return JsonResponse({'status': 'added'})
+    return JsonResponse({'error': 'Invalid request'}, status=400)

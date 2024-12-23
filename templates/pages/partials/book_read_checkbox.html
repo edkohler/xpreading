@@ -1,7 +1,7 @@
 <input
   type="checkbox"
-  hx-post="{% url 'toggle_read_status_htmx' book_category.id %}"
+  hx-post="{% url 'toggle_read_status_htmx' book.id %}"
   hx-target="this"
   hx-swap="outerHTML"
-  {% if completed %}checked{% endif %}>
-<label>Mark as Read</label>
+  {{ completed|yesno:"checked," }}
+  name="completed">
