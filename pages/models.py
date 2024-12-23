@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils.text import slugify
+from django.contrib.auth import get_user_model
 
 
 # Create your models here.
@@ -138,3 +139,24 @@ class LocalBookstore(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.state})"
+
+class UserBook(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_books')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    completed = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('user', 'book')  # A user can have only one entry per book
+
+    def __str__(self):
+        return f"{self.user.username} - {self.book.title} ({'Completed' if self.completed else 'Not Completed'})"
+
+
+
+class UserFavoriteLibrary(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    library = models.ForeignKey('Library', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['user', 'library']

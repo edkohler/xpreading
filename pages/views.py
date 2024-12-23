@@ -1,13 +1,17 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, get_object_or_404, Http404
 from django.contrib.auth.decorators import login_required
-from .models import Category, UserBookCategory, BookCategory, SharedList, Book, Library
+from .models import Category, UserBookCategory, BookCategory, SharedList, Book, Library, UserBook
 import uuid
 from django.utils.timezone import now, timedelta
 from django.core.mail import send_mail
 from collections import defaultdict
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.db.models import Count
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+
 
 import json
 
@@ -103,7 +107,7 @@ def category_detail(request, slug):
 
     context = {
         'category': category,
-        'books_by_year': dict(books_by_year),
+        'books_by_year': books_by_year,  # Keep as defaultdict for simplicity
     }
     return render(request, 'pages/category_detail.html', context)
 
@@ -128,7 +132,7 @@ def category_list_sorted_by_year(request):
         sorted_categories[category] = book_categories
 
     context = {'sorted_categories': sorted_categories}
-    return render(request, 'pages/categories_sorted_by_year.html', context)
+    return render(request, 'pages/homepage.html', context)
 
 
 def book_detail(request, book_slug):
@@ -191,3 +195,46 @@ def toggle_read_status_htmx(request, book_category_id):
         'book_category': book_category,
         'completed': user_book.completed,
     })
+
+class BooksByCategoryView(LoginRequiredMixin, TemplateView):
+    template_name = "pages/user_books_by_category.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # All books marked as completed by the user
+        user_completed_books = UserBook.objects.filter(user=user, completed=True).values_list('book_id', flat=True)
+
+        # All categories
+        categories = Category.objects.order_by('name')
+
+        books_by_category = {}
+        for category in categories:
+            books_by_year = {}
+
+            # All BookCategory records for this category
+            book_categories = BookCategory.objects.filter(category=category).select_related(
+                'book', 'book__author', 'award_level'
+            ).order_by('year', 'book__title')
+
+            # Group by year
+            for book_category in book_categories:
+                year = book_category.year
+                if year not in books_by_year:
+                    books_by_year[year] = {
+                        'total_books': 0,
+                        'read_books': 0,
+                        'book_list': []
+                    }
+
+                books_by_year[year]['total_books'] += 1
+                if book_category.book.id in user_completed_books:
+                    books_by_year[year]['read_books'] += 1
+                books_by_year[year]['book_list'].append(book_category)
+
+            if books_by_year:
+                books_by_category[category] = books_by_year
+
+        context['books_by_category'] = books_by_category
+        return context

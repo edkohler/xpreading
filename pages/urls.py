@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import HomePageView, AboutPageView
+from .views import HomePageView, AboutPageView, BooksByCategoryView
 from . import views
 
 urlpatterns = [
@@ -16,4 +16,5 @@ urlpatterns = [
     path('book/<slug:book_slug>/', views.book_detail, name='book_detail'),
     path('toggle-read-status/<int:book_category_id>/', views.toggle_read_status, name='toggle_read_status'),
     path('toggle-read-status-htmx/<int:book_category_id>/', views.toggle_read_status_htmx, name='toggle_read_status_htmx'),
+    path('my-books/', BooksByCategoryView.as_view(), name='my_books'),
 ]

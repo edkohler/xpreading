@@ -12,12 +12,10 @@
   <ul>
     {% for book_category in book_categories %}
       <li>
-        <div>
-          {% include 'pages/partials/book_read_checkbox.html' with book_category=book_info.book_category completed=book_info.completed %}
-        </div>
+
 
                <label>
-        <strong><a href="{% url 'book_detail' book_category.book.slug %}">{{ book_category.book.title }}</a></strong>
+        <strong>{{ book_category.book.title }}</strong>
         by {{ book_category.book.author.first_name }} {{ book_category.book.author.last_name }}
         {% if book_category.award_level %}
           - {{ book_category.award_level.name }}
