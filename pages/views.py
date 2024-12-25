@@ -11,6 +11,7 @@ from django.views.decorators.http import require_POST
 from django.db.models import Count
 from django.contrib.auth.mixins import LoginRequiredMixin
 import json
+import requests
 
 class HomePageView(TemplateView):
     template_name = "pages/home.html"
@@ -353,6 +354,12 @@ def my_to_read_list(request):
     # Fetch IDs of books marked as completed for the user
     user_completed_books = UserBook.objects.filter(user=request.user, completed=True).values_list('book_id', flat=True)
 
+    user = request.user
+    favorite_library_ids = UserFavoriteLibrary.objects.filter(user=user).values_list('library_id', flat=True)
+    favorite_libraries = Library.objects.filter(id__in=favorite_library_ids)
+    non_favorite_libraries = Library.objects.exclude(id__in=favorite_library_ids)
+
+
 
     # Debugging
     print("Completed book IDs:", list(user_completed_books))
@@ -365,5 +372,74 @@ def my_to_read_list(request):
         unread_books = books.exclude(book_id__in=user_completed_books)
         to_read_books.extend(unread_books)
 
-    context = {'to_read_books': to_read_books}
+    context = {'to_read_books': to_read_books,
+               'favorite_libraries': favorite_libraries,
+        'non_favorite_libraries': non_favorite_libraries,}
     return render(request, 'pages/my_to_read_list.html', context)
+
+
+def get_unique_books_per_branch(request, library_id):
+    # Get the list of book bibliocommons IDs from the query string
+    book_ids = request.GET.get("books", "").split(",")
+    base_url = f"https://gateway.bibliocommons.com/v2/libraries/{library_id}/bibs/"
+    url_suffix = "/availability?locale=en-US"
+
+    # Initialize branch data
+    branch_unique_books = defaultdict(set)
+
+    # Process each query
+    for book_id in book_ids:
+        url = f"{base_url}{book_id}{url_suffix}"
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            data = response.json()
+
+            # Iterate over bibItems to filter and count unique books by branch
+            for item_id, item_data in data.get("entities", {}).get("bibItems", {}).items():
+                availability = item_data.get("availability", {})
+                if availability.get("statusType") == "AVAILABLE":
+                    branch_name = item_data.get("branchName", "Unknown")
+                    branch_unique_books[branch_name].add(book_id)
+
+        except Exception as e:
+            print(f"Error fetching data from {url}: {e}")
+
+    # Fetch book details from the database
+    books = {
+        book.bibliocommons_id: {
+            "title": book.title,
+            "author_first_name": book.author.first_name,
+            "author_last_name": book.author.last_name,
+            "slug": book.slug
+        }
+        for book in Book.objects.filter(bibliocommons_id__in=book_ids)
+    }
+
+    # Convert branch data to a sorted list
+    results = sorted(
+        [
+            {
+                "branchName": branch,
+                "uniqueBooksCount": len(book_set),
+                "bookDetails": sorted(
+                    [
+                        {
+                            "bibliocommons_id": bibliocommons_id,
+                            "title": books.get(bibliocommons_id, {}).get("title", "Unknown Title"),
+                            "author_first_name": books.get(bibliocommons_id, {}).get("author_first_name", ""),
+                            "author_last_name": books.get(bibliocommons_id, {}).get("author_last_name", ""),
+                            "slug": books.get(bibliocommons_id, {}).get("slug", "#"),
+                        }
+                        for bibliocommons_id in book_set
+                    ],
+                    key=lambda x: x["author_last_name"]  # Sort by author's last name
+                )
+            }
+            for branch, book_set in branch_unique_books.items()
+        ],
+        key=lambda x: x["uniqueBooksCount"],
+        reverse=True
+    )
+
+    return render(request, "pages/library_locations.html", {"library_data": results})

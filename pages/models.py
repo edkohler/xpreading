@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils.text import slugify
 from django.contrib.auth import get_user_model
-
+import re
 
 
 # Create your models here.
@@ -121,11 +121,23 @@ class Library(models.Model):
     url_prefix = models.URLField()  # Base URL before search query
     url_suffix = models.CharField(max_length=200, blank=True)  # URL part after search query
     web_platform = models.ForeignKey('WebPlatform', on_delete=models.CASCADE, blank=True, null=True)
+    bibliocommons_id = models.CharField(max_length=400, blank=True)
     class Meta:
         ordering = ['state', 'name']  # Sort by state, then name
 
     def __str__(self):
         return f"{self.name} ({self.state})"
+
+    @property
+    def bibliocommons_library_id(self):
+        """
+        Extracts the subdomain from the url_prefix field.
+        Example: "https://hclib.bibliocommons.com/v2/search?query="
+        Returns: "hclib"
+        """
+        match = re.search(r"https://([\w-]+)\.bibliocommons\.com", self.url_prefix)
+        return match.group(1) if match else None
+
 
 class LocalBookstore(models.Model):
     name = models.CharField(max_length=200)  # Library name

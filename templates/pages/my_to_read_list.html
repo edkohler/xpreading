@@ -12,6 +12,28 @@
 </ul>
 
 
+<h2>Library Lookups</h2>
+<p>Use the buttons below to look up which books on your reading list are available each of your local library brances.</p>
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Location</th>
+        <th scope="col">Favorites</th>
+
+      </tr>
+    </thead>
+    <tbody>
+    {% for library in favorite_libraries %}
+    <tr>
+        <td><strong>{{ library.name }}</strong></td><td>{{ library.state }}</td>
+        <td><a href="{% url 'get_unique_books_per_branch' library.bibliocommons_id %}?books={% for book in to_read_books %}{{ book.book.bibliocommons_id }}{% if not forloop.last %},{% endif %}{% endfor %}">
+            Search all Branches
+        </a>
+            </td></tr>
+    {% endfor %}
+</tbody>
+</table>
 
 
 
