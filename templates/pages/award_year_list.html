@@ -4,19 +4,46 @@
 
 {% block content %}
 
-<h1>Award Years</h1>
-<ul>
-    {% for award in award_years %}
-        <li>
-            {{ award.category__name }} - {{ award.year }}
-            {% if award.liked %}
-                <a href="{% url 'toggle_award_year_like' award.category award.year %}">Unlike</a>
-            {% else %}
-                <a href="{% url 'toggle_award_year_like' award.category award.year %}">Like</a>
-            {% endif %}
-        </li>
-    {% endfor %}
-</ul>
+<h1>Book Awards</h1>
+<p>Liking a book award year adds the books from that year to your reading list.</p><p>Books you've already marked as read for that award year will already be marked as read.</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Book Award</th>
+            <th>Year</th>
+            <th>Liked</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for award in award_years %}
+            <tr>
+                <td><a href="{% url 'category_detail' award.category__slug%}">{{ award.category__name }}</a></td>
+                <td>{{ award.year }}</td>
+                <td>
+                    {% if award.liked %}
+                        <button
+                            hx-post="{% url 'toggle_award_year_like' award.category award.year %}"
+                            hx-swap="outerHTML"
+                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                            class="btn btn-danger btn-sm">
+                            Unlike
+                        </button>
+                    {% else %}
+                        <button
+                            hx-post="{% url 'toggle_award_year_like' award.category award.year %}"
+                            hx-swap="outerHTML"
+                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                            class="btn btn-primary btn-sm">
+                            Like
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 
 
 

@@ -233,7 +233,7 @@ class BooksByCategoryView(LoginRequiredMixin, TemplateView):
             # All BookCategory records for this category
             book_categories = BookCategory.objects.filter(category=category).select_related(
                 'book', 'book__author', 'award_level'
-            ).order_by('year', 'book__title')
+            ).order_by('-year', 'book__title')
 
             # Group by year
             for book_category in book_categories:
@@ -293,9 +293,9 @@ def terms_and_conditions(request):
 def award_year_list(request):
     # Fetch all unique category-year pairs from BookCategory
     award_years = (
-        BookCategory.objects.values('category', 'category__name', 'year')
+        BookCategory.objects.values('category', 'category__name','category__slug', 'year')
         .distinct()
-        .order_by('category__name', 'year')
+        .order_by('category__name', '-year')
     )
 
     # Fetch user's liked award years
