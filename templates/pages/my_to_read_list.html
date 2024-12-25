@@ -1,0 +1,18 @@
+{% extends '_base.html' %}
+
+{% block title %}About page{% endblock %}
+
+{% block content %}
+
+<h1>My Reading List</h1>
+<ul>
+    {% for book in to_read_books %}
+        <li><a href="{% url 'book_detail' book.book.slug %}">{{ book.book.title }}</a> ({{ book.book.author }})</li>
+    {% endfor %}
+</ul>
+
+
+
+
+
+{% endblock content %}

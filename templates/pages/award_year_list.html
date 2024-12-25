@@ -1,0 +1,23 @@
+{% extends '_base.html' %}
+
+{% block title %}About page{% endblock %}
+
+{% block content %}
+
+<h1>Award Years</h1>
+<ul>
+    {% for award in award_years %}
+        <li>
+            {{ award.category__name }} - {{ award.year }}
+            {% if award.liked %}
+                <a href="{% url 'toggle_award_year_like' award.category award.year %}">Unlike</a>
+            {% else %}
+                <a href="{% url 'toggle_award_year_like' award.category award.year %}">Like</a>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+
+
+
+{% endblock content %}

@@ -1,7 +1,7 @@
 from django.views.generic import TemplateView
-from django.shortcuts import render, get_object_or_404, Http404
+from django.shortcuts import render, get_object_or_404, Http404, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Category, UserBookCategory, BookCategory, SharedList, Book, Library, UserBook, UserFavoriteLibrary
+from .models import Category, UserBookCategory, BookCategory, SharedList, Book, Library, UserBook, UserFavoriteLibrary, AwardYearLike
 import uuid
 from django.utils.timezone import now, timedelta
 from django.core.mail import send_mail
@@ -254,6 +254,7 @@ class BooksByCategoryView(LoginRequiredMixin, TemplateView):
                 books_by_category[category] = books_by_year
 
         context['books_by_category'] = books_by_category
+        context['user_completed_books'] = user_completed_books
         return context
 
 
@@ -286,3 +287,83 @@ def toggle_favorite_library(request, library_id):
 
 def terms_and_conditions(request):
     return render(request, 'pages/terms_and_conditions.html')
+
+
+@login_required
+def award_year_list(request):
+    # Fetch all unique category-year pairs from BookCategory
+    award_years = (
+        BookCategory.objects.values('category', 'category__name', 'year')
+        .distinct()
+        .order_by('category__name', 'year')
+    )
+
+    # Fetch user's liked award years
+    liked_awards = AwardYearLike.objects.filter(user=request.user).values_list('category', 'year')
+    liked_award_set = {(like[0], like[1]) for like in liked_awards}
+
+    # Add a 'liked' flag to each award year
+    for award in award_years:
+        award['liked'] = (award['category'], award['year']) in liked_award_set
+
+    context = {
+        'award_years': award_years,
+    }
+    return render(request, 'pages/award_year_list.html', context)
+
+
+@login_required
+def toggle_award_year_like(request, category_id, year):
+    category = Category.objects.get(id=category_id)
+    like, created = AwardYearLike.objects.get_or_create(user=request.user, category=category, year=year)
+    if not created:
+        like.delete()
+    return redirect('award_year_list')
+
+
+@login_required
+def my_award_lists(request):
+    liked_awards = AwardYearLike.objects.filter(user=request.user)
+    liked_award_data = []
+
+    for like in liked_awards:
+        books = BookCategory.objects.filter(category=like.category, year=like.year)
+        user_books = UserBookCategory.objects.filter(user=request.user, book_category__in=books)
+
+        completed_books = user_books.filter(completed=True).select_related('book_category__book')
+        not_completed_books = books.exclude(id__in=completed_books.values_list('book_category', flat=True))
+
+        liked_award_data.append({
+            'category': like.category,
+            'year': like.year,
+            'completed_books': completed_books,
+            'not_completed_books': not_completed_books,
+        })
+
+    context = {'liked_awards': liked_award_data}
+    return render(request, 'pages/my_award_lists.html', context)
+
+
+@login_required
+def my_to_read_list(request):
+    liked_awards = AwardYearLike.objects.filter(user=request.user)
+    print("Liked awards:", liked_awards)
+    to_read_books = []
+
+    # Fetch IDs of books marked as completed for the user
+    user_completed_books = UserBook.objects.filter(user=request.user, completed=True).values_list('book_id', flat=True)
+
+
+    # Debugging
+    print("Completed book IDs:", list(user_completed_books))
+
+    for like in liked_awards:
+        # Get all BookCategory entries for the liked category and year
+        books = BookCategory.objects.filter(category=like.category, year=like.year)
+
+        # Exclude completed books
+        unread_books = books.exclude(book_id__in=user_completed_books)
+        to_read_books.extend(unread_books)
+
+    context = {'to_read_books': to_read_books}
+    return render(request, 'pages/my_to_read_list.html', context)

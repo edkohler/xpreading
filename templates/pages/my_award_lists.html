@@ -1,0 +1,31 @@
+{% extends '_base.html' %}
+
+{% block title %}About page{% endblock %}
+
+{% block content %}
+
+<h1>My Award Lists</h1>
+<ul>
+    {% for award in liked_awards %}
+        <li>
+            {{ award.category.name }} - {{ award.year }}
+            <h3>Completed Books:</h3>
+            <ul>
+                {% for book in award.completed_books %}
+                    <li><a href="{% url 'book_detail' book.book_category.book.slug %}">{{ book.book_category.book.title }}</a>/li>
+                {% endfor %}
+            </ul>
+            <h3>Not Completed Books:</h3>
+            <ul>
+                {% for book in award.not_completed_books %}
+                    <li><a href="{% url 'book_detail' book.book.slug %}">{{ book.book.title }}</a></li>
+                {% endfor %}
+            </ul>
+        </li>
+    {% endfor %}
+</ul>
+
+
+
+
+{% endblock content %}

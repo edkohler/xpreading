@@ -12,17 +12,23 @@
         <h3>
             {{ year }} - {{ data.read_books }}/{{ data.total_books }} Completed
         </h3>
-        <ul>
+        <table class="table">
+            <tr class="table-light">
+                <th>Book</th>
+                <th>Author</th>
+                <th>Award Level</th>
+                <th>Completed</th>
+            </tr>
             {% for book_category in data.book_list %}
-                <li>
-                    <strong><a href="{% url 'book_detail' book_category.book.slug %}">{{ book_category.book.title }}</a></strong> by
-                    {{ book_category.book.author.first_name }} {{ book_category.book.author.last_name }}
-                    {% if book_category.award_level %}
-                        - <em>{{ book_category.award_level.name }}</em>
-                    {% endif %}
-                </li>
+                <tr>
+                    <td><a href="{% url 'book_detail' book_category.book.slug %}">{{ book_category.book.title }}</a></td>
+                    <td>{{ book_category.book.author.first_name }} {{ book_category.book.author.last_name }}</td>
+                    <td>{% if book_category.award_level %}{{ book_category.award_level.name }}{% endif %}</td>
+                    <td>{% if book_category.book.id in user_completed_books %}Yes{% else %}No{% endif %}</td>
+                </tr>
             {% endfor %}
-        </ul>
+        </table>
+
     {% endfor %}
 {% endfor %}
 {% endblock %}

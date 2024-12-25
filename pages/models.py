@@ -164,3 +164,16 @@ class UserFavoriteLibrary(models.Model):
 
     class Meta:
         unique_together = ['user', 'library']
+
+
+class AwardYearLike(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="liked_award_years")
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    year = models.IntegerField()
+
+    class Meta:
+        unique_together = ('user', 'category', 'year')
+        ordering = ['category__name', 'year']
+
+    def __str__(self):
+        return f"{self.user.username} likes {self.category.name} ({self.year})"

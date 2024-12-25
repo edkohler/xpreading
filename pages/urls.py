@@ -20,4 +20,8 @@ urlpatterns = [
     path('toggle-read-status-htmx/<int:book_id>/', views.toggle_read_status_htmx, name='toggle_read_status_htmx'),
     path('libraries/', views.library_list, name='library_list'),
     path('libraries/toggle-favorite/<int:library_id>/', views.toggle_favorite_library, name='toggle_favorite'),
+    path('award-years/', views.award_year_list, name='award_year_list'),
+    path('toggle-award-year-like/<int:category_id>/<int:year>/', views.toggle_award_year_like, name='toggle_award_year_like'),
+    path('my-award-lists/', views.my_award_lists, name='my_award_lists'),
+    path('my-to-read-list/', views.my_to_read_list, name='my_to_read_list'),
 ]
