@@ -282,3 +282,7 @@ def toggle_favorite_library(request, library_id):
             return JsonResponse({'status': 'removed'})
         return JsonResponse({'status': 'added'})
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+def terms_and_conditions(request):
+    return render(request, 'pages/terms_and_conditions.html')

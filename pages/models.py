@@ -5,6 +5,7 @@ from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 
 
+
 # Create your models here.
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)  # e.g., "Caldecott", "Newbery"
@@ -42,6 +43,9 @@ class Book(models.Model):
     title = models.CharField(max_length=200)
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="books")
     categories = models.ManyToManyField(Category, through='BookCategory')
+    isbn = models.CharField(max_length=13, blank=True, null=True)
+    page_count = models.CharField(max_length=5, blank=True, null=True)
+    bibliocommons_id = models.CharField(max_length=20, blank=True, null=True)
 
     slug = models.SlugField(blank=True)
 

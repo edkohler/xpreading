@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.category_list_sorted_by_year, name='category_list_sorted_by_year'),
 
     path("about/", AboutPageView.as_view(), name="about"),
+    path('terms-and-conditions/', views.terms_and_conditions, name='terms_and_conditions'),
     path('manage-list/<int:category_id>/', views.manage_book_list, name='manage_book_list'),
     path('share-list/', views.share_book_list, name='share_book_list'),
     path('shared-list/<str:token>/', views.view_shared_list, name='view_shared_list'),
