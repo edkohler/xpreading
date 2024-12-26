@@ -1,0 +1,4 @@
+<form hx-post="{% url 'update_book_field' book.pk field_name %}" hx-target="this" hx-swap="outerHTML">
+    <input type="text" name="value" value="{{ current_value|default:'' }}" />
+    <button type="submit">Save</button>
+</form>

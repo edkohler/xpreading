@@ -73,6 +73,9 @@
                 </li>
                 <li><a class="dropdown-item" href="{% url 'account_change_password' %}">Change password</a></li>
                 <li><a class="dropdown-item" href="{% url 'account_logout' %}">Sign out</a></li>
+                {% if user.is_superuser %}
+                <li><a class="dropdown-item" href="{% url 'incomplete_books' %}">Incomplete Books</a></li>
+                {% endif %}
               </ul>
             </li>
           </ul>

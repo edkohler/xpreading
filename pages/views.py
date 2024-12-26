@@ -12,6 +12,9 @@ from django.db.models import Count
 from django.contrib.auth.mixins import LoginRequiredMixin
 import json
 import requests
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Q
+
 
 class HomePageView(TemplateView):
     template_name = "pages/home.html"
@@ -371,6 +374,9 @@ def my_to_read_list(request):
         # Exclude completed books
         unread_books = books.exclude(book_id__in=user_completed_books)
         to_read_books.extend(unread_books)
+        to_read_books
+
+    to_read_books = sorted(to_read_books, key=lambda book: book.book.author.last_name.lower() if book.book.author else "")
 
     context = {'to_read_books': to_read_books,
                'favorite_libraries': favorite_libraries,
@@ -443,3 +449,42 @@ def get_unique_books_per_branch(request, library_id):
     )
 
     return render(request, "pages/library_locations.html", {"library_data": results})
+
+
+@staff_member_required
+def incomplete_books_view(request):
+    books = Book.objects.filter(
+    Q(asin__isnull=True) | Q(asin='') |
+    Q(bibliocommons_id__isnull=True) | Q(bibliocommons_id='') |
+    Q(page_count__isnull=True) | Q(page_count='')
+    )
+
+    return render(request, 'pages/incomplete_books.html', {'books': books})
+
+@staff_member_required
+def update_book_field(request, pk, field_name):
+    if request.method == "POST":
+        book = get_object_or_404(Book, pk=pk)
+        new_value = request.POST.get('value')
+        if hasattr(book, field_name):
+            setattr(book, field_name, new_value)
+            book.save()
+            return JsonResponse({"success": True, "value": new_value})
+    return JsonResponse({"success": False}, status=400)
+
+
+@staff_member_required
+def update_book_field(request, pk, field_name):
+    book = get_object_or_404(Book, pk=pk)
+    if request.method == "GET" and hasattr(book, field_name):
+        return render(request, 'pages/partials/edit_field.html', {
+            'book': book,
+            'field_name': field_name,
+            'current_value': getattr(book, field_name),
+        })
+    elif request.method == "POST" and hasattr(book, field_name):
+        new_value = request.POST.get('value')
+        setattr(book, field_name, new_value)
+        book.save()
+        return JsonResponse({"success": True, "value": new_value})
+    return JsonResponse({"success": False}, status=400)

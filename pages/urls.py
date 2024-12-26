@@ -25,5 +25,6 @@ urlpatterns = [
     path('my-award-lists/', views.my_award_lists, name='my_award_lists'),
     path('my-to-read-list/', views.my_to_read_list, name='my_to_read_list'),
     path('get_unique_books_per_branch/<str:library_id>/', views.get_unique_books_per_branch, name='get_unique_books_per_branch'),
-
+    path('data/incomplete-books/', views.incomplete_books_view, name='incomplete_books'),
+    path('data/update-book-field/<int:pk>/<str:field_name>/', views.update_book_field, name='update_book_field'),
 ]

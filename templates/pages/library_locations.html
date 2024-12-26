@@ -19,16 +19,21 @@
                     <td>{{ branch.branchName }}</td>
                     <td>{{ branch.uniqueBooksCount }}</td>
                     <td>
-                        <ul>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
                             {% for book in branch.bookDetails %}
-                                <li>
-                                    <a href="{% url 'book_detail' book.slug %}">
-                                        {{ book.title }}
-                                    </a>
-                                    by {{ book.author_first_name }} {{ book.author_last_name }}
-                                </li>
+                                <tr><td><a href="{% url 'book_detail' book.slug %}">{{ book.title }}</a></td><td>{{ book.author_first_name }} {{ book.author_last_name }}</td></tr>
+
                             {% endfor %}
-                        </ul>
+                        </tbody>
+                    </table>
                     </td>
                 </tr>
             {% endfor %}
