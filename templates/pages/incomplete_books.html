@@ -8,8 +8,9 @@
             <th>Title</th>
             <th>Author</th>
             <th>ASIN</th>
-            <th>Bibliocommons ID</th>
             <th>Page Count</th>
+            <th>Bibliocommons ID</th>
+
         </tr>
     </thead>
     <tbody>
@@ -18,15 +19,26 @@
             <td><a href="https://www.amazon.com/s?k={{ book.title }}+{{ book.author }}&i=stripbooks" target="_blank">{{ book.title }}</a></td>
             <td>{{ book.author }}</td>
             <td>
-                <span hx-get="{% url 'update_book_field' book.pk 'asin' %}" hx-trigger="click" hx-swap="outerHTML">{{ book.asin|default:"[Click to edit]" }} </span>
+                <form hx-post="{% url 'update_book_field' book.pk 'asin' %}" hx-trigger="change">
+                    <input type="text" name="value" value="{{ book.asin|default:'' }}" placeholder="Enter ASIN" />
+                </form>
             </td>
             <td>
-                <span hx-get="{% url 'update_book_field' book.pk 'bibliocommons_id' %}" hx-trigger="click" hx-swap="outerHTML">{{ book.bibliocommons_id|default:"[Click to edit]" }} | <a href="https://hclib.bibliocommons.com/v2/search?query={{ book.title }}+{{ book.author }}&searchType=smart" target="_blank">Biblio</a></span>
+                <form hx-post="{% url 'update_book_field' book.pk 'page_count' %}" hx-trigger="change">
+                    <input type="text" name="value" value="{{ book.page_count|default:'' }}" placeholder="Enter Page Count" />
+                </form>
             </td>
             <td>
-                <span hx-get="{% url 'update_book_field' book.pk 'page_count' %}" hx-trigger="click" hx-swap="outerHTML">{{ book.page_count|default:"[Click to edit]" }}</span>
+                <form hx-post="{% url 'update_book_field' book.pk 'bibliocommons_id' %}" hx-trigger="change">
+                    <input type="text" name="value" value="{{ book.bibliocommons_id|default:'' }}" placeholder="Enter Bibliocommons ID" />
+                </form>
+                | <a href="https://hclib.bibliocommons.com/v2/search?query={{ book.title }}+{{ book.author }}&searchType=smart" target="_blank">Biblio</a>
             </td>
+
         </tr>
+
+
+        
         {% endfor %}
     </tbody>
 </table>
