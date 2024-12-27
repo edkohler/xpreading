@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, get_object_or_404, Http404, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Category, UserBookCategory, BookCategory, SharedList, Book, Library, UserBook, UserFavoriteLibrary, AwardYearLike
 import uuid
 from django.utils.timezone import now, timedelta
@@ -417,7 +417,8 @@ def get_unique_books_per_branch(request, library_id):
             "title": book.title,
             "author_first_name": book.author.first_name,
             "author_last_name": book.author.last_name,
-            "slug": book.slug
+            "slug": book.slug,
+            "image": book.image if book.image else None,
         }
         for book in Book.objects.filter(bibliocommons_id__in=book_ids)
     }
@@ -436,6 +437,7 @@ def get_unique_books_per_branch(request, library_id):
                             "author_first_name": books.get(bibliocommons_id, {}).get("author_first_name", ""),
                             "author_last_name": books.get(bibliocommons_id, {}).get("author_last_name", ""),
                             "slug": books.get(bibliocommons_id, {}).get("slug", "#"),
+                            "image": books.get(bibliocommons_id, {}).get("image", ""),
                         }
                         for bibliocommons_id in book_set
                     ],
@@ -488,3 +490,21 @@ def update_book_field(request, pk, field_name):
         book.save()
         return JsonResponse({"success": True, "value": new_value})
     return JsonResponse({"success": False}, status=400)
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def books_without_images(request):
+    books = Book.objects.filter(Q(image__isnull=True) | Q(image=""))
+    return render(request, "pages/books_without_images.html", {"books": books})
+
+@user_passes_test(lambda u: u.is_superuser)
+def upload_book_image(request, pk):
+    if request.method == "POST" and request.FILES.get("image"):
+        book = get_object_or_404(Book, pk=pk)
+        book.image = request.FILES["image"]
+        book.save()
+        return JsonResponse({
+            "message": "Image uploaded successfully",
+            "image_url": book.image.url,
+        })
+    return JsonResponse({"error": "Invalid request"}, status=400)

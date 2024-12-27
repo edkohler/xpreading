@@ -14,6 +14,7 @@
         </h3>
         <table class="table">
             <tr class="table-light">
+                <th></th>
                 <th>Book</th>
                 <th>Author</th>
                 <th>Award Level</th>
@@ -21,6 +22,7 @@
             </tr>
             {% for book_category in data.book_list %}
                 <tr>
+                    <td><a href="{% url 'book_detail' book_category.book.slug %}"><img src="{{ book_category.book.image.url }}" alt="{{ book_category.book.title }}" style="max-width: 24px;"/></a></td>
                     <td><a href="{% url 'book_detail' book_category.book.slug %}">{{ book_category.book.title }}</a></td>
                     <td>{{ book_category.book.author.first_name }} {{ book_category.book.author.last_name }}</td>
                     <td>{% if book_category.award_level %}{{ book_category.award_level.name }}{% endif %}</td>

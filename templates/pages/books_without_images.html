@@ -1,0 +1,31 @@
+{% extends "_base.html" %}
+
+{% block content %}
+<h1>Books Without Images</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Image</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for book in books %}
+        <tr id="book-{{ book.id }}">
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td>
+                <form
+                    hx-post="{% url 'upload_book_image' book.id %}"
+                    hx-swap="outerHTML"
+                    enctype="multipart/form-data">
+                    <input type="file" name="image" accept="image/*" required>
+                    <button type="submit">Upload</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

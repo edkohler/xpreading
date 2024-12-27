@@ -8,17 +8,21 @@
 <h1>{{ book.title }}</h1>
 <p>By: {{ book.author.first_name }} {{ book.author.last_name }}</p>
 <hr>
-<div>
-  {% with user_book=book.userbook_set.get %}
-    {% include 'pages/partials/book_read_checkbox.html' with book=book completed=user_book.completed %}
-  {% endwith %}
-  I read this!
-</div>
-<div>
+<table class="table">
+  <tr><td>{% if book.image %}
+    <img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-width: 200px;"/>
+{% else %}
+    <p>No image.</p>
+{% endif %}</td><td>
 
-</div>
+  <div>
+    {% with user_book=book.userbook_set.get %}
+      {% include 'pages/partials/book_read_checkbox.html' with book=book completed=user_book.completed %}
+    {% endwith %}
+    I read this!
+  </div>
 
-<hr>
+  <hr>
 <h2>Awards</h2>
 <ul>
   {% for book_category in categories %}
@@ -33,6 +37,15 @@
     </li>
   {% endfor %}
 </ul>
+</td></tr>
+</table
+
+
+
+
+</div>
+
+
 
 <h2>Library Lookup Links</h2>
 <p>Clicking the links to libraries listed below takes you to each library's search results for this book.</p><p>Add local libraries to your favorites <a href="{%url 'library_list' %}">here</a>.</p>

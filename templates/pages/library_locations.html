@@ -8,7 +8,7 @@
     <thead>
         <tr>
             <th>Branch Name</th>
-            <th>Available Books</th>
+
             <th>Titles & Authors</th>
         </tr>
     </thead>
@@ -16,12 +16,14 @@
         {% if library_data %}
             {% for branch in library_data %}
                 <tr>
-                    <td>{{ branch.branchName }}</td>
-                    <td>{{ branch.uniqueBooksCount }}</td>
+                    <td><strong>{{ branch.branchName }}</strong></br>
+                        Available books: {{ branch.uniqueBooksCount }}</td>
+
                     <td>
                         <table class="table">
                             <thead>
                                 <tr>
+                                    <th></th>
                                     <th>Title</th>
                                     <th>Author</th>
                                 </tr>
@@ -29,7 +31,8 @@
                             <tbody>
 
                             {% for book in branch.bookDetails %}
-                                <tr><td><a href="{% url 'book_detail' book.slug %}">{{ book.title }}</a></td><td>{{ book.author_first_name }} {{ book.author_last_name }}</td></tr>
+                                <tr><td><a href="{% url 'book_detail' book.slug %}"><img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-width: 24px;"/></a></td>
+                                    <td><a href="{% url 'book_detail' book.slug %}">{{ book.title }}</a></td><td>{{ book.author_first_name }} {{ book.author_last_name }}</td></tr>
 
                             {% endfor %}
                         </tbody>

@@ -19,8 +19,8 @@
     {% for library in favorite_libraries %}
     <tr>
         <td><strong>{{ library.name }}</strong></td><td>{{ library.state }}</td>
-        <td><a href="{% url 'get_unique_books_per_branch' library.bibliocommons_id %}?books={% for book in to_read_books %}{{ book.book.bibliocommons_id }}{% if not forloop.last %},{% endif %}{% endfor %}">
-            Search all Branches
+        <td><a class="btn btn-primary btn-sm" href="{% url 'get_unique_books_per_branch' library.bibliocommons_id %}?books={% for book in to_read_books %}{{ book.book.bibliocommons_id }}{% if not forloop.last %},{% endif %}{% endfor %}">
+            Power Search</a>
         </a>
             </td></tr>
     {% endfor %}
@@ -32,6 +32,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th></th>
             <th>Title</th>
             <th>Author</th>
             <th>Purchase</th>
@@ -42,6 +43,7 @@
     <tbody>
         {% for book in to_read_books %}
             <tr>
+                <td><img src="{{ book.book.image.url }}" alt="{{ book.book.title }}" style="max-width: 30px;"/></td>
                 <td><a href="{% url 'book_detail' book.book.slug %}">{{ book.book.title }}</a></td>
                 <td>{{ book.book.author }}</td>
 

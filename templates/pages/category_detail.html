@@ -9,25 +9,44 @@
 
 {% if books_by_year %}
   {% for year, book_categories in books_by_year.items %}
+
+
     <h2>{{ year }}</h2>
-    <ul>
-      {% for item in book_categories %}
-        <li>
-          <label>
-            <strong><a href="{% url 'book_detail' item.book_category.book.slug %}">{{ item.book_category.book.title }}</a></strong>
-            by {{ item.book_category.book.author.first_name }} {{ item.book_category.book.author.last_name }}
-            {% if item.book_category.award_level %}
-              - {{ item.book_category.award_level.name }}
-            {% else %}
-              - Nominee
-            {% endif %}
-            {% if item.completed %}
-              - Completed
-            {% endif %}
-          </label>
-        </li>
-      {% endfor %}
-    </ul>
+    <table class="table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Book</th>
+          <th>Author</th>
+          <th>Award Level</th>
+          <th>Completed</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in book_categories %}
+          <tr>
+            <td><a href="{% url 'book_detail' item.book_category.book.slug %}"><img src="{{ item.book_category.book.image.url }}" alt="{{ item.book_category.book.title }}" style="max-width: 24px;"/></a></td>
+            <td>
+              <a href="{% url 'book_detail' item.book_category.book.slug %}">{{ item.book_category.book.title }}</a>
+            </td>
+            <td>{{ item.book_category.book.author.first_name }} {{ item.book_category.book.author.last_name }}</td>
+            <td>
+              {% if item.book_category.award_level %}
+                {{ item.book_category.award_level.name }}
+              {% else %}
+                Nominee
+              {% endif %}
+            </td>
+            <td>
+              {% if item.completed %}
+                Completed
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    
   {% endfor %}
 {% else %}
   <p>No books found in this category.</p>

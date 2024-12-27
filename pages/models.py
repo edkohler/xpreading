@@ -5,6 +5,16 @@ from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 import re
 
+import os
+import uuid
+
+def upload_to_book_images(instance, filename):
+    # Get the file extension (e.g., '.jpg', '.png')
+    ext = os.path.splitext(filename)[1]
+    # Generate a new unique filename
+    new_filename = f"{uuid.uuid4()}{ext}"
+    # Return the full path for the file
+    return f"book_images/{new_filename}"
 
 # Create your models here.
 class Category(models.Model):
@@ -14,7 +24,7 @@ class Category(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.name)[:50]
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -48,10 +58,15 @@ class Book(models.Model):
     bibliocommons_id = models.CharField(max_length=20, blank=True, null=True)
     asin = models.CharField(max_length=20, blank=True, null=True)
     slug = models.SlugField(blank=True)
+    image = models.ImageField(
+        upload_to=upload_to_book_images,  # Use the custom function
+        blank=True,
+        null=True
+    )
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = '-'.join((slugify(self.title), slugify(self.author.first_name), slugify(self.author.last_name)))
+            self.slug = '-'.join((slugify(self.title), slugify(self.author.first_name), slugify(self.author.last_name)))[:50]
 
         super().save(*args, **kwargs)
 
