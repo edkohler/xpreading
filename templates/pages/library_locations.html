@@ -31,7 +31,7 @@
                             <tbody>
 
                             {% for book in branch.bookDetails %}
-                                <tr><td><a href="{% url 'book_detail' book.slug %}"><img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-width: 24px;"/></a></td>
+                                <tr><td>{%if book.image%}<a href="{% url 'book_detail' book.slug %}"><img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-width: 24px;"/></a>{%endif%}</td>
                                     <td><a href="{% url 'book_detail' book.slug %}">{{ book.title }}</a></td><td>{{ book.author_first_name }} {{ book.author_last_name }}</td></tr>
 
                             {% endfor %}

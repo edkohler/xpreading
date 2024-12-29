@@ -292,6 +292,9 @@ def toggle_favorite_library(request, library_id):
 def terms_and_conditions(request):
     return render(request, 'pages/terms_and_conditions.html')
 
+def privacy_policy(request):
+    return render(request, 'pages/privacy_policy.html')
+
 
 @login_required
 def award_year_list(request):

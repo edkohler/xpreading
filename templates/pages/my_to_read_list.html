@@ -43,7 +43,7 @@
     <tbody>
         {% for book in to_read_books %}
             <tr>
-                <td><img src="{{ book.book.image.url }}" alt="{{ book.book.title }}" style="max-width: 30px;"/></td>
+                <td>{% if book.book.image %}<img src="{{ book.book.image.url }}" alt="{{ book.book.title }}" style="max-width: 30px;"/>{% endif %}</td>
                 <td><a href="{% url 'book_detail' book.book.slug %}">{{ book.book.title }}</a></td>
                 <td>{{ book.book.author }}</td>
 

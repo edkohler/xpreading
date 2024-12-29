@@ -1,7 +1,24 @@
 from pathlib import Path
 import os
+import environ
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn="https://382707f0c49ac83738b5f83aa6df88b7@o4508541680091136.ingest.us.sentry.io/4508541680418816",
+)
+
+
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Take environment variables from .env file
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -9,15 +26,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-0peo@#x9jur3!h$ryje!$879xww8y1y66jx!%*#ymhg&jkozs2"
+#SECRET_KEY = "django-insecure-0peo@#x9jur3!h$ryje!$879xww8y1y66jx!%*#ymhg&jkozs2"
+SECRET_KEY = env('SECRET_KEY')
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
+
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]
+ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "katyreads.fly.dev", "www.xpreading.com", "*.xpreading.com"]
 
+CSRF_TRUSTED_ORIGINS = ['https://xpreading.com/', 'https://www.xpreading.com/', 'https://*.xpreading.com/', 'https://katyreads.fly.dev/', 'https://*.fly.dev']
+CSRF_ALLOWED_ORIGINS = ['https://xpreading.com/', 'https://www.xpreading.com/', 'https://*.xpreading.com/', 'https://katyreads.fly.dev/', 'https://*.fly.dev']
 
 # Application definition
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -33,6 +54,7 @@ INSTALLED_APPS = [
     # Third-party
     "allauth",
     "allauth.account",
+    "allauth.socialaccount.providers.google",
     "crispy_forms",
     "crispy_bootstrap5",
     "debug_toolbar",
@@ -40,7 +62,6 @@ INSTALLED_APPS = [
     "accounts",
     "pages",
     'import_export',
-    'isbn_field',
     'storages',
 ]
 
@@ -57,6 +78,19 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",  # django-allauth
 ]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        # For each OAuth based provider, either add a ``SocialApp``
+        # (``socialaccount`` app) containing the required client
+        # credentials, or list them here:
+        'APP': {
+            'client_id': "env('GOOGLE_CLIENT_ID')",
+            'secret': "env('GOOGLE_CLIENT_SECRET')",  
+            'key': ''
+        }
+    }
+}
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
 ROOT_URLCONF = "django_project.urls"
@@ -83,11 +117,29 @@ TEMPLATES = [
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
+    # read os.environ['DATABASE_URL'] and raises
+    # ImproperlyConfigured exception if not found
+    #
+    # The db() method is an alias for db_url().
+    'default': env.db(),
+
+    # read os.environ['SQLITE_URL']
+    'sqlite':{
+    "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
-    }
 }
+}
+
+#CACHES = {
+    # Read os.environ['CACHE_URL'] and raises
+    # ImproperlyConfigured exception if not found.
+    #
+    # The cache() method is an alias for cache_url().
+#    'default': env.cache(),
+
+    # read os.environ['REDIS_URL']
+#    'redis': env.cache_url('REDIS_URL')
+#}
 
 # For Docker/PostgreSQL usage uncomment this and comment the DATABASES config above
 # DATABASES = {
@@ -189,10 +241,10 @@ AUTH_USER_MODEL = "accounts.CustomUser"
 SITE_ID = 1
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
-LOGIN_REDIRECT_URL = "home"
+LOGIN_REDIRECT_URL = "category_list_sorted_by_year"
 
 # https://django-allauth.readthedocs.io/en/latest/views.html#logout-account-logout
-ACCOUNT_LOGOUT_REDIRECT_URL = "home"
+ACCOUNT_LOGOUT_REDIRECT_URL = "category_list_sorted_by_year"
 
 # https://django-allauth.readthedocs.io/en/latest/installation.html?highlight=backends
 AUTHENTICATION_BACKENDS = (

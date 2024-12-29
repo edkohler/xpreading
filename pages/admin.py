@@ -3,14 +3,14 @@ from django.contrib import admin
 # Register your models here.
 from .models import Author, Book, Category, AwardLevel, BookCategory, Library, WebPlatform
 from import_export.admin import ImportExportModelAdmin
-from .resources import LibraryResource
+from .resources import LibraryResource, BookResource, AuthorResource
 
 @admin.register(Author)
-class AuthorAdmin(admin.ModelAdmin):
+class AuthorAdmin(ImportExportModelAdmin):
     list_display = ('first_name', 'last_name')
 
 @admin.register(Book)
-class BookAdmin(admin.ModelAdmin):
+class BookAdmin(ImportExportModelAdmin):
     list_display = ('title', 'author')
 
 @admin.register(Category)

@@ -25,7 +25,7 @@
       <tbody>
         {% for item in book_categories %}
           <tr>
-            <td><a href="{% url 'book_detail' item.book_category.book.slug %}"><img src="{{ item.book_category.book.image.url }}" alt="{{ item.book_category.book.title }}" style="max-width: 24px;"/></a></td>
+            <td>{%if item.book_category.book.image%}<a href="{% url 'book_detail' item.book_category.book.slug %}"><img src="{{ item.book_category.book.image.url }}" alt="{{ item.book_category.book.title }}" style="max-width: 24px;"/></a>{%endif%}</td>
             <td>
               <a href="{% url 'book_detail' item.book_category.book.slug %}">{{ item.book_category.book.title }}</a>
             </td>
@@ -46,7 +46,7 @@
         {% endfor %}
       </tbody>
     </table>
-    
+
   {% endfor %}
 {% else %}
   <p>No books found in this category.</p>

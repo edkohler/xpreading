@@ -9,7 +9,7 @@
   <title>{% block title %}XP Reading - Reading List Challenges for Students{% endblock title %}</title>
   <meta name="description" content="Track your award winning book reading progress.">
   <meta name="author" content="">
-  <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+  <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicons/icons8-open-book-undefined-16.png' %}">
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   <meta name="csrf-token" content="{{ csrf_token }}">
   <script>
@@ -100,7 +100,7 @@
 
   <footer class="footer">
     <div class="container">
-      <span class="text-muted">Copyright © 2024 | <a class="text-muted" aria-current="page" href="{%url 'terms_and_conditions' %}">Terms and Conditions</a></span>
+      <span class="text-muted">Copyright © 2024 | <a class="text-muted" aria-current="page" href="{%url 'terms_and_conditions' %}">Terms and Conditions</a> | <a class="text-muted" aria-current="page" href="{%url 'privacy_policy' %}">Privacy Policy</a></span>
     </div>
   </footer>
 
