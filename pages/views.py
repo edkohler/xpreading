@@ -36,72 +36,6 @@ def profile_view(request):
     return render(request, "account/profile.html", {"user": request.user})
 
 
-def books_by_category(request, category_name):
-    category = Category.objects.get(name=category_name)
-    books = BookCategory.objects.filter(category=category).select_related('book', 'award_level')
-    return render(request, 'pages/books_by_category.html', {'category': category, 'books': books})
-
-
-
-
-@login_required
-def manage_book_list(request, category_id):
-    category = get_object_or_404(Category, id=category_id)
-    book_categories = BookCategory.objects.filter(category=category).select_related('book', 'award_level').order_by('-year')
-    user_book_categories = {ubc.book_category_id: ubc for ubc in UserBookCategory.objects.filter(user=request.user)}
-
-    context = {
-        'category': category,
-        'book_categories': book_categories,
-        'user_book_categories': user_book_categories,
-    }
-    return render(request, 'pages/manage_book_list.html', context)
-
-
-@login_required
-def share_book_list(request):
-    if request.method == "POST":
-        recipient_email = request.POST.get('email')
-        expires_in = int(request.POST.get('expires_in', 7))  # Default to 7 days
-        token = uuid.uuid4().hex
-        expires_at = now() + timedelta(days=expires_in)
-
-        shared_list = SharedList.objects.create(
-            owner=request.user,
-            recipient_email=recipient_email,
-            token=token,
-            expires_at=expires_at
-        )
-
-        # Send email with the sharing link
-        share_link = request.build_absolute_uri(f"/shared-list/{token}/")
-        send_mail(
-            subject="Your Shared Book List",
-            message=f"View the shared book list here: {share_link}",
-            from_email="kohler@haystackinaneedle.com",
-            recipient_list=[recipient_email],
-        )
-
-        return render(request, 'pages/share_success.html', {'recipient_email': recipient_email})
-    return render(request, 'pages/share_book_list.html')
-
-
-
-
-def view_shared_list(request, token):
-    shared_list = get_object_or_404(SharedList, token=token)
-
-    if shared_list.expires_at and shared_list.expires_at < now():
-        raise Http404("This shared list has expired.")
-
-    user_book_categories = UserBookCategory.objects.filter(user=shared_list.owner)
-    context = {
-        'shared_list': shared_list,
-        'user_book_categories': user_book_categories,
-    }
-    return render(request, 'pages/view_shared_list.html', context)
-
-
 def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug)
     books = BookCategory.objects.filter(category=category).select_related('book', 'award_level').order_by('-year')
@@ -128,10 +62,6 @@ def category_detail(request, slug):
         'books_by_year': dict(books_by_year),  # Convert to a regular dictionary for easier template handling
     }
     return render(request, 'pages/category_detail.html', context)
-
-
-
-
 
 
 def category_list_sorted_by_year(request):
@@ -192,9 +122,6 @@ def book_detail(request, book_slug):
         'user_book': user_book,
     }
     return render(request, 'pages/book_detail.html', context)
-
-
-
 
 
 @login_required
@@ -593,23 +520,6 @@ def upload_book_image(request, pk):
     return JsonResponse({"error": "Invalid request"}, status=400)
 
 
-def book_category_form(request):
-    """Render the BookCategory creation form."""
-    if request.method == "POST":
-        form = BookCategoryForm(request.POST)
-        if form.is_valid():
-            book_category = form.save()
-            return JsonResponse({'success': True, 'message': 'BookCategory created successfully!'})
-        return JsonResponse({'success': False, 'errors': form.errors})
-
-    form = BookCategoryForm()
-    return render(request, 'pages/book_category_form.html', {'form': form})
-
-def book_search(request):
-    """Search for books by title (for the HTMX dropdown)."""
-    query = request.GET.get('query', '')
-    books = Book.objects.filter(title__icontains=query)[:10]
-    return render(request, 'pages/partials/book_search_results.html', {'books': books})
 
 
 # Helper function to download and save images
