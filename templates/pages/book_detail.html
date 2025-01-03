@@ -16,10 +16,11 @@
 {% endif %}</td><td>
 
   <div>
-    {% with user_book=book.userbook_set.get %}
-      {% include 'pages/partials/book_read_checkbox.html' with book=book completed=user_book.completed %}
-    {% endwith %}
-    I read this!
+    {% if user_book %}
+  {% include 'pages/partials/book_read_button.html' with book=book completed=user_book.completed %}
+{% endif %}
+
+   
   </div>
 
   <hr>

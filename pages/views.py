@@ -1,12 +1,12 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, get_object_or_404, Http404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Category, UserBookCategory, BookCategory, SharedList, Book, Library, UserBook, UserFavoriteLibrary, AwardYearLike
+from .models import Category, UserBookCategory, BookCategory, SharedList, Book, Library, UserBook, UserFavoriteLibrary, AwardYearLike, AwardLevel
 import uuid
 from django.utils.timezone import now, timedelta
 from django.core.mail import send_mail
 from collections import defaultdict
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
 from django.db.models import Count
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -14,6 +14,14 @@ import json
 import requests
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Q
+from django.views.decorators.csrf import csrf_exempt
+from .forms import BookCategoryForm
+from django.template.loader import render_to_string
+
+import os
+from bs4 import BeautifulSoup
+from django.urls import path
+
 
 
 class HomePageView(TemplateView):
@@ -23,7 +31,9 @@ class HomePageView(TemplateView):
 class AboutPageView(TemplateView):
     template_name = "pages/about.html"
 
-
+@login_required
+def profile_view(request):
+    return render(request, "account/profile.html", {"user": request.user})
 
 
 def books_by_category(request, category_name):
@@ -164,8 +174,12 @@ def book_detail(request, book_slug):
 
         favorite_libraries = Library.objects.filter(id__in=favorite_library_ids)
         other_libraries = Library.objects.exclude(id__in=favorite_library_ids)
+
+        # Retrieve the UserBook for this user and book, if it exists
+        user_book = UserBook.objects.filter(user=request.user, book=book).first()
     else:
         other_libraries = Library.objects.all()
+        user_book = None
 
     context = {
         'book': book,
@@ -175,8 +189,10 @@ def book_detail(request, book_slug):
         'first_category_completed': first_category_completed,
         'libraries': libraries,
         'favorite_libraries': favorite_libraries,
+        'user_book': user_book,
     }
     return render(request, 'pages/book_detail.html', context)
+
 
 
 
@@ -200,7 +216,6 @@ def toggle_read_status(request, book_category_id):
 
     return JsonResponse({'completed': user_book.completed})
 
-
 @login_required
 def toggle_read_status_htmx(request, book_id):
     book = get_object_or_404(Book, id=book_id)
@@ -214,7 +229,32 @@ def toggle_read_status_htmx(request, book_id):
     }
     print("Rendering response with completed =", context['completed'])
 
-    return render(request, 'pages/partials/book_read_checkbox.html', context)
+    return render(request, 'pages/partials/book_read_button.html', context)
+
+
+@login_required
+def category_detail(request, slug):
+    category = get_object_or_404(Category, slug=slug)
+    books = BookCategory.objects.filter(category=category).select_related('book', 'award_level').order_by('-year')
+
+    # Get the UserBook objects for the current user
+    user_books = UserBook.objects.filter(user=request.user)
+    user_books_dict = {user_book.book_id: user_book.completed for user_book in user_books}
+
+    from collections import defaultdict
+    books_by_year = defaultdict(list)
+    for book_category in books:
+        if book_category.id and book_category.book:
+            books_by_year[book_category.year].append({
+                'book_category': book_category,
+                'completed': user_books_dict.get(book_category.book.id, False),
+            })
+
+    context = {
+        'category': category,
+        'books_by_year': dict(books_by_year),  # Convert to a regular dictionary for easier template handling
+    }
+    return render(request, 'pages/category_detail.html', context)
 
 
 class BooksByCategoryView(LoginRequiredMixin, TemplateView):
@@ -227,17 +267,22 @@ class BooksByCategoryView(LoginRequiredMixin, TemplateView):
         # All books marked as completed by the user
         user_completed_books = UserBook.objects.filter(user=user, completed=True).values_list('book_id', flat=True)
 
-        # All categories
-        categories = Category.objects.order_by('name')
+        # Filter categories based on AwardYearLike for the user
+        liked_awards = AwardYearLike.objects.filter(user=user)
+        categories = Category.objects.filter(
+            id__in=liked_awards.values_list('category_id', flat=True)
+        ).order_by('name')
 
         books_by_category = {}
         for category in categories:
             books_by_year = {}
 
-            # All BookCategory records for this category
-            book_categories = BookCategory.objects.filter(category=category).select_related(
-                'book', 'book__author', 'award_level'
-            ).order_by('-year', 'book__title')
+            # Filter BookCategory to only include years liked by the user
+            liked_years = liked_awards.filter(category=category).values_list('year', flat=True)
+            book_categories = BookCategory.objects.filter(
+                category=category,
+                year__in=liked_years
+            ).select_related('book', 'book__author', 'award_level').order_by('-year', 'book__title')
 
             # Group by year
             for book_category in book_categories:
@@ -262,6 +307,7 @@ class BooksByCategoryView(LoginRequiredMixin, TemplateView):
         return context
 
 
+
 @login_required
 def library_list(request):
     user = request.user
@@ -282,10 +328,18 @@ def toggle_favorite_library(request, library_id):
         user = request.user
         library = get_object_or_404(Library, id=library_id)
         favorite, created = UserFavoriteLibrary.objects.get_or_create(user=user, library=library)
+
         if not created:
             favorite.delete()
-            return JsonResponse({'status': 'removed'})
-        return JsonResponse({'status': 'added'})
+
+        # Render the button template and pass the library and favorite status
+        button_html = render_to_string(
+            'pages/partials/button_library_favorite.html',
+            {'library': library, 'is_favorite': created, 'csrf_token': request.COOKIES.get('csrftoken')},
+            request=request
+        )
+        return HttpResponse(button_html)  # Return the updated button HTML
+
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
@@ -321,11 +375,37 @@ def award_year_list(request):
 
 @login_required
 def toggle_award_year_like(request, category_id, year):
-    category = Category.objects.get(id=category_id)
-    like, created = AwardYearLike.objects.get_or_create(user=request.user, category=category, year=year)
-    if not created:
-        like.delete()
-    return redirect('award_year_list')
+    if request.method == "POST":
+        user = request.user
+        like, created = AwardYearLike.objects.get_or_create(
+            user=user,
+            category_id=category_id,
+            year=year
+        )
+
+        if not created:
+            # If it wasn't created, it existed, so delete it
+            like.delete()
+            is_liked = False
+        else:
+            is_liked = True
+
+        # Render just the button template
+        button_html = render_to_string(
+            'pages/partials/award_like_button.html',
+            {
+                'award': {
+                    'category': category_id,
+                    'year': year
+                },
+                'is_liked': is_liked,
+                'csrf_token': request.COOKIES.get('csrftoken')
+            },
+            request=request
+        )
+        return HttpResponse(button_html)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 @login_required
@@ -511,3 +591,83 @@ def upload_book_image(request, pk):
             "image_url": book.image.url,
         })
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+def book_category_form(request):
+    """Render the BookCategory creation form."""
+    if request.method == "POST":
+        form = BookCategoryForm(request.POST)
+        if form.is_valid():
+            book_category = form.save()
+            return JsonResponse({'success': True, 'message': 'BookCategory created successfully!'})
+        return JsonResponse({'success': False, 'errors': form.errors})
+
+    form = BookCategoryForm()
+    return render(request, 'pages/book_category_form.html', {'form': form})
+
+def book_search(request):
+    """Search for books by title (for the HTMX dropdown)."""
+    query = request.GET.get('query', '')
+    books = Book.objects.filter(title__icontains=query)[:10]
+    return render(request, 'pages/partials/book_search_results.html', {'books': books})
+
+
+# Helper function to download and save images
+def download_image(url, book):
+    response = requests.get(url, stream=True)
+    if response.status_code == 200:
+        # Generate a unique filename
+        ext = os.path.splitext(url.split("?")[0])[1]  # Extract extension from URL
+        filename = f"{uuid.uuid4()}{ext}"
+        filepath = f"book_images/{filename}"
+
+        # Save the image to the media directory
+        full_path = os.path.join("media", filepath)
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        with open(full_path, 'wb') as f:
+            for chunk in response.iter_content(1024):
+                f.write(chunk)
+
+        # Update the book's image field
+        book.image = filepath
+        book.save()
+
+# View to scrape and update images
+def scrape_book_images(request):
+    books = Book.objects.filter(image__exact='', bibliocommons_id__isnull=False)
+    print(books)
+    results = []
+
+    for book in books:
+        url = f"https://hclib.bibliocommons.com/v2/record/{book.bibliocommons_id}"
+        print(url)
+        response = requests.get(url)
+        print(response)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            img_tag = soup.find('div', class_='cp-bib-jacket').find('img')
+            print(img_tag)
+            if img_tag:
+                img_url = img_tag.get('src')
+                download_image(img_url, book)
+                results.append({
+                    'title': book.title,
+                    'image_url': img_url,
+                    'status': 'Updated'
+                })
+            else:
+                results.append({
+                    'title': book.title,
+                    'status': 'Image not found'
+                })
+        else:
+            results.append({
+                'title': book.title,
+                'status': f'Failed to fetch page (Status code: {response.status_code})'
+            })
+
+    return JsonResponse({'results': results})
+
+# Template for triggering the scrape process
+def scrape_view(request):
+    return render(request, 'pages/scrape_books.html')

@@ -1,0 +1,7 @@
+<button
+    hx-post="{% url 'toggle_award_year_like' award.category award.year %}"
+    hx-swap="outerHTML"
+    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+    class="btn {% if is_liked %}btn-danger{% else %}btn-primary{% endif %} btn-sm">
+    {% if is_liked %}Unlike{% else %}Like{% endif %}
+</button>

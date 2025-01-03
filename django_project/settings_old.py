@@ -35,7 +35,7 @@ DEBUG = env('DEBUG')
 
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "katyreads.fly.dev", "www.xpreading.com", "*.xpreading.com"]
+ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "katyreads.fly.dev", "www.xpreading.com", "*.xpreading.com", "xpreading.com"]
 
 CSRF_TRUSTED_ORIGINS = ['https://xpreading.com/', 'https://www.xpreading.com/', 'https://*.xpreading.com/', 'https://katyreads.fly.dev/', 'https://*.fly.dev']
 CSRF_ALLOWED_ORIGINS = ['https://xpreading.com/', 'https://www.xpreading.com/', 'https://*.xpreading.com/', 'https://katyreads.fly.dev/', 'https://*.fly.dev']
@@ -86,7 +86,7 @@ SOCIALACCOUNT_PROVIDERS = {
         # credentials, or list them here:
         'APP': {
             'client_id': "env('GOOGLE_CLIENT_ID')",
-            'secret': "env('GOOGLE_CLIENT_SECRET')",  
+            'secret': "env('GOOGLE_CLIENT_SECRET')",
             'key': ''
         }
     }

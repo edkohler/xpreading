@@ -1,0 +1,11 @@
+<button
+    hx-post="{% url 'toggle_favorite' library.id %}"
+    hx-swap="outerHTML"
+    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+    class="btn {% if is_favorite %}btn-danger{% else %}btn-primary{% endif %} btn-sm">
+    {% if is_favorite %}
+        Remove from Favorites
+    {% else %}
+        Add to Favorites
+    {% endif %}
+</button>

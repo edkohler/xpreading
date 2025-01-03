@@ -32,13 +32,13 @@
                 <form hx-post="{% url 'update_book_field' book.pk 'bibliocommons_id' %}" hx-trigger="change">
                     <input type="text" name="value" value="{{ book.bibliocommons_id|default:'' }}" placeholder="Enter Bibliocommons ID" />
                 </form>
-                | <a href="https://hclib.bibliocommons.com/v2/search?query={{ book.title }}+{{ book.author }}&searchType=smart" target="_blank">Biblio</a>
+                | <a href="https://hclib.bibliocommons.com/v2/search?query={{ book.title }}+{{ book.author }}&searchType=smart&f_PRIMARY_LANGUAGE=eng" target="_blank">Biblio</a>
             </td>
 
         </tr>
 
 
-        
+
         {% endfor %}
     </tbody>
 </table>

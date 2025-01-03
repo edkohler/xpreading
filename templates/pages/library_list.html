@@ -20,13 +20,11 @@
     <tr>
         <td><strong>{{ library.name }}</strong></td><td>{{ library.state }}</td>
         <td>
-        <button
-            hx-post="{% url 'toggle_favorite' library.id %}"
-            hx-swap="outerHTML"
-            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-            class="btn btn-danger btn-sm">
-            Remove from Favorites
-        </button></td></tr>
+          <td>
+            {% include "pages/partials/button_library_favorite.html" with library=library is_favorite=True %}
+        </td>
+
+        </td></tr>
     {% endfor %}
 </tbody>
 </table>
@@ -50,15 +48,18 @@
     <tr>
         <td><strong>{{ library.name }}</strong></td><td>{{ library.state }}</td><td>
 
-        <button
-            hx-post="{% url 'toggle_favorite' library.id %}"
-            hx-swap="outerHTML"
-            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-            class="btn btn-primary btn-sm">
-            Add to Favorites
-        </button></td>
+          {% include "pages/partials/button_library_favorite.html" with library=library is_favorite=False %}
+        </td>
     </tr>
     {% endfor %}
 </tbody>
 </table>
+<script>
+  document.body.addEventListener('htmx:afterSwap', function(evt) {
+      if (evt.detail.xhr.getResponseHeader('Content-Type') === 'application/json') {
+          const response = JSON.parse(evt.detail.xhr.responseText);
+          evt.target.outerHTML = response.html;
+      }
+  });
+  </script>
 {% endblock %}

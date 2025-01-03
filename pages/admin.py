@@ -1,9 +1,9 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Author, Book, Category, AwardLevel, BookCategory, Library, WebPlatform
+from .models import Author, Book, Category, AwardLevel, BookCategory, Library, WebPlatform, UserBook
 from import_export.admin import ImportExportModelAdmin
-from .resources import LibraryResource, BookResource, AuthorResource
+from .resources import LibraryResource, BookResource, AuthorResource,BookCategoryResource
 
 @admin.register(Author)
 class AuthorAdmin(ImportExportModelAdmin):
@@ -22,7 +22,7 @@ class AwardLevelAdmin(admin.ModelAdmin):
     list_display = ('name', 'order')
 
 @admin.register(BookCategory)
-class BookCategoryAdmin(admin.ModelAdmin):
+class BookCategoryAdmin(ImportExportModelAdmin):
     list_display = ('book', 'category', 'year', 'award_level')
     list_filter = ('category', 'year', 'award_level')
 
@@ -35,3 +35,7 @@ class LibraryAdmin(ImportExportModelAdmin):
 @admin.register(WebPlatform)
 class WebPlatformAdmin(admin.ModelAdmin):
     list_display = ('name',)
+
+@admin.register(UserBook)
+class UserBookAdmin(admin.ModelAdmin):
+    list_display = ('user','book','completed')

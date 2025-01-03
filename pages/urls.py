@@ -5,6 +5,7 @@ from . import views
 
 urlpatterns = [
     #path("", HomePageView.as_view(), name="home"),
+
     path('', views.category_list_sorted_by_year, name='category_list_sorted_by_year'),
 
     path("about/", AboutPageView.as_view(), name="about"),
@@ -18,7 +19,7 @@ urlpatterns = [
     path('book/<slug:book_slug>/', views.book_detail, name='book_detail'),
     path('toggle-read-status/<int:book_category_id>/', views.toggle_read_status, name='toggle_read_status'),
     path('my-books/', BooksByCategoryView.as_view(), name='my_books'),
-    path('toggle-read-status-htmx/<int:book_id>/', views.toggle_read_status_htmx, name='toggle_read_status_htmx'),
+    path('toggle_read_status_htmx/<int:book_id>/', views.toggle_read_status_htmx, name='toggle_read_status_htmx'),
     path('libraries/', views.library_list, name='library_list'),
     path('libraries/toggle-favorite/<int:library_id>/', views.toggle_favorite_library, name='toggle_favorite'),
     path('award-years/', views.award_year_list, name='award_year_list'),
@@ -28,7 +29,11 @@ urlpatterns = [
     path('get_unique_books_per_branch/<str:library_id>/', views.get_unique_books_per_branch, name='get_unique_books_per_branch'),
     path('data/incomplete-books/', views.incomplete_books_view, name='incomplete_books'),
     path('data/update-book-field/<int:pk>/<str:field_name>/', views.update_book_field, name='update_book_field'),
-    path("data/without-images/", views.books_without_images, name="books_without_images"),
+    path("data/books_without_images/", views.books_without_images, name="books_without_images"),
     path("data/<int:pk>/upload-image/", views.upload_book_image, name="upload_book_image"),
+    path('data/book-category/create/', views.book_category_form, name='book_category_form'),
+    path('book-category/book-search/', views.book_search, name='book_search'),
 
+    path('scrape-books/', views.scrape_view, name='scrape_books_view'),
+    path('scrape-books/run/', views.scrape_book_images, name='scrape_books_run'),
 ]

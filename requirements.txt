@@ -30,3 +30,4 @@ django-storages
 boto3
 pillow
 sentry-sdk[django]
+beautifulsoup4

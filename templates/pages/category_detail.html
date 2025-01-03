@@ -38,9 +38,10 @@
               {% endif %}
             </td>
             <td>
-              {% if item.completed %}
-                Completed
-              {% endif %}
+              <td>
+                {% include 'pages/partials/book_read_button.html' with book=item.book_category.book completed=item.completed %}
+            </td>
+              </td>
             </td>
           </tr>
         {% endfor %}

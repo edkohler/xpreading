@@ -1,7 +1,0 @@
-<input
-  type="checkbox"
-  hx-post="{% url 'toggle_read_status_htmx' book.id %}"
-  hx-target="this"
-  hx-swap="outerHTML"
-  {{ completed|yesno:"checked," }}
-  name="completed">

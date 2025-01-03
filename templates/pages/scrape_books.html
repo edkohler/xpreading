@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrape Book Images</title>
+</head>
+<body>
+    <h1>Scrape Book Images</h1>
+    <button id="scrape-button">Start Scraping</button>
+    <ul id="results"></ul>
+
+    <script>
+        document.getElementById('scrape-button').addEventListener('click', () => {
+            fetch('/scrape-books/run/')
+                .then(response => response.json())
+                .then(data => {
+                    const resultsList = document.getElementById('results');
+                    resultsList.innerHTML = '';
+                    data.results.forEach(result => {
+                        const li = document.createElement('li');
+                        li.textContent = `${result.title}: ${result.status}`;
+                        resultsList.appendChild(li);
+                    });
+                });
+        });
+    </script>
+</body>
+</html>

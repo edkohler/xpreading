@@ -1,0 +1,12 @@
+<ul>
+    {% for book in books %}
+        <li hx-trigger="click"
+            hx-target="#id_book_display"
+            hx-swap="innerHTML"
+            hx-vals='{"book_id": "{{ book.id }}", "book_title": "{{ book.title }}"}'>
+            {{ book.title }}
+        </li>
+    {% empty %}
+        <li>No results found.</li>
+    {% endfor %}
+</ul>

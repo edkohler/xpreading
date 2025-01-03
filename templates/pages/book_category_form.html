@@ -1,0 +1,44 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}{{ book.title }}{% endblock title %}
+
+{% block content %}
+
+
+
+<h1>Create BookCategory</h1>
+    <form hx-post="{% url 'book_category_form' %}" hx-swap="outerHTML" method="post">
+        {% csrf_token %}
+        <div>
+            <label for="book-search">Book:</label>
+            <input type="text" id="book-search"
+                   hx-get="{% url 'book_search' %}"
+                   hx-trigger="keyup changed delay:300ms"
+                   hx-target="#book-results"
+                   autocomplete="off">
+            <div id="book-results"></div>
+            <div>
+                Selected Book: <span id="id_book_display">None</span>
+            </div>
+            <input type="hidden" id="id_book" name="book">
+        </div>
+        
+        <div>
+            <label for="id_category">Category:</label>
+            {{ form.category }}
+        </div>
+        <div>
+            <label for="id_award_level">Award Level:</label>
+            {{ form.award_level }}
+        </div>
+        <div>
+            <label for="id_year">Year:</label>
+            {{ form.year }}
+        </div>
+        <button type="submit">Create</button>
+    </form>
+
+
+
+{% endblock content %}
