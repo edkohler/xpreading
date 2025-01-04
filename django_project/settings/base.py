@@ -44,10 +44,11 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     #"debug_toolbar",
+    "storages",
     "accounts",
     "pages",
     "import_export",
-    "storages",
+
 ]
 
 MIDDLEWARE = [
@@ -93,45 +94,51 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.CustomUser"
 SITE_ID=1
 CRISPY_TEMPLATE_PACK = "bootstrap5"
-# S3 Configuration for AWS
-AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
-AWS_S3_REGION_NAME = env("AWS_REGION", default="us-east-1")
-AWS_STORAGE_BUCKET_NAME = 'xpreading'
-AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
-}
 
-# Static files configuration
-AWS_LOCATION = 'static'  # Static files location in S3
+
+# AWS S3 Settings
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')  # replace with your key
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')  # replace with your secret
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')  # replace with your bucket name
+AWS_S3_REGION_NAME = 'us-east-1'  # replace with your region
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+
+# Static files
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # Local static directory for development
-]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Collectstatic directory
+STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"  # Local directory for collectstatic
 
-# Media files configuration
-DEFAULT_FILE_STORAGE = "django_project.storage_backends.MediaStorage"
-MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+# Media files
+DEFAULT_FILE_STORAGE = 'django_project.storage_backends.MediaStorage'
+
+#MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+
+AWS_S3_FILE_OVERWRITE = False  # Don't overwrite files with the same name
+#AWS_DEFAULT_ACL = 'public-read'  # Make files publicly readable
+AWS_S3_SIGNATURE_VERSION = 's3v4'  # Important for certain regions
+
 
 LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "file": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "filename": "media_upload_debug.log",
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
         },
     },
-    "loggers": {
-        "django": {
-            "handlers": ["file"],
-            "level": "DEBUG",
-            "propagate": True,
+    'loggers': {
+        'django_project.storage_backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'boto3': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'botocore': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
         },
     },
 }

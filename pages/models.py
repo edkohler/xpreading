@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 import re
+from django_project.storage_backends import MediaStorage
 
 import os
 import uuid
@@ -60,6 +61,7 @@ class Book(models.Model):
     slug = models.SlugField(blank=True)
     image = models.ImageField(
         upload_to=upload_to_book_images,  # Use the custom function
+        storage=MediaStorage(),
         blank=True,
         null=True
     )
