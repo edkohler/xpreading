@@ -13,7 +13,7 @@
     <tbody>
         {% for book in books %}
         <tr id="book-{{ book.id }}">
-            <td>{{ book.title }}</td>
+            <td><a href="https://hclib.bibliocommons.com/v2/record/{{book.bibliocommons_id}}" target="blank">{{ book.title }}</a></td>
             <td>{{ book.author }}</td>
             <td>
                 <form
