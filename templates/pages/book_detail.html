@@ -6,7 +6,11 @@
 {% block content %}
 
 <h1>{{ book.title }}</h1>
-<p>By: {{ book.author.first_name }} {{ book.author.last_name }}</p>
+<p><strong>By:</strong> {{ book.author.first_name }} {{ book.author.last_name }}<br/>
+  <strong>Pages:</strong> {{ book.page_count }}</p>
+<p><a href="https://bookshop.org/search?keywords={{ book.title.split|join:"+" }}+{{ book.author.split|join:"+" }}" target="_blank"><img src="{% static 'images/IndieBound-18px-18px.png' %}" class="img-fluid" alt="buy {{ book.title }} at local US bookstores" width="18" height="18"/></a>
+  <a href="https://bookmanager.com/tbm/?searchtype=keyword&qs={{ book.title.split|join:"+" }}+{{ book.author.split|join:"+" }}&qs_file=&q=h.tviewer&using_sb=status&qsb=keyword" target="_blank"><img src="{% static 'images/canada_icon_18_18.png' %}" class="img-fluid" alt="buy {{ book.title }} at local Canadian bookstores" width="18" height="18"/></a>
+  <a href="https://www.amazon.com/dp/{{ book.asin }}/?xpreading-20" target="_blank"><img src="{% static 'images/amazon.svg' %}" class="img-fluid" alt="buy {{ book.title }} at Amazon" width="18" height="18"/></a></p>
 <hr>
 <table class="table">
   <tr><td>{% if book.image %}
@@ -20,7 +24,7 @@
   {% include 'pages/partials/book_read_button.html' with book=book completed=user_book.completed %}
 {% endif %}
 
-   
+
   </div>
 
   <hr>
