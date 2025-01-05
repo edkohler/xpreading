@@ -1,0 +1,44 @@
+{% extends "_base.html" %}
+
+{% block content %}
+<h1>Your XP Reading Report</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th colspan="2">Reading Progress</th>
+            <th colspan="2">XP Earned</th>
+
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td><strong>Books Completed:</strong></td>
+            <td>{{ completed_books_count }}</td>
+            <td><strong>Points from Books:</strong></td>
+            <td>{{ points_from_books }}</td>
+        </tr>
+        <tr>
+            <td><strong>Pages Read:</strong></td>
+            <td>{{ completed_books_pages }}</td>
+            <td><strong>Points from Pages:</strong></td>
+            <td>{{ points_from_pages }}</td>
+        </tr>
+        <tr>
+            <td><strong>Book Lists Completed:</strong></td>
+            <td>{{ completed_award_lists }}</td>
+            <td><strong>Points from Lists:</strong></td>
+            <td>{{ points_from_awards }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td><strong>Total XP:</strong></td>
+            <td><strong>{{ total_points }}</strong></td>
+        </tr>
+
+    </tbody>
+</table>
+
+{% endblock %}

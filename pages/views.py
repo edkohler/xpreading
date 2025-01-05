@@ -8,7 +8,7 @@ from django.core.mail import send_mail
 from collections import defaultdict
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
-from django.db.models import Count
+from django.db.models import Count, Sum
 from django.contrib.auth.mixins import LoginRequiredMixin
 import json
 import requests
@@ -21,6 +21,7 @@ from django.template.loader import render_to_string
 import os
 from bs4 import BeautifulSoup
 from django.urls import path
+
 
 
 
@@ -589,3 +590,56 @@ def scrape_book_images(request):
 # Template for triggering the scrape process
 def scrape_view(request):
     return render(request, 'pages/scrape_books.html')
+
+
+@login_required
+def xp_report(request):
+    user = request.user
+
+    # Count the number of completed books
+    completed_books_count = UserBook.objects.filter(user=user, completed=True).count()
+
+    # Sum the page counts of completed books
+    completed_books_pages = (
+        UserBook.objects.filter(user=user, completed=True)
+        .select_related('book')
+        .aggregate(total_pages=Sum('book__page_count'))['total_pages']
+    ) or 0
+
+    # Count the number of award lists completed
+    completed_award_lists = 0
+    user_book_categories = UserBookCategory.objects.filter(user=user, completed=True)
+
+    # Group by category and year, and check if the user has completed all books in each
+    award_list_data = (
+        BookCategory.objects.values('category', 'year')
+        .annotate(total_books=Count('book'))
+        .filter(
+            category__in=user_book_categories.values('book_category__category'),
+            year__in=user_book_categories.values('book_category__year')
+        )
+    )
+    for award_list in award_list_data:
+        user_books_in_list = user_book_categories.filter(
+            book_category__category_id=award_list['category'],
+            book_category__year=award_list['year']
+        ).count()
+        if user_books_in_list == award_list['total_books']:
+            completed_award_lists += 1
+
+    # Calculate total points
+    points_from_pages = completed_books_pages
+    points_from_books = completed_books_count * 100
+    points_from_awards = completed_award_lists * 500
+    total_points = points_from_pages + points_from_books + points_from_awards
+
+    context = {
+        'completed_books_count': completed_books_count,
+        'completed_books_pages': completed_books_pages,
+        'completed_award_lists': completed_award_lists,
+        'points_from_pages': points_from_pages,
+        'points_from_books': points_from_books,
+        'points_from_awards': points_from_awards,
+        'total_points': total_points,
+    }
+    return render(request, 'pages/user_report.html', context)

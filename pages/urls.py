@@ -24,6 +24,7 @@ urlpatterns = [
     path('data/update-book-field/<int:pk>/<str:field_name>/', views.update_book_field, name='update_book_field'),
     path("data/books_without_images/", views.books_without_images, name="books_without_images"),
     path("data/<int:pk>/upload-image/", views.upload_book_image, name="upload_book_image"),
+    path('xp_report/', views.xp_report, name='xp_report'),
 
     path('scrape-books/', views.scrape_view, name='scrape_books_view'),
     path('scrape-books/run/', views.scrape_book_images, name='scrape_books_run'),
