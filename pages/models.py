@@ -61,7 +61,7 @@ class Book(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="books")
     categories = models.ManyToManyField(Category, through='BookCategory')
     isbn = models.CharField(max_length=13, blank=True, null=True)
-    page_count = models.CharField(max_length=5, blank=True, null=True)
+    page_count = models.IntegerField(blank=True, null=True)
     bibliocommons_id = models.CharField(max_length=20, blank=True, null=True)
     asin = models.CharField(max_length=20, blank=True, null=True)
     slug = models.SlugField(blank=True)
