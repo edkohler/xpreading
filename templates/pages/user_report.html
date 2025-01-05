@@ -1,5 +1,5 @@
 {% extends "_base.html" %}
-
+{% load humanize %}
 {% block content %}
 <h1>Your XP Reading Report</h1>
 
@@ -17,25 +17,25 @@
             <td><strong>Books Completed:</strong></td>
             <td>{{ completed_books_count }}</td>
             <td><strong>Points from Books:</strong></td>
-            <td>{{ points_from_books }}</td>
+            <td>{{ points_from_books|intcomma }}</td>
         </tr>
         <tr>
             <td><strong>Pages Read:</strong></td>
-            <td>{{ completed_books_pages }}</td>
+            <td>{{ completed_books_pages|intcomma }}</td>
             <td><strong>Points from Pages:</strong></td>
-            <td>{{ points_from_pages }}</td>
+            <td>{{ points_from_pages|intcomma }}</td>
         </tr>
         <tr>
             <td><strong>Book Lists Completed:</strong></td>
             <td>{{ completed_award_lists }}</td>
             <td><strong>Points from Lists:</strong></td>
-            <td>{{ points_from_awards }}</td>
+            <td>{{ points_from_awards|intcomma }}</td>
         </tr>
         <tr>
             <td></td>
             <td></td>
             <td><strong>Total XP:</strong></td>
-            <td><strong>{{ total_points }}</strong></td>
+            <td><strong>{{ total_points|intcomma }}</strong></td>
         </tr>
 
     </tbody>

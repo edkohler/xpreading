@@ -31,6 +31,9 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ['name']
+
 
 class AwardLevel(models.Model):
     name = models.CharField(max_length=50, unique=True)  # e.g., "Nominee", "Gold", "1st"
@@ -48,6 +51,9 @@ class Author(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+    class Meta:
+        ordering = ['last_name', 'first_name']
 
 
 class Book(models.Model):
@@ -86,6 +92,9 @@ class Book(models.Model):
     @property
     def first_name_url_friendly(self):
         return self.author.first_name.replace(' ', '+')
+
+    class Meta:
+        ordering = ['title']
 
 class BookCategory(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
@@ -130,6 +139,9 @@ class WebPlatform(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        ordering = ['name']
 
 class Library(models.Model):
     name = models.CharField(max_length=200)  # Library name
@@ -193,6 +205,8 @@ class UserFavoriteLibrary(models.Model):
 
     class Meta:
         unique_together = ['user', 'library']
+        ordering = ['library__name']
+
 
 
 class AwardYearLike(models.Model):

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "accounts",
     "pages",
     "import_export",
+    "django.contrib.humanize",
 
 ]
 

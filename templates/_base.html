@@ -78,6 +78,7 @@
                 <li><a class="dropdown-item" href="{% url 'account_logout' %}">Sign out</a></li>
                 {% if user.is_superuser %}
                 <li><a class="dropdown-item" href="{% url 'incomplete_books' %}">Incomplete Books</a></li>
+                li><a class="dropdown-item" href="{% url 'books_without_images' %}">No Images</a></li>
                 {% endif %}
               </ul>
             </li>
