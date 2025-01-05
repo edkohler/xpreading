@@ -37,7 +37,7 @@
                 Nominee
               {% endif %}
             </td>
-            
+
               <td>
                 {% include 'pages/partials/book_read_button.html' with book=item.book_category.book completed=item.completed %}
             </td>
@@ -54,7 +54,6 @@
 {% endif %}
 
 
-<a href="{% url 'category_list_sorted_by_year' %}">Back to Categories</a>
 
 
 

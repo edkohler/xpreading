@@ -4,7 +4,7 @@ from .views import HomePageView, AboutPageView, BooksByCategoryView
 from . import views
 
 urlpatterns = [
-    path('', views.category_list_sorted_by_year, name='category_list_sorted_by_year'),
+    path('', views.category_list_sorted_by_year, name='home'),
     path("about/", AboutPageView.as_view(), name="about"),
     path('terms-and-conditions/', views.terms_and_conditions, name='terms_and_conditions'),
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),

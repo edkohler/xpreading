@@ -402,6 +402,7 @@ def get_unique_books_per_branch(request, library_id):
 
     # Initialize branch data
     branch_unique_books = defaultdict(set)
+    book_additional_data = {}
 
     # Process each query
     for book_id in book_ids:
@@ -411,12 +412,18 @@ def get_unique_books_per_branch(request, library_id):
             response.raise_for_status()
             data = response.json()
 
-            # Iterate over bibItems to filter and count unique books by branch
+            # Iterate over bibItems to filter and collect data
             for item_id, item_data in data.get("entities", {}).get("bibItems", {}).items():
                 availability = item_data.get("availability", {})
                 if availability.get("statusType") == "AVAILABLE":
                     branch_name = item_data.get("branchName", "Unknown")
                     branch_unique_books[branch_name].add(book_id)
+
+                    # Store additional data for the book
+                    book_additional_data[book_id] = {
+                        "collection": item_data.get("collection", "Unknown Collection"),
+                        "callNumber": item_data.get("callNumber", "Unknown Call Number"),
+                    }
 
         except Exception as e:
             print(f"Error fetching data from {url}: {e}")
@@ -448,6 +455,8 @@ def get_unique_books_per_branch(request, library_id):
                             "author_last_name": books.get(bibliocommons_id, {}).get("author_last_name", ""),
                             "slug": books.get(bibliocommons_id, {}).get("slug", "#"),
                             "image": books.get(bibliocommons_id, {}).get("image", ""),
+                            "collection": book_additional_data.get(bibliocommons_id, {}).get("collection", ""),
+                            "callNumber": book_additional_data.get(bibliocommons_id, {}).get("callNumber", ""),
                         }
                         for bibliocommons_id in book_set
                     ],
@@ -461,7 +470,6 @@ def get_unique_books_per_branch(request, library_id):
     )
 
     return render(request, "pages/library_locations.html", {"library_data": results})
-
 
 @staff_member_required
 def incomplete_books_view(request):
