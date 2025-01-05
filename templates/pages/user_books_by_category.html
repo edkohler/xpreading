@@ -1,8 +1,8 @@
 {% extends "_base.html" %}
 {% block title %}Books You've Read by Category List - XP Reading{% endblock %}
 {% block content %}
-<h1>Books You've Read by Category</h1>
-<p>Here are the books I've read, sorted by category and year. Some books will appear in more than one category because they've won or been nominated for multiple awards. We're not going to make you read them twice (unless you want to).</p>
+<h1>My Book Challenges</h1>
+<p>Here are the books you've read, sorted by category and year. Some books will appear in more than one category because they've won or been nominated for multiple awards. We're not going to make you read them twice (unless you want to).</p>
 
 {% for category, years in books_by_category.items %}
     <h2><a href="{% url 'category_detail' category.slug %}">{{ category.name }}</a></h2>

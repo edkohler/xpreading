@@ -1,7 +1,7 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, get_object_or_404, Http404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Category, UserBookCategory, BookCategory, SharedList, Book, Library, UserBook, UserFavoriteLibrary, AwardYearLike, AwardLevel
+from .models import Category, UserBookCategory, BookCategory, Book, Library, UserBook, UserFavoriteLibrary, AwardYearLike, AwardLevel, Author
 import uuid
 from django.utils.timezone import now, timedelta
 from django.core.mail import send_mail
@@ -21,6 +21,9 @@ from django.template.loader import render_to_string
 import os
 from bs4 import BeautifulSoup
 from django.urls import path
+import csv
+from django.contrib import messages
+
 
 
 
@@ -643,3 +646,59 @@ def xp_report(request):
         'total_points': total_points,
     }
     return render(request, 'pages/user_report.html', context)
+
+
+def upload_book_categories(request):
+    if request.method == "POST" and request.FILES.get("csv_file"):
+        csv_file = request.FILES["csv_file"]
+        try:
+            decoded_file = csv_file.read().decode("utf-8").splitlines()
+            reader = csv.DictReader(decoded_file, delimiter="\t")
+
+            for row in reader:
+                # Get or create the author
+                author, _ = Author.objects.get_or_create(
+                    first_name=row["first_name"].strip(),
+                    last_name=row["last_name"].strip(),
+                )
+
+                # Get or create the book
+                book, _ = Book.objects.get_or_create(
+                    title=row["title"].strip(),
+                    author=author,
+                )
+
+                # Handle category
+                try:
+                    category = Category.objects.get(id=row["category"])
+                except Category.DoesNotExist:
+                    messages.error(
+                        request,
+                        f"Category with ID {row['category']} does not exist. Please check your data.",
+                    )
+                    continue
+
+                # Handle award level
+                try:
+                    award_level = AwardLevel.objects.get(id=row["level"])
+                except AwardLevel.DoesNotExist:
+                    messages.error(
+                        request,
+                        f"Award level with ID {row['level']} does not exist. Please check your data.",
+                    )
+                    continue
+
+                # Create or update the BookCategory
+                BookCategory.objects.update_or_create(
+                    book=book,
+                    category=category,
+                    year=row["year"],
+                    defaults={"award_level": award_level},
+                )
+
+            messages.success(request, "Book categories uploaded successfully!")
+            return redirect("upload_book_categories")
+        except Exception as e:
+            messages.error(request, f"Error processing file: {e}")
+
+    return render(request, "pages/upload_book_categories.html")
