@@ -21,6 +21,7 @@ def upload_to_book_images(instance, filename):
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)  # e.g., "Caldecott", "Newbery"
     description = models.TextField(blank=True)
+    new_books_release_day_of_year = models.IntegerField(blank=True, null=True)  # Day of the year when new books are released
     slug = models.SlugField(unique=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -52,8 +53,7 @@ class Author(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
-    class Meta:
-        ordering = ['last_name', 'first_name']
+    
 
 
 class Book(models.Model):
@@ -93,8 +93,7 @@ class Book(models.Model):
     def first_name_url_friendly(self):
         return self.author.first_name.replace(' ', '+')
 
-    class Meta:
-        ordering = ['title']
+
 
 class BookCategory(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)

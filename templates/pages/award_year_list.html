@@ -21,6 +21,7 @@
                 <td><a href="{% url 'category_detail' award.category__slug%}">{{ award.category__name }}</a></td>
                 <td>{{ award.year }}</td>
                 <td>
+                    <!-- {{ award.category }}, {{ award.year }}, {{ award.liked }} -->
                     {% include "pages/partials/award_like_button.html" with award=award is_liked=award.liked %}
                 </td>
             </tr>

@@ -1,13 +1,14 @@
 {% extends '_base.html' %}
 {% load static %}
 
-{% block title %}{{ book.title }}{% endblock title %}
+{% block title %}{{ book.title }} - Find More Books Like This{% endblock title %}
 
 {% block content %}
 
 <h1>{{ book.title }}</h1>
 <p><strong>By:</strong> {{ book.author.first_name }} {{ book.author.last_name }}<br/>
   <strong>Pages:</strong> {{ book.page_count }}</p>
+  <p><a href="/admin/pages/book/{{book.id}}/change/" target="_blank">(edit)</a></p>
 
 <hr>
 <table class="table">
@@ -21,9 +22,9 @@
   <a href="https://www.amazon.com/dp/{{ book.asin }}/?xpreading-20" target="_blank"><img src="{% static 'images/amazon.svg' %}" class="img-fluid" alt="buy {{ book.title }} at Amazon" width="18" height="18"/></a></p></td><td>
 
   <div>
-    {% if user.is_authenticated %}
+
   {% include 'pages/partials/book_read_button.html' with book=book completed=user_book.completed %}
-{%endif %}
+
 
 
   </div>

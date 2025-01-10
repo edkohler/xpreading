@@ -43,13 +43,14 @@ def profile_view(request):
 def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug)
     books = BookCategory.objects.filter(category=category).select_related('book', 'award_level').order_by('-year')
+
+    # Handle unauthenticated users
     user_book_categories = (
         UserBookCategory.objects.filter(user=request.user, book_category__in=books)
         .values_list('book_category_id', flat=True)
         if request.user.is_authenticated else []
     )
 
-    from collections import defaultdict
     books_by_year = defaultdict(list)
     for book_category in books:
         if book_category.id and book_category.book:
@@ -58,14 +59,35 @@ def category_detail(request, slug):
                 'completed': book_category.id in user_book_categories,
             })
 
-    # Debug the structure of books_by_year
-    print("Books by Year:", books_by_year)
-
     context = {
         'category': category,
-        'books_by_year': dict(books_by_year),  # Convert to a regular dictionary for easier template handling
+        'books_by_year': dict(books_by_year),
     }
     return render(request, 'pages/category_detail.html', context)
+
+
+@login_required
+def mark_book_read(request, book_id):
+    book_category = get_object_or_404(BookCategory, book__id=book_id)
+    UserBookCategory.objects.get_or_create(user=request.user, book_category=book_category)
+    html = render_to_string(
+        'pages/partials/book_read_button.html',
+        {'book': book_category.book, 'completed': True, 'user': request.user},
+        request=request,
+    )
+    return HttpResponse(html)
+
+
+@login_required
+def mark_book_unread(request, book_id):
+    book_category = get_object_or_404(BookCategory, book__id=book_id)
+    UserBookCategory.objects.filter(user=request.user, book_category=book_category).delete()
+    html = render_to_string(
+        'pages/partials/book_read_button.html',
+        {'book': book_category.book, 'completed': False, 'user': request.user},
+        request=request,
+    )
+    return HttpResponse(html)
 
 
 def category_list_sorted_by_year(request):
@@ -162,7 +184,7 @@ def toggle_read_status_htmx(request, book_id):
 
     return render(request, 'pages/partials/book_read_button.html', context)
 
-
+'''
 @login_required
 def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug)
@@ -186,7 +208,7 @@ def category_detail(request, slug):
         'books_by_year': dict(books_by_year),  # Convert to a regular dictionary for easier template handling
     }
     return render(request, 'pages/category_detail.html', context)
-
+'''
 
 class BooksByCategoryView(LoginRequiredMixin, TemplateView):
     template_name = "pages/user_books_by_category.html"
@@ -239,10 +261,13 @@ class BooksByCategoryView(LoginRequiredMixin, TemplateView):
 
 
 
-@login_required
 def library_list(request):
-    user = request.user
-    favorite_library_ids = UserFavoriteLibrary.objects.filter(user=user).values_list('library_id', flat=True)
+    user = request.user if request.user.is_authenticated else None
+
+    favorite_library_ids = (
+        UserFavoriteLibrary.objects.filter(user=user).values_list('library_id', flat=True)
+        if user else []
+    )
     favorite_libraries = Library.objects.filter(id__in=favorite_library_ids)
     non_favorite_libraries = Library.objects.exclude(id__in=favorite_library_ids)
 
@@ -251,6 +276,30 @@ def library_list(request):
         'non_favorite_libraries': non_favorite_libraries,
     }
     return render(request, 'pages/library_list.html', context)
+
+@login_required
+def add_favorite_library(request, library_id):
+    library = get_object_or_404(Library, id=library_id)
+    UserFavoriteLibrary.objects.get_or_create(user=request.user, library=library)
+    html = render_to_string(
+        'pages/partials/button_library_favorite.html',
+        {'library': library, 'is_favorite': True, 'user': request.user},
+        request=request,
+    )
+    return HttpResponse(html)
+
+
+@login_required
+def remove_favorite_library(request, library_id):
+    library = get_object_or_404(Library, id=library_id)
+    UserFavoriteLibrary.objects.filter(user=request.user, library=library).delete()
+    html = render_to_string(
+        'pages/partials/button_library_favorite.html',
+        {'library': library, 'is_favorite': False, 'user': request.user},
+        request=request,
+    )
+    return HttpResponse(html)
+
 
 
 @login_required
@@ -281,27 +330,63 @@ def privacy_policy(request):
     return render(request, 'pages/privacy_policy.html')
 
 
-@login_required
 def award_year_list(request):
-    # Fetch all unique category-year pairs from BookCategory
+    # Update the query to include the category ID
     award_years = (
-        BookCategory.objects.values('category', 'category__name','category__slug', 'year')
+        BookCategory.objects.values(
+            'category',
+            'category__name',
+            'category__slug',
+            'category__id',  # Add this line
+            'year'
+        )
         .distinct()
-        .order_by('category__name', '-year')
+        .order_by('-year', 'category__name')
     )
 
-    # Fetch user's liked award years
-    liked_awards = AwardYearLike.objects.filter(user=request.user).values_list('category', 'year')
-    liked_award_set = {(like[0], like[1]) for like in liked_awards}
+    liked_award_set = set()
+    if request.user.is_authenticated:
+        # Use category ID here
+        liked_awards = AwardYearLike.objects.filter(user=request.user).values_list('category_id', 'year')
+        liked_award_set = {(like[0], like[1]) for like in liked_awards}
 
-    # Add a 'liked' flag to each award year
     for award in award_years:
-        award['liked'] = (award['category'], award['year']) in liked_award_set
+        # Use category ID for comparison
+        award['liked'] = (award['category__id'], award['year']) in liked_award_set
 
     context = {
         'award_years': award_years,
     }
     return render(request, 'pages/award_year_list.html', context)
+
+
+@login_required
+def add_award_like(request, category_id, year):
+    # Change this line to get the Category instead of BookCategory
+    category = get_object_or_404(Category, id=category_id)
+    # Create the like
+    AwardYearLike.objects.get_or_create(user=request.user, category=category, year=year)
+    # Render the updated button
+    html = render_to_string(
+        'pages/partials/award_like_button.html',
+        {'award': {'category': category.id, 'year': year, 'liked': True}, 'is_liked': True, 'user': request.user},
+        request=request,
+    )
+    return HttpResponse(html)
+
+
+@login_required
+def remove_award_like(request, category_id, year):
+    category = get_object_or_404(Category, id=category_id)
+    # Ensure the record is deleted from the database
+    AwardYearLike.objects.filter(user=request.user, category=category, year=year).delete()
+    # Render the updated button
+    html = render_to_string(
+        'pages/partials/award_like_button.html',
+        {'award': {'category': category.id, 'year': year, 'liked': False}, 'is_liked': False, 'user': request.user},
+        request=request,
+    )
+    return HttpResponse(html)
 
 
 @login_required
@@ -478,9 +563,9 @@ def get_unique_books_per_branch(request, library_id):
 @staff_member_required
 def incomplete_books_view(request):
     books = Book.objects.filter(
-    Q(asin__isnull=True) | Q(asin='') |
-    Q(bibliocommons_id__isnull=True) | Q(bibliocommons_id='') |
-    Q(page_count__isnull=True) | Q(page_count='')
+        Q(asin__isnull=True) | Q(asin='') |
+        Q(bibliocommons_id__isnull=True) | Q(bibliocommons_id='') |
+        Q(page_count__isnull=True)
     )
 
     return render(request, 'pages/incomplete_books.html', {'books': books})

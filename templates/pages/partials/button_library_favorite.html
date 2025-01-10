@@ -1,11 +1,25 @@
-<button
-    hx-post="{% url 'toggle_favorite' library.id %}"
-    hx-swap="outerHTML"
-    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-    class="btn {% if is_favorite %}btn-danger{% else %}btn-primary{% endif %} btn-sm">
+{% if user.is_authenticated %}
     {% if is_favorite %}
-        Remove from Favorites
+        <button
+            hx-post="{% url 'remove_favorite_library' library.id %}"
+            hx-target="this"
+            hx-swap="outerHTML"
+            class="btn btn-danger"
+        >
+            Remove from Favorites
+        </button>
     {% else %}
-        Add to Favorites
+        <button
+            hx-post="{% url 'add_favorite_library' library.id %}"
+            hx-target="this"
+            hx-swap="outerHTML"
+            class="btn btn-primary"
+        >
+            Add to Favorites
+        </button>
     {% endif %}
-</button>
+{% else %}
+    <a href="{% url 'account_login' %}" class="btn btn-secondary">
+        Log in to Add to Favorites
+    </a>
+{% endif %}

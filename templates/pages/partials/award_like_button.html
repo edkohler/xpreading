@@ -1,7 +1,23 @@
-<button
-    hx-post="{% url 'toggle_award_year_like' award.category award.year %}"
-    hx-swap="outerHTML"
-    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-    class="btn {% if is_liked %}btn-danger{% else %}btn-primary{% endif %} btn-sm">
-    {% if is_liked %}Unlike{% else %}Like{% endif %}
-</button>
+{% if user.is_authenticated %}
+    {% if is_liked %}
+        <button
+            hx-post="{% url 'remove_award_like' award.category award.year %}"
+            hx-target="this"
+            hx-swap="outerHTML"
+            class="btn btn-danger"
+        >
+            Unlike
+        </button>
+    {% else %}
+        <button
+            hx-post="{% url 'add_award_like' award.category award.year %}"
+            hx-target="this"
+            hx-swap="outerHTML"
+            class="btn btn-primary"
+        >
+            Like
+        </button>
+    {% endif %}
+{% else %}
+    <a href="{% url 'login' %}" class="btn btn-secondary">Login to Like</a>
+{% endif %}

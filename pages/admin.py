@@ -12,6 +12,7 @@ class AuthorAdmin(ImportExportModelAdmin):
 @admin.register(Book)
 class BookAdmin(ImportExportModelAdmin):
     list_display = ('title', 'author')
+    search_fields = ['title', 'author', 'bibliocommons_id', 'asin']
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):

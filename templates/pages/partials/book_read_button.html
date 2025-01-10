@@ -1,7 +1,25 @@
-<button
-  hx-post="{% url 'toggle_read_status_htmx' book.id %}"
-  hx-target="this"
-  hx-swap="outerHTML"
-  class="btn btn-sm {% if completed %}btn-success{% else %}btn-secondary{% endif %}">
-  {% if completed %}Read{% else %}Unread{% endif %}
-</button>
+{% if user.is_authenticated %}
+    {% if completed %}
+        <button
+            hx-post="{% url 'mark_book_unread' book.id %}"
+            hx-target="this"
+            hx-swap="outerHTML"
+            class="btn btn-danger"
+        >
+            Mark as Unread
+        </button>
+    {% else %}
+        <button
+            hx-post="{% url 'mark_book_read' book.id %}"
+            hx-target="this"
+            hx-swap="outerHTML"
+            class="btn btn-primary"
+        >
+            Mark as Read
+        </button>
+    {% endif %}
+{% else %}
+    <a href="{% url 'account_login' %}" class="btn btn-secondary">
+        Log in to Mark as Read
+    </a>
+{% endif %}
