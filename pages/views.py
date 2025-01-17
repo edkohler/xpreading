@@ -25,9 +25,6 @@ import csv
 from django.contrib import messages
 
 
-
-
-
 class HomePageView(TemplateView):
     template_name = "pages/home.html"
 

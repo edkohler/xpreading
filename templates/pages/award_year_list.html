@@ -18,7 +18,7 @@
     <tbody>
         {% for award in award_years %}
             <tr>
-                <td><a href="{% url 'category_detail' award.category__slug%}">{{ award.category__name }}</a></td>
+                <td><a href="{% url 'category_detail' award.category__slug%}#{{ award.year }}">{{ award.category__name }}</a></td>
                 <td>{{ award.year }}</td>
                 <td>
                     <!-- {{ award.category }}, {{ award.year }}, {{ award.liked }} -->

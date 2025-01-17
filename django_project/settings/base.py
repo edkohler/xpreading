@@ -119,6 +119,7 @@ AWS_S3_FILE_OVERWRITE = False  # Don't overwrite files with the same name
 #AWS_DEFAULT_ACL = 'public-read'  # Make files publicly readable
 AWS_S3_SIGNATURE_VERSION = 's3v4'  # Important for certain regions
 
+ASIN_DATA_API_KEY = os.getenv('ASIN_DATA_API_KEY')
 
 LOGGING = {
     'version': 1,

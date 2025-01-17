@@ -32,3 +32,4 @@ pillow
 sentry-sdk[django]
 beautifulsoup4
 django-environ
+

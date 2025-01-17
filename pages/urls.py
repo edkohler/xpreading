@@ -35,4 +35,6 @@ urlpatterns = [
 
     path('scrape-books/', views.scrape_view, name='scrape_books_view'),
     path('scrape-books/run/', views.scrape_book_images, name='scrape_books_run'),
+
+    
 ]
