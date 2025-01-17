@@ -22,11 +22,11 @@
             </tr>
             {% for book_category in data.book_list %}
                 <tr>
-                    <td>{% if book_category.book.image %}<a href="{% url 'book_detail' book_category.book.slug %}"><img src="{{ book_category.book.image.url }}" alt="{{ book_category.book.title }}" style="max-width: 24px;"/></a>{%endif%}</td>
-                    <td><a href="{% url 'book_detail' book_category.book.slug %}">{{ book_category.book.title }}</a></td>
-                    <td>{{ book_category.book.author.first_name }} {{ book_category.book.author.last_name }}</td>
-                    <td>{% if book_category.award_level %}{{ book_category.award_level.name }}{% endif %}</td>
-                    <td>
+                    <td class="col-2">{% if book_category.book.image %}<a href="{% url 'book_detail' book_category.book.slug %}"><img src="{{ book_category.book.image.url }}" alt="{{ book_category.book.title }}" style="max-width: 50px;"/></a>{%endif%}</td>
+                    <td class="col-6"><a href="{% url 'book_detail' book_category.book.slug %}">{{ book_category.book.title }}</a></td>
+                    <td class="col-2"><a href="{% url 'author_detail' book_category.book.author.id %}">{{ book_category.book.author.first_name }} {{ book_category.book.author.last_name }}</a></td>
+                    <td class="col-1">{% if book_category.award_level %}{{ book_category.award_level.name }}{% endif %}</td>
+                    <td class="col-1">
                         {% if book_category.book.id in user_completed_books %}Yes{% else %}No{% endif %}</td>
                 </tr>
             {% endfor %}

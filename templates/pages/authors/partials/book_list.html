@@ -1,0 +1,49 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    {% for book in books %}
+    <div class="book-card bg-white rounded-lg shadow-md overflow-hidden">
+        {% if book.image %}
+        <div class="aspect-w-2 aspect-h-3">
+            <img src="{{ book.image.url }}"
+                 alt="{{ book.title }}"
+                 class="object-cover w-full h-full"
+                 width="100">
+
+        {% else %}
+        <div class="aspect-w-2 aspect-h-3 bg-gray-200 flex items-center justify-center">
+            <span class="text-gray-400">No Cover</span>
+        </div>
+        {% endif %}
+
+
+            <h3 class="font-bold text-lg mb-2">
+                <a href="{% url 'book_detail' book.slug %}"
+                   class="text-blue-600 hover:text-blue-800">
+                    {{ book.title }}
+                </a>
+            </h3>
+
+            
+
+            {% if book.page_count %}
+            <p class="text-sm text-gray-600">{{ book.page_count }} pages</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if books.has_next %}
+<div class="text-center mt-8">
+    <button class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+            hx-get="{{ request.path }}?page={{ books.next_page_number }}"
+            hx-target="#books-container"
+            hx-swap="beforeend"
+            hx-indicator=".htmx-indicator">
+        Load More Books
+    </button>
+</div>
+{% endif %}
+
+<div class="htmx-indicator text-center mt-4">
+    <div class="spinner inline-block"></div>
+</div>

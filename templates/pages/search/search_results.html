@@ -1,0 +1,33 @@
+{% extends '_base.html' %}
+
+{% block content %}
+<div class="search-results container mx-auto p-4">
+    {% if query %}
+        <h2 class="text-2xl mb-4">Search results for "{{ query }}"</h2>
+
+        {% if authors %}
+            <div class="authors-section mb-8">
+                <h3 class="text-xl mb-4">Authors</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for author in authors %}
+                        <div class="author-card p-4 border rounded">
+                            <h4 class="font-bold">{{ author }}</h4>
+                            <p class="text-gray-600">{{ author.books.count }} books</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="books-section">
+            <h3 class="text-xl mb-4">Books ({{ total_books }} results)</h3>
+            <div id="books-container">
+                {% include 'pages/search/partials/book_results.html' %}
+            </div>
+        </div>
+    {% else %}
+        <p>Enter a search term to begin</p>
+    {% endif %}
+</div>
+
+{%endblock%}

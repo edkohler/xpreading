@@ -24,6 +24,8 @@ from django.urls import path
 import csv
 from django.contrib import messages
 
+from django.core.paginator import Paginator
+
 
 class HomePageView(TemplateView):
     template_name = "pages/home.html"
@@ -791,3 +793,90 @@ def upload_book_categories(request):
             messages.error(request, f"Error processing file: {e}")
 
     return render(request, "pages/upload_book_categories.html")
+
+
+def search_view(request):
+    query = request.GET.get('q', '')
+
+    if not query:
+        return render(request, 'pages/search/search_results.html', {
+            'query': query,
+            'authors': [],
+            'books': [],
+        })
+
+    authors = Author.objects.filter(
+        Q(first_name__icontains=query) |
+        Q(last_name__icontains=query)
+    ).distinct()
+
+    books = Book.objects.filter(
+        Q(title__icontains=query) |
+        Q(author__first_name__icontains=query) |
+        Q(author__last_name__icontains=query) |
+        Q(isbn__icontains=query)
+    ).distinct()
+
+    # Paginate books
+    page_number = int(request.GET.get('page', 1))
+    books_paginator = Paginator(books, 10)
+    books_page = books_paginator.get_page(page_number)
+
+    if request.headers.get('HX-Request'):
+        return render(request, 'pages/search/partials/book_results.html', {
+            'books': books_page,
+            'query': query,
+        })
+
+    return render(request, 'pages/search/search_results.html', {
+        'query': query,
+        'authors': authors,
+        'books': books_page,
+        'total_books': books.count(),
+    })
+
+def search_autocomplete(request):
+    query = request.GET.get('q', '')
+    if len(query) < 2:
+        return render(request, 'pages/search/partials/autocomplete_results.html', {'results': []})
+
+    authors = Author.objects.filter(
+        Q(first_name__icontains=query) |
+        Q(last_name__icontains=query)
+    )[:5]
+
+    books = Book.objects.filter(
+        Q(title__icontains=query)
+    )[:5]
+
+    results = {
+        'authors': authors,
+        'books': books,
+        'query': query
+    }
+
+    return render(request, 'pages/search/partials/autocomplete_results.html', results)
+
+
+def author_detail(request, author_id):
+    author = get_object_or_404(Author, id=author_id)
+
+    # Get all books by this author
+    books = author.books.all().order_by('title')
+
+    # Paginate the books
+    paginator = Paginator(books, 12)  # Show 12 books per page
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    if request.headers.get('HX-Request'):
+        return render(request, 'pages/authors/partials/book_list.html', {
+            'books': page_obj,
+            'author': author
+        })
+
+    return render(request, 'pages/authors/author_detail.html', {
+        'author': author,
+        'books': page_obj,
+        'total_books': books.count(),
+    })

@@ -6,7 +6,7 @@
 {% block content %}
 
 <h1>{{ book.title }}</h1>
-<p><strong>By:</strong> {{ book.author.first_name }} {{ book.author.last_name }}<br/>
+<p><strong>By:</strong> <a href="{% url 'author_detail' book.author.id %}">{{ book.author.first_name }} {{ book.author.last_name }}</a><br/>
   <strong>Pages:</strong> {{ book.page_count }}</p>
   <p><a href="/admin/pages/book/{{book.id}}/change/" target="_blank">(edit)</a></p>
 

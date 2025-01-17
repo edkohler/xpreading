@@ -1,0 +1,35 @@
+<div class="autocomplete-results {% if not authors and not books %}hidden{% endif %}">
+    {% if authors %}
+        <div class="authors-section border-b">
+            <div class="text-sm font-semibold text-gray-500 px-3 py-1 bg-gray-50">Authors</div>
+            {% for author in authors %}
+                <a href="{% url 'author_detail' author.id %}"
+                   class="block px-4 py-2 hover:bg-gray-100 transition-colors">
+                    <div class="text-sm">{{ author }}</div>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if books %}
+        <div class="books-section">
+            <div class="text-sm font-semibold text-gray-500 px-3 py-1 bg-gray-50">Books</div>
+            {% for book in books %}
+                <a href="{% url 'book_detail' book.slug %}"
+                   class="block px-4 py-2 hover:bg-gray-100 transition-colors">
+                    <div class="text-sm">{{ book.title }}</div>
+                    <div class="text-xs text-gray-500">by {{ book.author }}</div>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if authors or books %}
+        <div class="view-all text-center border-t">
+            <a href="{% url 'search' %}?q={{ query }}"
+               class="block px-4 py-2 text-sm text-blue-600 hover:bg-gray-100">
+                View all results
+            </a>
+        </div>
+    {% endif %}
+</div>

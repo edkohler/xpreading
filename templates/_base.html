@@ -70,7 +70,19 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'about' %}">About</a>
           </li>
+
+
+        <li class="nav-item">
+
+
+        </li>
+
+
+
         </ul>
+
+
+
         {% if user.is_authenticated %}
         <div class="mr-auto">
           <ul class="navbar-nav">
@@ -106,7 +118,28 @@
         {% endif %}
       </div>
     </div>
+
   </nav>
+  <form class="search-form relative" action="{% url 'search' %}" method="get">
+    <div class="relative">
+        <input
+            type="text"
+            name="q"
+            placeholder="Search books and authors..."
+            class="w-full p-2 border rounded"
+            hx-get="{% url 'search_autocomplete' %}"
+            hx-trigger="keyup changed delay:500ms"
+            hx-target="#search-results"
+            hx-indicator=".htmx-indicator"
+        >
+        <div id="search-results"
+             class="absolute w-full bg-white border rounded-b shadow-lg mt-1 z-50">
+        </div>
+        <div class="htmx-indicator absolute right-3 top-3">
+            <div class="spinner"></div>
+        </div>
+    </div>
+</form>
 
   <div class="container">
     {% block content %}
