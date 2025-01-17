@@ -41,19 +41,22 @@ def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug)
     books = BookCategory.objects.filter(category=category).select_related('book', 'award_level').order_by('-year')
 
-    # Handle unauthenticated users
-    user_book_categories = (
-        UserBookCategory.objects.filter(user=request.user, book_category__in=books)
-        .values_list('book_category_id', flat=True)
-        if request.user.is_authenticated else []
-    )
+    # Get the UserBook objects for the current user
+    user_completed_books = set()
+    if request.user.is_authenticated:
+        user_completed_books = set(
+            UserBook.objects.filter(
+                user=request.user,
+                completed=True
+            ).values_list('book_id', flat=True)
+        )
 
     books_by_year = defaultdict(list)
     for book_category in books:
         if book_category.id and book_category.book:
             books_by_year[book_category.year].append({
                 'book_category': book_category,
-                'completed': book_category.id in user_book_categories,
+                'completed': book_category.book.id in user_completed_books,
             })
 
     context = {
@@ -63,25 +66,43 @@ def category_detail(request, slug):
     return render(request, 'pages/category_detail.html', context)
 
 
+
 @login_required
 def mark_book_read(request, book_id):
-    book_category = get_object_or_404(BookCategory, book__id=book_id)
-    UserBookCategory.objects.get_or_create(user=request.user, book_category=book_category)
+    book = get_object_or_404(Book, id=book_id)
+    UserBook.objects.get_or_create(user=request.user, book=book, defaults={'completed': True})
+
+    # Also mark the UserBookCategory as completed if it exists
+    book_categories = BookCategory.objects.filter(book=book)
+    for book_category in book_categories:
+        UserBookCategory.objects.get_or_create(
+            user=request.user,
+            book_category=book_category,
+            defaults={'completed': True}
+        )
+
     html = render_to_string(
         'pages/partials/book_read_button.html',
-        {'book': book_category.book, 'completed': True, 'user': request.user},
+        {'book': book, 'completed': True, 'user': request.user},
         request=request,
     )
     return HttpResponse(html)
 
-
 @login_required
 def mark_book_unread(request, book_id):
-    book_category = get_object_or_404(BookCategory, book__id=book_id)
-    UserBookCategory.objects.filter(user=request.user, book_category=book_category).delete()
+    book = get_object_or_404(Book, id=book_id)
+    UserBook.objects.filter(user=request.user, book=book).delete()
+
+    # Also mark the UserBookCategory as not completed
+    book_categories = BookCategory.objects.filter(book=book)
+    UserBookCategory.objects.filter(
+        user=request.user,
+        book_category__in=book_categories
+    ).update(completed=False)
+
     html = render_to_string(
         'pages/partials/book_read_button.html',
-        {'book': book_category.book, 'completed': False, 'user': request.user},
+        {'book': book, 'completed': False, 'user': request.user},
         request=request,
     )
     return HttpResponse(html)
@@ -148,23 +169,29 @@ def book_detail(request, book_slug):
 
 
 @login_required
-@require_POST
 def toggle_read_status(request, book_category_id):
     book_category = get_object_or_404(BookCategory, id=book_category_id)
-    data = json.loads(request.body)  # Parse JSON payload
-    completed = data.get('completed', False)  # Get 'completed' status from the request
+    data = json.loads(request.body)
+    completed = data.get('completed', False)
 
-    # Get or create the UserBookCategory object
-    user_book, created = UserBookCategory.objects.get_or_create(
+    # Update or create both UserBook and UserBookCategory
+    user_book, _ = UserBook.objects.get_or_create(
         user=request.user,
-        book_category=book_category
+        book=book_category.book,
+        defaults={'completed': completed}
     )
-
-    # Update the completed status
     user_book.completed = completed
     user_book.save()
 
-    return JsonResponse({'completed': user_book.completed})
+    user_book_category, _ = UserBookCategory.objects.get_or_create(
+        user=request.user,
+        book_category=book_category,
+        defaults={'completed': completed}
+    )
+    user_book_category.completed = completed
+    user_book_category.save()
+
+    return JsonResponse({'completed': completed})
 
 @login_required
 def toggle_read_status_htmx(request, book_id):
@@ -181,31 +208,7 @@ def toggle_read_status_htmx(request, book_id):
 
     return render(request, 'pages/partials/book_read_button.html', context)
 
-'''
-@login_required
-def category_detail(request, slug):
-    category = get_object_or_404(Category, slug=slug)
-    books = BookCategory.objects.filter(category=category).select_related('book', 'award_level').order_by('-year')
 
-    # Get the UserBook objects for the current user
-    user_books = UserBook.objects.filter(user=request.user)
-    user_books_dict = {user_book.book_id: user_book.completed for user_book in user_books}
-
-    from collections import defaultdict
-    books_by_year = defaultdict(list)
-    for book_category in books:
-        if book_category.id and book_category.book:
-            books_by_year[book_category.year].append({
-                'book_category': book_category,
-                'completed': user_books_dict.get(book_category.book.id, False),
-            })
-
-    context = {
-        'category': category,
-        'books_by_year': dict(books_by_year),  # Convert to a regular dictionary for easier template handling
-    }
-    return render(request, 'pages/category_detail.html', context)
-'''
 
 class BooksByCategoryView(LoginRequiredMixin, TemplateView):
     template_name = "pages/user_books_by_category.html"
@@ -214,9 +217,13 @@ class BooksByCategoryView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        # All books marked as completed by the user
-        user_completed_books = UserBook.objects.filter(user=user, completed=True).values_list('book_id', flat=True)
-
+        # Get completed books directly from UserBook
+        user_completed_books = set(
+            UserBook.objects.filter(
+                user=user,
+                completed=True
+            ).values_list('book_id', flat=True)
+        )
         # Filter categories based on AwardYearLike for the user
         liked_awards = AwardYearLike.objects.filter(user=user)
         categories = Category.objects.filter(

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Author, Book, Category, AwardLevel, BookCategory, Library, WebPlatform, UserBook
+from .models import Author, Book, Category, AwardLevel, BookCategory, Library, WebPlatform, UserBook, UserBookCategory
 from import_export.admin import ImportExportModelAdmin
 from .resources import LibraryResource, BookResource, AuthorResource,BookCategoryResource
 
@@ -40,3 +40,7 @@ class WebPlatformAdmin(admin.ModelAdmin):
 @admin.register(UserBook)
 class UserBookAdmin(admin.ModelAdmin):
     list_display = ('user','book','completed')
+
+@admin.register(UserBookCategory)
+class UserBookCategoryAdmin(admin.ModelAdmin):
+    list_display = ('user','book_category','completed')

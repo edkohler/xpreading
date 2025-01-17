@@ -5,8 +5,10 @@
             hx-target="this"
             hx-swap="outerHTML"
             class="btn btn-danger"
+            title="Remove this book from your completed list"
         >
-            Mark as Unread
+            <span>Mark as
+            Unread
         </button>
     {% else %}
         <button
@@ -14,12 +16,19 @@
             hx-target="this"
             hx-swap="outerHTML"
             class="btn btn-primary"
+            title="Add this book to your completed list"
         >
-            Mark as Read
+            <span>Mark
+            as
+            Read
         </button>
     {% endif %}
 {% else %}
-    <a href="{% url 'account_login' %}" class="btn btn-secondary">
-        Log in to Mark as Read
+    <a
+        href="{% url 'account_login' %}"
+        class="btn btn-secondary"
+        title="Login to track your reading progress"
+    >
+        Log in to Track
     </a>
 {% endif %}
