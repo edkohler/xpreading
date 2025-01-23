@@ -1,13 +1,18 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Author, Book, Category, AwardLevel, BookCategory, Library, WebPlatform, UserBook, UserBookCategory
+from .models import Author, Book, Category, AwardLevel, BookCategory, Library, WebPlatform, UserBook, UserBookCategory, Illustrator
 from import_export.admin import ImportExportModelAdmin
 from .resources import LibraryResource, BookResource, AuthorResource,BookCategoryResource
 
 @admin.register(Author)
 class AuthorAdmin(ImportExportModelAdmin):
     list_display = ('first_name', 'last_name')
+
+@admin.register(Illustrator)
+class IllustratorAdmin(ImportExportModelAdmin):
+    list_display = ('first_name', 'last_name')
+
 
 @admin.register(Book)
 class BookAdmin(ImportExportModelAdmin):

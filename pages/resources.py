@@ -1,5 +1,5 @@
 from import_export import resources
-from .models import Library, Book, Author, BookCategory
+from .models import Library, Book, Author, BookCategory, Illustrator
 
 class LibraryResource(resources.ModelResource):
     class Meta:
@@ -20,6 +20,14 @@ class AuthorResource(resources.ModelResource):
         model = Author
         fields = ('id', 'first_name', 'last_name')  # Specify fields to include
         export_order = ('id', 'first_name', 'last_name')  # Order of fields
+
+
+class IllustratorResource(resources.ModelResource):
+    class Meta:
+        model = Illustrator
+        fields = ('id', 'first_name', 'last_name')  # Specify fields to include
+        export_order = ('id', 'first_name', 'last_name')  # Order of fields
+
 
 class BookCategoryResource(resources.ModelResource):
     class Meta:

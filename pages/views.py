@@ -1,7 +1,7 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, get_object_or_404, Http404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Category, UserBookCategory, BookCategory, Book, Library, UserBook, UserFavoriteLibrary, AwardYearLike, AwardLevel, Author
+from .models import Category, UserBookCategory, BookCategory, Book, Library, UserBook, UserFavoriteLibrary, AwardYearLike, AwardLevel, Author, Illustrator
 import uuid
 from django.utils.timezone import now, timedelta
 from django.core.mail import send_mail
@@ -745,21 +745,46 @@ def upload_book_categories(request):
         try:
             decoded_file = csv_file.read().decode("utf-8").splitlines()
             reader = csv.DictReader(decoded_file, delimiter="\t")
-
             for row in reader:
-                # Get or create the author
-                author, _ = Author.objects.get_or_create(
-                    first_name=row["first_name"].strip(),
-                    last_name=row["last_name"].strip(),
-                )
+                # Get or create author
+                author = None
+                if row["first_name"].strip() and row["last_name"].strip():
+                    author, _ = Author.objects.get_or_create(
+                        first_name=row["first_name"].strip(),
+                        last_name=row["last_name"].strip(),
+                    )
 
-                # Get or create the book
-                book, _ = Book.objects.get_or_create(
-                    title=row["title"].strip(),
-                    author=author,
-                )
+                # Get or create illustrator
+                illustrator = None
+                if row["illustrator_first_name"].strip() and row["illustrator_last_name"].strip():
+                    illustrator, _ = Illustrator.objects.get_or_create(
+                        first_name=row["illustrator_first_name"].strip(),
+                        last_name=row["illustrator_last_name"].strip(),
+                    )
 
-                # Handle category
+                # Handle existing or new book
+                try:
+                    book = Book.objects.get(title=row["title"].strip())
+                    # Update book's author/illustrator if not already set
+                    if author and not book.author:
+                        book.author = author
+                    if illustrator and not book.illustrator:
+                        book.illustrator = illustrator
+                    book.save()
+                except Book.DoesNotExist:
+                    book = Book.objects.create(
+                        title=row["title"].strip(),
+                        author=author,
+                        illustrator=illustrator
+                    )
+                except Book.MultipleObjectsReturned:
+                    messages.error(
+                        request,
+                        f"Multiple books found with title '{row['title']}'. Please resolve duplicates.",
+                    )
+                    continue
+
+                # Rest of the function remains the same...
                 try:
                     category = Category.objects.get(id=row["category"])
                 except Category.DoesNotExist:
@@ -769,7 +794,6 @@ def upload_book_categories(request):
                     )
                     continue
 
-                # Handle award level
                 try:
                     award_level = AwardLevel.objects.get(id=row["level"])
                 except AwardLevel.DoesNotExist:
@@ -779,7 +803,6 @@ def upload_book_categories(request):
                     )
                     continue
 
-                # Create or update the BookCategory
                 BookCategory.objects.update_or_create(
                     book=book,
                     category=category,
@@ -791,7 +814,6 @@ def upload_book_categories(request):
             return redirect("upload_book_categories")
         except Exception as e:
             messages.error(request, f"Error processing file: {e}")
-
     return render(request, "pages/upload_book_categories.html")
 
 
