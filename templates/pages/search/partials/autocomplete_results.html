@@ -1,4 +1,4 @@
-<div class="autocomplete-results {% if not authors and not books %}hidden{% endif %}">
+<div class="autocomplete-results {% if not authors and not books and not illustrators %}hidden{% endif %}">
     {% if authors %}
         <div class="authors-section border-b">
             <div class="text-sm font-semibold text-gray-500 px-3 py-1 bg-gray-50">Authors</div>
@@ -7,6 +7,18 @@
                    class="block px-4 py-2 hover:bg-gray-100 transition-colors">
                     <div class="text-sm">{{ author }}</div>
                 </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if illustrators %}
+        <div class="authors-section border-b">
+            <div class="text-sm font-semibold text-gray-500 px-3 py-1 bg-gray-50">Illustrators</div>
+            {% for illustrator in illustrators %}
+            <a href="{% url 'illustrator_detail' illustrator.id %}"
+            class="block px-4 py-2 hover:bg-gray-100 transition-colors">
+                    <div class="text-sm">{{ illustrator }}</div>
+        </a>
             {% endfor %}
         </div>
     {% endif %}
@@ -24,7 +36,7 @@
         </div>
     {% endif %}
 
-    {% if authors or books %}
+    {% if authors or books or illustrators %}
         <div class="view-all text-center border-t">
             <a href="{% url 'search' %}?q={{ query }}"
                class="block px-4 py-2 text-sm text-blue-600 hover:bg-gray-100">

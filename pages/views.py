@@ -825,9 +825,15 @@ def search_view(request):
             'query': query,
             'authors': [],
             'books': [],
+            'illustrators': [],
         })
 
     authors = Author.objects.filter(
+        Q(first_name__icontains=query) |
+        Q(last_name__icontains=query)
+    ).distinct()
+
+    illustrators = Illustrator.objects.filter(
         Q(first_name__icontains=query) |
         Q(last_name__icontains=query)
     ).distinct()
@@ -836,6 +842,8 @@ def search_view(request):
         Q(title__icontains=query) |
         Q(author__first_name__icontains=query) |
         Q(author__last_name__icontains=query) |
+        Q(illustrator__first_name__icontains=query) |
+        Q(illustrator__last_name__icontains=query) |
         Q(isbn__icontains=query)
     ).distinct()
 
@@ -853,6 +861,7 @@ def search_view(request):
     return render(request, 'pages/search/search_results.html', {
         'query': query,
         'authors': authors,
+        'illustrators': illustrators,
         'books': books_page,
         'total_books': books.count(),
     })
@@ -867,12 +876,18 @@ def search_autocomplete(request):
         Q(last_name__icontains=query)
     )[:5]
 
+    illustrators = Illustrator.objects.filter(
+        Q(first_name__icontains=query) |
+        Q(last_name__icontains=query)
+    )[:5]
+
     books = Book.objects.filter(
         Q(title__icontains=query)
     )[:5]
 
     results = {
         'authors': authors,
+        'illustrators': illustrators,
         'books': books,
         'query': query
     }
@@ -899,6 +914,30 @@ def author_detail(request, author_id):
 
     return render(request, 'pages/authors/author_detail.html', {
         'author': author,
+        'books': page_obj,
+        'total_books': books.count(),
+    })
+
+
+def illustrator_detail(request, illustrator_id):
+    illustrator = get_object_or_404(Illustrator, id=illustrator_id)
+
+    # Get all books by this author
+    books = illustrator.books.all().order_by('title')
+
+    # Paginate the books
+    paginator = Paginator(books, 12)  # Show 12 books per page
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    if request.headers.get('HX-Request'):
+        return render(request, 'pages/authors/partials/book_list.html', {
+            'books': page_obj,
+            'illustrator': illustrator
+        })
+
+    return render(request, 'pages/authors/author_detail.html', {
+        'illustrator': illustrator,
         'books': page_obj,
         'total_books': books.count(),
     })

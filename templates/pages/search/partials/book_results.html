@@ -6,7 +6,9 @@
             {% endif %}
             <h4 class="font-bold"><a href="{%url 'book_detail' book.slug%}">{{ book.title }}</a></h4>
             <p class="text-gray-600">by {{ book.author }}</p>
-            
+            {% if book.illustrator%}
+            <p class="text-gray-600">Illustrator: {{ book.illustrator }}</p>
+            {% endif %}
         </div>
     {% endfor %}
 </div>

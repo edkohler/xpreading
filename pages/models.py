@@ -64,7 +64,7 @@ class Illustrator(models.Model):
 class Book(models.Model):
     title = models.CharField(max_length=200)
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="books")
-    illustrator = models.ForeignKey(Illustrator, on_delete=models.CASCADE, blank=True, null=True)
+    illustrator = models.ForeignKey(Illustrator, on_delete=models.CASCADE, blank=True, null=True, related_name="books")
     categories = models.ManyToManyField(Category, through='BookCategory')
     isbn = models.CharField(max_length=13, blank=True, null=True)
     page_count = models.IntegerField(blank=True, null=True)

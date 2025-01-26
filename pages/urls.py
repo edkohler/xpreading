@@ -37,7 +37,8 @@ urlpatterns = [
     path('scrape-books/run/', views.scrape_book_images, name='scrape_books_run'),
 
     path('author/<int:author_id>/', views.author_detail, name='author_detail'),
-    
+    path('illustrator/<int:illustrator_id>/', views.illustrator_detail, name='illustrator_detail'),
+
     path('search/', views.search_view, name='search'),
     path('search/autocomplete/', views.search_autocomplete, name='search_autocomplete'),
 
