@@ -702,69 +702,73 @@ def xp_report(request):
     ) or 0
 
     # Get the user's liked award years
-    liked_award_years = AwardYearLike.objects.filter(user=user).values_list('category_id', 'year')
+    liked_award_years = set(AwardYearLike.objects.filter(user=user).values_list('category_id', 'year'))
 
     # Count completed award lists (only for liked years)
     completed_award_lists = 0
     near_complete_lists = []
+    discoverable_lists = []  # For lists user hasn't liked yet
 
-    # Get all books in award categories for liked years
+    # Get all award categories and years with their book counts
     award_list_data = (
-        BookCategory.objects.filter(
-            category_id__in=[cat_id for cat_id, _ in liked_award_years],
-            year__in=[year for _, year in liked_award_years]
-        )
-        .values('category', 'year')
+        BookCategory.objects.values('category', 'year')
         .annotate(total_books=Count('book'))
     )
 
     # Get user's completed books
-    user_completed_books = UserBook.objects.filter(
+    user_completed_books = set(UserBook.objects.filter(
         user=user,
         completed=True
-    ).values_list('book_id', flat=True)
+    ).values_list('book_id', flat=True))
 
-    # Get category information including slugs - simplified
+    # Get category information including slugs
     categories_info = {
         cat['id']: {'name': cat['name'], 'slug': cat['slug']}
         for cat in Category.objects.values('id', 'name', 'slug')
     }
 
-    # For each award list in liked years
+    # For each award list
     for award_list in award_list_data:
         category_id = award_list['category']
         year = award_list['year']
         total_books = award_list['total_books']
 
-        # Check if this specific category/year combination was liked
-        if (category_id, year) not in liked_award_years:
-            continue
-
         # Get all books in this category/year
-        books_in_list = BookCategory.objects.filter(
+        books_in_list = set(BookCategory.objects.filter(
             category_id=category_id,
             year=year
-        ).values_list('book_id', flat=True)
+        ).values_list('book_id', flat=True))
 
         # Check completion status
-        completed_books_in_list = set(books_in_list) & set(user_completed_books)
+        completed_books_in_list = books_in_list & user_completed_books
         completion_ratio = len(completed_books_in_list) / total_books
 
-        if completion_ratio == 1.0:
-            completed_award_lists += 1
-        elif completion_ratio >= NEAR_COMPLETION_THRESHOLD:
-            category_data = categories_info[category_id]
-            near_complete_lists.append({
-                'category': category_data['name'],
-                'category_slug': category_data['slug'],
-                'year': year,
-                'completed_count': len(completed_books_in_list),
-                'total_books': total_books,
-                'completion_percentage': round(completion_ratio * 100, 1)
-            })
+        # Skip if completion ratio is too low
+        if completion_ratio < NEAR_COMPLETION_THRESHOLD:
+            continue
 
-    # Sort near complete lists by completion percentage (highest first)
+        # Prepare list data
+        list_data = {
+            'category': categories_info[category_id]['name'],
+            'category_slug': categories_info[category_id]['slug'],
+            'year': year,
+            'completed_count': len(completed_books_in_list),
+            'total_books': total_books,
+            'completion_percentage': round(completion_ratio * 100, 1)
+        }
+
+        # Add to appropriate list based on whether it's liked or not
+        if (category_id, year) in liked_award_years:
+            if completion_ratio == 1.0:
+                completed_award_lists += 1
+            else:
+                near_complete_lists.append(list_data)
+        else:
+            discoverable_lists.append(list_data)
+
+    # Sort both lists by completion percentage (highest first)
     near_complete_lists.sort(key=lambda x: x['completion_percentage'], reverse=True)
+    discoverable_lists.sort(key=lambda x: x['completion_percentage'], reverse=True)
 
     # Calculate total points
     points_from_pages = completed_books_pages
@@ -777,6 +781,7 @@ def xp_report(request):
         'completed_books_pages': completed_books_pages,
         'completed_award_lists': completed_award_lists,
         'near_complete_lists': near_complete_lists,
+        'discoverable_lists': discoverable_lists,
         'points_from_pages': points_from_pages,
         'points_from_books': points_from_books,
         'points_from_awards': points_from_awards,
