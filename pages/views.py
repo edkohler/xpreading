@@ -689,6 +689,7 @@ def scrape_view(request):
 @login_required
 def xp_report(request):
     user = request.user
+    NEAR_COMPLETION_THRESHOLD = 0.3  # 30%
 
     # Count the number of completed books
     completed_books_count = UserBook.objects.filter(user=user, completed=True).count()
@@ -700,26 +701,70 @@ def xp_report(request):
         .aggregate(total_pages=Sum('book__page_count'))['total_pages']
     ) or 0
 
-    # Count the number of award lists completed
-    completed_award_lists = 0
-    user_book_categories = UserBookCategory.objects.filter(user=user, completed=True)
+    # Get the user's liked award years
+    liked_award_years = AwardYearLike.objects.filter(user=user).values_list('category_id', 'year')
 
-    # Group by category and year, and check if the user has completed all books in each
+    # Count completed award lists (only for liked years)
+    completed_award_lists = 0
+    near_complete_lists = []
+
+    # Get all books in award categories for liked years
     award_list_data = (
-        BookCategory.objects.values('category', 'year')
-        .annotate(total_books=Count('book'))
-        .filter(
-            category__in=user_book_categories.values('book_category__category'),
-            year__in=user_book_categories.values('book_category__year')
+        BookCategory.objects.filter(
+            category_id__in=[cat_id for cat_id, _ in liked_award_years],
+            year__in=[year for _, year in liked_award_years]
         )
+        .values('category', 'year')
+        .annotate(total_books=Count('book'))
     )
+
+    # Get user's completed books
+    user_completed_books = UserBook.objects.filter(
+        user=user,
+        completed=True
+    ).values_list('book_id', flat=True)
+
+    # Get category information including slugs - simplified
+    categories_info = {
+        cat['id']: {'name': cat['name'], 'slug': cat['slug']}
+        for cat in Category.objects.values('id', 'name', 'slug')
+    }
+
+    # For each award list in liked years
     for award_list in award_list_data:
-        user_books_in_list = user_book_categories.filter(
-            book_category__category_id=award_list['category'],
-            book_category__year=award_list['year']
-        ).count()
-        if user_books_in_list == award_list['total_books']:
+        category_id = award_list['category']
+        year = award_list['year']
+        total_books = award_list['total_books']
+
+        # Check if this specific category/year combination was liked
+        if (category_id, year) not in liked_award_years:
+            continue
+
+        # Get all books in this category/year
+        books_in_list = BookCategory.objects.filter(
+            category_id=category_id,
+            year=year
+        ).values_list('book_id', flat=True)
+
+        # Check completion status
+        completed_books_in_list = set(books_in_list) & set(user_completed_books)
+        completion_ratio = len(completed_books_in_list) / total_books
+
+        if completion_ratio == 1.0:
             completed_award_lists += 1
+        elif completion_ratio >= NEAR_COMPLETION_THRESHOLD:
+            category_data = categories_info[category_id]
+            near_complete_lists.append({
+                'category': category_data['name'],
+                'category_slug': category_data['slug'],
+                'year': year,
+                'completed_count': len(completed_books_in_list),
+                'total_books': total_books,
+                'completion_percentage': round(completion_ratio * 100, 1)
+            })
+
+    # Sort near complete lists by completion percentage (highest first)
+    near_complete_lists.sort(key=lambda x: x['completion_percentage'], reverse=True)
 
     # Calculate total points
     points_from_pages = completed_books_pages
@@ -731,11 +776,13 @@ def xp_report(request):
         'completed_books_count': completed_books_count,
         'completed_books_pages': completed_books_pages,
         'completed_award_lists': completed_award_lists,
+        'near_complete_lists': near_complete_lists,
         'points_from_pages': points_from_pages,
         'points_from_books': points_from_books,
         'points_from_awards': points_from_awards,
         'total_points': total_points,
     }
+
     return render(request, 'pages/user_report.html', context)
 
 

@@ -42,4 +42,17 @@
     </tbody>
 </table>
 
+{% if near_complete_lists %}
+    <h3>Lists In Progress</h3>
+    <ul>
+    {% for list in near_complete_lists %}
+        <li>
+            <a href="{% url 'category_detail' slug=list.category_slug %}#{{ list.year }}">{{ list.category }} {{ list.year }}</a> -
+            {{ list.completed_count }}/{{ list.total_books }} books
+            ({{ list.completion_percentage }}% complete)
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
 {% endblock %}
