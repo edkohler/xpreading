@@ -33,6 +33,10 @@ urlpatterns = [
     path('xp_report/', views.xp_report, name='xp_report'),
     path("data/upload_book_categories/", views.upload_book_categories, name="upload_book_categories"),
 
+    path('books/<int:pk>/lookup/', views.lookup_book, name='lookup_book'),
+    path('books/<int:pk>/update-from-api/', views.update_book_from_api, name='update_book_from_api'),
+
+
     path('scrape-books/', views.scrape_view, name='scrape_books_view'),
     path('scrape-books/run/', views.scrape_book_images, name='scrape_books_run'),
 

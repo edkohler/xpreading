@@ -25,6 +25,7 @@ import csv
 from django.contrib import messages
 
 from django.core.paginator import Paginator
+from django.conf import settings
 
 
 class HomePageView(TemplateView):
@@ -337,31 +338,36 @@ def privacy_policy(request):
 
 
 def award_year_list(request):
-    # Update the query to include the category ID
+    # Retrieve distinct category-year combinations
     award_years = (
         BookCategory.objects.values(
             'category',
             'category__name',
             'category__slug',
-            'category__id',  # Add this line
+            'category__id',
             'year'
         )
         .distinct()
-        .order_by('-year', 'category__name')
+        .order_by('category__name', '-year')  # Sort by category name first, then by year descending
     )
 
     liked_award_set = set()
     if request.user.is_authenticated:
-        # Use category ID here
         liked_awards = AwardYearLike.objects.filter(user=request.user).values_list('category_id', 'year')
         liked_award_set = {(like[0], like[1]) for like in liked_awards}
 
+    # Group awards by category name, also store the category slug
+    grouped_awards = defaultdict(list)
+    category_slugs = {}  # Dictionary to store category slugs
+
     for award in award_years:
-        # Use category ID for comparison
         award['liked'] = (award['category__id'], award['year']) in liked_award_set
+        grouped_awards[award['category__name']].append(award)
+        category_slugs[award['category__name']] = award['category__slug']  # Store slug for each category
 
     context = {
-        'award_years': award_years,
+        'grouped_awards': dict(grouped_awards),  # Convert defaultdict to a normal dictionary
+        'category_slugs': category_slugs,  # Pass slugs to template
     }
     return render(request, 'pages/award_year_list.html', context)
 
@@ -993,3 +999,81 @@ def illustrator_detail(request, illustrator_id):
         'books': page_obj,
         'total_books': books.count(),
     })
+
+
+def lookup_book(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+
+    # Get search parameters from the book
+    title = book.title
+    author = book.author
+
+    params = {
+        'api_key': settings.ASIN_DATA_API_KEY,
+        'type': 'search',
+        'amazon_domain': 'amazon.com',
+        'search_term': f'{title} {author}',
+        'exclude_sponsored': 'true',
+        'max_page': '1',
+        'output': 'json',
+        'include_html': 'false',
+        'category_id': '283155',
+        'page': '1'
+    }
+
+    try:
+        api_result = requests.get('https://api.asindataapi.com/request', params)
+        data = api_result.json()
+
+        # Extract relevant information from search results
+        results = [{
+            'title': item['title'],
+            'asin': item['asin'],
+            'image': item['image']
+        } for item in data.get('search_results', [])]
+
+        # Render the results partial template
+        html = render_to_string('pages/partials/book_results.html', {
+            'results': results,
+            'book_id': pk
+        })
+
+        return JsonResponse({
+            'html': html,
+            'success': True
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+def update_book_from_api(request, pk):
+    if request.method == "POST":
+        book = get_object_or_404(Book, pk=pk)
+        asin = request.POST.get('asin')
+        image_url = request.POST.get('image')
+
+        # Update ASIN
+        if asin and not book.asin:
+            book.asin = asin
+
+        # Download and save image if missing
+        if image_url and not book.image:
+            try:
+                response = requests.get(image_url)
+                if response.status_code == 200:
+                    from django.core.files.base import ContentFile
+                    image_name = f"{book.pk}_cover.jpg"
+                    book.image.save(image_name, ContentFile(response.content), save=True)
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)})
+
+        book.save()
+        return JsonResponse({
+            'success': True,
+            'asin': book.asin,
+            'image_url': book.image.url if book.image else None
+        })
+
+    return JsonResponse({'success': False}, status=400)

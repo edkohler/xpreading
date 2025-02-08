@@ -3,7 +3,7 @@ from django.contrib import admin
 # Register your models here.
 from .models import Author, Book, Category, AwardLevel, BookCategory, Library, WebPlatform, UserBook, UserBookCategory, Illustrator
 from import_export.admin import ImportExportModelAdmin
-from .resources import LibraryResource, BookResource, AuthorResource,BookCategoryResource
+from .resources import LibraryResource, BookResource, AuthorResource,BookCategoryResource, CategoryResource
 
 @admin.register(Author)
 class AuthorAdmin(ImportExportModelAdmin):
@@ -20,8 +20,8 @@ class BookAdmin(ImportExportModelAdmin):
     search_fields = ['title', 'author', 'bibliocommons_id', 'asin']
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+class CategoryAdmin(ImportExportModelAdmin):
+    list_display = ('name','new_books_release_day_of_year')
 
 @admin.register(AwardLevel)
 class AwardLevelAdmin(admin.ModelAdmin):

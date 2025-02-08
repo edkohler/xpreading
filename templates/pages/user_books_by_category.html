@@ -1,4 +1,5 @@
 {% extends "_base.html" %}
+{% load custom_filters %}
 {% block title %}Books You've Read by Category List - XP Reading{% endblock %}
 {% block content %}
 <h1>My Book Challenges</h1>
@@ -10,7 +11,12 @@
 
     {% for year, data in years.items %}
         <h3>
-            {{ year }} - {{ data.read_books }}/{{ data.total_books }} Completed
+            {{ year }} - {{ data.read_books|percent_complete:data.total_books }}% Complete
+
+
+            <div class="progress">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ data.read_books|percent_complete:data.total_books }}%;" aria-valuenow="{{ data.read_books|percent_complete:data.total_books }}" aria-valuemin="0" aria-valuemax="100">{{ data.read_books|percent_complete:data.total_books }}%</div>
+              </div>
         </h3>
         <table class="table">
             <tr class="table-light">

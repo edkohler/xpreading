@@ -28,10 +28,9 @@
             <div class="text-sm font-semibold text-gray-500 px-3 py-1 bg-gray-50">Books</div>
             {% for book in books %}
                 <a href="{% url 'book_detail' book.slug %}"
-                   class="block px-4 py-2 hover:bg-gray-100 transition-colors">
-                    <div class="text-sm">{{ book.title }}</div>
-                    <div class="text-xs text-gray-500">by {{ book.author }}</div>
-                </a>
+                   class="block px-2 py-1 hover:bg-gray-100 transition-colors">
+                    <div class="text-sm">{{ book.title }}</a> by <a href="{% url 'author_detail' book.author.id %}">{{ book.author }}</a></div>
+
             {% endfor %}
         </div>
     {% endif %}

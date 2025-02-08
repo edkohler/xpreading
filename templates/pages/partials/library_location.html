@@ -1,0 +1,9 @@
+{% for library in libraries %}
+<tr>
+    <td><strong>{{ library.name }}</strong></td>
+    <td>{{ library.state }}</td>
+    <td>
+        {% include "pages/partials/button_library_favorite.html" with library=library is_favorite=False %}
+    </td>
+</tr>
+{% endfor %}

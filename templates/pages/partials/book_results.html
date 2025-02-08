@@ -1,0 +1,16 @@
+{# templates/pages/partials/book_results.html #}
+<div class="search-results">
+    {% for result in results %}
+    <div class="result-item border p-4 mb-4">
+        <img src="{{ result.image }}" alt="{{ result.title }}" style="max-height: 100px;">
+        <h4>{{ result.title }}</h4>
+        <p>ASIN: {{ result.asin }}</p>
+        <button hx-post="{% url 'update_book_from_api' book_id %}"
+                hx-vals='{"asin": "{{ result.asin }}", "image": "{{ result.image }}"}'
+                hx-target="closest tr"
+                hx-swap="outerHTML">
+            Use This Result
+        </button>
+    </div>
+    {% endfor %}
+</div>

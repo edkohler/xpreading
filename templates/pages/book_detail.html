@@ -7,9 +7,9 @@
 
 <h1>{{ book.title }}</h1>
 <p><strong>Author:</strong> <a href="{% url 'author_detail' book.author.id %}">{{ book.author.first_name }} {{ book.author.last_name }}</a><br/>
-  <strong>Illustrator:</strong> {{ book.illustrator.first_name }} {{ book.illustrator.last_name }}<br/>
+  {%if book.illustrator.first_name %}<strong>Illustrator:</strong> {{ book.illustrator.first_name }} {{ book.illustrator.last_name }}<br/>{%endif%}
 
-  <strong>Pages:</strong> {{ book.page_count }}</p>
+  <strong>Pages:</strong> {%if book.page_count%}{{ book.page_count }}{%else%}Unknown{%endif%}</p>
   <p><a href="/admin/pages/book/{{book.id}}/change/" target="_blank">(edit)</a></p>
 
 <hr>
@@ -17,7 +17,7 @@
   <tr><td>{% if book.image %}
     <img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-width: 200px;"/>
 {% else %}
-    <p>No image.</p>
+    <p>No image yet.</p>
 {% endif %}
 <p><a href="https://bookshop.org/search?keywords={{ book.title.split|join:"+" }}+{{ book.author.split|join:"+" }}" target="_blank"><img src="{% static 'images/IndieBound-18px-18px.png' %}" class="img-fluid" alt="buy {{ book.title }} at local US bookstores" width="18" height="18"/></a>
   <a href="https://bookmanager.com/tbm/?searchtype=keyword&qs={{ book.title.split|join:"+" }}+{{ book.author.split|join:"+" }}&qs_file=&q=h.tviewer&using_sb=status&qsb=keyword" target="_blank"><img src="{% static 'images/canada_icon_18_18.png' %}" class="img-fluid" alt="buy {{ book.title }} at local Canadian bookstores" width="18" height="18"/></a>

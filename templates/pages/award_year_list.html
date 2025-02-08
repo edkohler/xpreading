@@ -1,35 +1,41 @@
 {% extends '_base.html' %}
-
+{% load custom_filters %}
 {% block title %}Lists of good books for students to read - XP Reading{% endblock %}
 
 {% block content %}
 
 <h1>Book Lists</h1>
-<p>Liking a book list (typically a list for a given year) adds the books from that year to your reading list.</p><p>Books you've already marked as read for that list year will already be marked as read.</p>
+<p>Liking a book list (typically a list for a given year) adds the books from that year to your reading list.</p>
+<p>Books you've already marked as read for that list year will already be marked as read.</p>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Book List</th>
-            <th>Year</th>
-            <th>Select</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for award in award_years %}
-            <tr>
-                <td><a href="{% url 'category_detail' award.category__slug%}#{{ award.year }}">{{ award.category__name }}</a></td>
-                <td>{{ award.year }}</td>
-                <td>
-                    <!-- {{ award.category }}, {{ award.year }}, {{ award.liked }} -->
-                    {% include "pages/partials/award_like_button.html" with award=award is_liked=award.liked %}
-                </td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<ul>
+{% for category_name, awards in grouped_awards.items %}
+<li><a href="#{{category_slugs|get_item:category_name}}">{{ category_name }}</a></li>
+{%endfor%}
+<ul>
+    <hr/>
 
+<div class="container">
+    {% for category_name, awards in grouped_awards.items %}
+        <div class="mb-3"><div id="{{ category_slugs|get_item:category_name}}"></div>
+            <h3><a href="{%url 'category_detail' category_slugs|get_item:category_name %}">{{ category_name }}</a></h3>
 
+        </div>
 
+        <div class="d-flex flex-wrap gap-2">  {# Flexbox for side-by-side cards with wrapping #}
+            {% for award in awards %}
+                <div class="card small-card p-2">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            <a href="{% url 'category_detail' award.category__slug %}#{{ award.year }}">{{ award.year }}</a>
+                        </h5>
+                        {% include "pages/partials/award_like_button.html" with award=award is_liked=award.liked %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div><br/>
+    {% endfor %}
+
+</div>
 
 {% endblock content %}

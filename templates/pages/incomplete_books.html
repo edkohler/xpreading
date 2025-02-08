@@ -1,6 +1,6 @@
+{# templates/pages/book_list.html #}
 {% extends "_base.html" %}
 {% block title %}Books with Missing Fields{% endblock %}
-
 {% block content %}
 <h1>Books with Missing Fields</h1>
 <table class="table">
@@ -12,7 +12,7 @@
             <th>Page Count</th>
             <th>Bibliocommons ID</th>
             <th>Image</th>
-
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -34,25 +34,25 @@
                 <form hx-post="{% url 'update_book_field' book.pk 'bibliocommons_id' %}" hx-trigger="change">
                     <input type="text" name="value" value="{{ book.bibliocommons_id|default:'' }}" placeholder="Enter Bibliocommons ID" />
                 </form>
-                | <a href="https://chipublib.bibliocommons.com/v2/search?query={{ book.title }}+{{ book.author }}&searchType=smart&f_PRIMARY_LANGUAGE=eng" target="_blank">Biblio</a>
+                | <a href="https://hclib.bibliocommons.com/v2/search?query={{ book.title }}+{{ book.author }}&searchType=smart&f_PRIMARY_LANGUAGE=eng" target="_blank">Biblio</a>
             </td>
-
             <td>
-                {% if not book.image%}
-                <form
-                    hx-post="{% url 'upload_book_image' book.id %}"
-                    hx-swap="outerHTML"
-                    enctype="multipart/form-data">
-                    <input type="file" name="image" accept="image/*" required>
-                    <button type="submit">Upload</button>
-                </form>
-                {%endif%}
+                {% if book.image %}
+                    <img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-height: 100px;">
+                {% endif %}
             </td>
-
+            <td>
+                {% if not book.asin or not book.image %}
+                    <button class="lookup-btn"
+                            hx-get="{% url 'lookup_book' book.pk %}"
+                            hx-target="#results-{{ book.pk }}"
+                            hx-trigger="click">
+                        Look up on Amazon
+                    </button>
+                    <div id="results-{{ book.pk }}"></div>
+                {% endif %}
+            </td>
         </tr>
-
-
-
         {% endfor %}
     </tbody>
 </table>

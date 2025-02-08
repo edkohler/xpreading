@@ -45,7 +45,7 @@
             <tr>
                 <td>{% if book.book.image %}<img src="{{ book.book.image.url }}" alt="{{ book.book.title }}" style="max-width: 30px;"/>{% endif %}</td>
                 <td><a href="{% url 'book_detail' book.book.slug %}">{{ book.book.title }}</a></td>
-                <td><a href="{% url 'author_detail' book.book.id %}">{{ book.book.author }}</a></td>
+                <td><a href="{% url 'author_detail' book.book.author.id %}">{{ book.book.author }}</a></td>
 
                 <td><a href="https://bookshop.org/search?keywords={{ book.book.title }}+{{ book.book.author }}" target="_blank"><img src="{% static 'images/IndieBound-18px-18px.png' %}" class="img-fluid" alt="buy {{ book.book.title }} at local US bookstores" width="18" height="18"/></a>
                     <a href="https://bookmanager.com/tbm/?searchtype=keyword&qs={{ book.book.title }}+{{ book.book.author }}" target="_blank"><img src="{% static 'images/canada_icon_18_18.png' %}" class="img-fluid" alt="buy {{ book.book.title }} at local Canadian bookstores" width="18" height="18"/></a>

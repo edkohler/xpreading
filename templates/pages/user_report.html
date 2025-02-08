@@ -1,5 +1,6 @@
 {% extends "_base.html" %}
 {% load humanize %}
+{% load custom_filters %}
 {% block title %}XP Earned on XP Reading{% endblock %}
 {% block content %}
 <h1>Your XP Reading Report</h1>
@@ -49,7 +50,10 @@
         <li>
             <a href="{% url 'category_detail' slug=list.category_slug %}#{{ list.year }}">{{ list.category }} - {{ list.year }}</a> -
             {{ list.completed_count }}/{{ list.total_books }} books
-            ({{ list.completion_percentage }}% complete)
+            
+            <div class="progress">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ list.completed_count|percent_complete:list.total_books }}%;" aria-valuenow="{{ list.completed_count|percent_complete:list.total_books }}" aria-valuemin="0" aria-valuemax="100">{{ list.completed_count|percent_complete:list.total_books }}%</div>
+              </div>
         </li>
     {% endfor %}
     </ul>
@@ -62,7 +66,11 @@
         <li>
             <a href="{% url 'category_detail' slug=list.category_slug %}#{{ list.year }}">{{ list.category }} - {{ list.year }}</a> -
             {{ list.completed_count }}/{{ list.total_books }} books
-            ({{ list.completion_percentage }}% complete)
+
+
+            <div class="progress">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ list.completed_count|percent_complete:list.total_books }}%;" aria-valuenow="{{ list.completed_count|percent_complete:list.total_books }}" aria-valuemin="0" aria-valuemax="100">{{ list.completed_count|percent_complete:list.total_books }}%</div>
+              </div>
         </li>
     {% endfor %}
     </ul>
