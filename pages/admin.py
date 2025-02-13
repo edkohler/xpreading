@@ -17,7 +17,7 @@ class IllustratorAdmin(ImportExportModelAdmin):
 @admin.register(Book)
 class BookAdmin(ImportExportModelAdmin):
     list_display = ('title', 'author')
-    search_fields = ['title', 'author', 'bibliocommons_id', 'asin']
+    search_fields = ['title', 'author__first_name',  'author__last_name', 'bibliocommons_id', 'asin']
 
 @admin.register(Category)
 class CategoryAdmin(ImportExportModelAdmin):
