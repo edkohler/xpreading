@@ -696,63 +696,51 @@ def scrape_view(request):
 def xp_report(request):
     user = request.user
     NEAR_COMPLETION_THRESHOLD = 0.3  # 30%
-
     # Count the number of completed books
     completed_books_count = UserBook.objects.filter(user=user, completed=True).count()
-
     # Sum the page counts of completed books
     completed_books_pages = (
         UserBook.objects.filter(user=user, completed=True)
         .select_related('book')
         .aggregate(total_pages=Sum('book__page_count'))['total_pages']
     ) or 0
-
     # Get the user's liked award years
     liked_award_years = set(AwardYearLike.objects.filter(user=user).values_list('category_id', 'year'))
-
-    # Count completed award lists (only for liked years)
-    completed_award_lists = 0
+    # Initialize lists for different completion states
+    completed_lists = []  # New list for completed awards
     near_complete_lists = []
     discoverable_lists = []  # For lists user hasn't liked yet
-
     # Get all award categories and years with their book counts
     award_list_data = (
         BookCategory.objects.values('category', 'year')
         .annotate(total_books=Count('book'))
     )
-
     # Get user's completed books
     user_completed_books = set(UserBook.objects.filter(
         user=user,
         completed=True
     ).values_list('book_id', flat=True))
-
     # Get category information including slugs
     categories_info = {
         cat['id']: {'name': cat['name'], 'slug': cat['slug']}
         for cat in Category.objects.values('id', 'name', 'slug')
     }
-
     # For each award list
     for award_list in award_list_data:
         category_id = award_list['category']
         year = award_list['year']
         total_books = award_list['total_books']
-
         # Get all books in this category/year
         books_in_list = set(BookCategory.objects.filter(
             category_id=category_id,
             year=year
         ).values_list('book_id', flat=True))
-
         # Check completion status
         completed_books_in_list = books_in_list & user_completed_books
         completion_ratio = len(completed_books_in_list) / total_books
-
         # Skip if completion ratio is too low
         if completion_ratio < NEAR_COMPLETION_THRESHOLD:
             continue
-
         # Prepare list data
         list_data = {
             'category': categories_info[category_id]['name'],
@@ -762,30 +750,27 @@ def xp_report(request):
             'total_books': total_books,
             'completion_percentage': round(completion_ratio * 100, 1)
         }
-
-        # Add to appropriate list based on whether it's liked or not
+        # Add to appropriate list based on whether it's liked and completion status
         if (category_id, year) in liked_award_years:
             if completion_ratio == 1.0:
-                completed_award_lists += 1
+                completed_lists.append(list_data)
             else:
                 near_complete_lists.append(list_data)
         else:
             discoverable_lists.append(list_data)
-
-    # Sort both lists by completion percentage (highest first)
+    # Sort all lists by completion percentage (highest first)
+    completed_lists.sort(key=lambda x: x['year'], reverse=True)  # Sort completed by year
     near_complete_lists.sort(key=lambda x: x['completion_percentage'], reverse=True)
     discoverable_lists.sort(key=lambda x: x['completion_percentage'], reverse=True)
-
     # Calculate total points
     points_from_pages = completed_books_pages
     points_from_books = completed_books_count * 100
-    points_from_awards = completed_award_lists * 500
+    points_from_awards = len(completed_lists) * 500  # Updated to use length of completed_lists
     total_points = points_from_pages + points_from_books + points_from_awards
-
     context = {
         'completed_books_count': completed_books_count,
         'completed_books_pages': completed_books_pages,
-        'completed_award_lists': completed_award_lists,
+        'completed_lists': completed_lists,  # Add completed lists to context
         'near_complete_lists': near_complete_lists,
         'discoverable_lists': discoverable_lists,
         'points_from_pages': points_from_pages,
@@ -793,7 +778,6 @@ def xp_report(request):
         'points_from_awards': points_from_awards,
         'total_points': total_points,
     }
-
     return render(request, 'pages/user_report.html', context)
 
 

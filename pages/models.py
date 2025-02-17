@@ -70,7 +70,7 @@ class Book(models.Model):
     page_count = models.IntegerField(blank=True, null=True)
     bibliocommons_id = models.CharField(max_length=20, blank=True, null=True)
     asin = models.CharField(max_length=20, blank=True, null=True)
-    slug = models.SlugField(blank=True)
+    slug = models.SlugField(blank=True, unique=True)
     image = models.ImageField(
         upload_to=upload_to_book_images,  # Use the custom function
         storage=MediaStorage(),
@@ -89,7 +89,8 @@ class Book(models.Model):
 
     class Meta:
         ordering = ['title']
-
+        indexes = [models.Index(fields=['title']),
+                    ]
     @property
     def title_url_friendly(self):
         return self.title.replace(' ', '+')

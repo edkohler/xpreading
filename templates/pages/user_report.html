@@ -29,7 +29,7 @@
         </tr>
         <tr>
             <td><strong>Book Lists Completed:</strong></td>
-            <td>{{ completed_award_lists }}</td>
+            <td>{{ completed_lists|length }}</td>
             <td><strong>Points from Lists:</strong></td>
             <td>{{ points_from_awards|intcomma }}</td>
         </tr>
@@ -43,6 +43,23 @@
     </tbody>
 </table>
 
+
+{% if completed_lists %}
+    <h3>Completed Reading Lists</h3>
+    <ul>
+    {% for list in completed_lists %}
+        <li>
+            <a href="{% url 'category_detail' slug=list.category_slug %}#{{ list.year }}">{{ list.category }} - {{ list.year }}</a> -
+            {{ list.completed_count }}/{{ list.total_books }} books
+
+            <div class="progress">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ list.completed_count|percent_complete:list.total_books }}%;" aria-valuenow="{{ list.completed_count|percent_complete:list.total_books }}" aria-valuemin="0" aria-valuemax="100">{{ list.completed_count|percent_complete:list.total_books }}%</div>
+              </div>
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
 {% if near_complete_lists %}
     <h3>Reading Lists In Progress</h3>
     <ul>
@@ -50,7 +67,7 @@
         <li>
             <a href="{% url 'category_detail' slug=list.category_slug %}#{{ list.year }}">{{ list.category }} - {{ list.year }}</a> -
             {{ list.completed_count }}/{{ list.total_books }} books
-            
+
             <div class="progress">
                 <div class="progress-bar bg-success" role="progressbar" style="width: {{ list.completed_count|percent_complete:list.total_books }}%;" aria-valuenow="{{ list.completed_count|percent_complete:list.total_books }}" aria-valuemin="0" aria-valuemax="100">{{ list.completed_count|percent_complete:list.total_books }}%</div>
               </div>
@@ -75,5 +92,8 @@
     {% endfor %}
     </ul>
 {% endif %}
+
+<hr>
+<br/>
 
 {% endblock %}
