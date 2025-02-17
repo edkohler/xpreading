@@ -1,16 +1,28 @@
-{# templates/pages/partials/book_results.html #}
-<div class="search-results">
-    {% for result in results %}
-    <div class="result-item border p-4 mb-4">
-        <img src="{{ result.image }}" alt="{{ result.title }}" style="max-height: 100px;">
-        <h4>{{ result.title }}</h4>
-        <p>ASIN: {{ result.asin }}</p>
-        <button hx-post="{% url 'update_book_from_api' book_id %}"
-                hx-vals='{"asin": "{{ result.asin }}", "image": "{{ result.image }}"}'
-                hx-target="closest tr"
-                hx-swap="outerHTML">
-            Use This Result
-        </button>
-    </div>
-    {% endfor %}
+<div class="search-results mt-4">
+    {% if results %}
+        {% for result in results %}
+        <div class="result-item border p-4 mb-4 bg-white rounded shadow-sm">
+            <div class="flex items-center gap-4">
+                {% if result.image %}
+                <div class="flex-shrink-0">
+                    <img src="{{ result.image }}" alt="{{ result.title }}" class="w-24 h-auto object-cover">
+                </div>
+                {% endif %}
+                <div class="flex-grow">
+                    <h4 class="text-lg font-semibold mb-2">{{ result.title }}</h4>
+                    <p class="text-gray-600 mb-2">ASIN: {{ result.asin }}</p>
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                            hx-post="{% url 'update_book_from_api' book_id %}"
+                            hx-vals='{"asin": "{{ result.asin }}", "image": "{{ result.image }}"}'
+                            hx-target="closest tr"
+                            hx-swap="outerHTML">
+                        Use This Result
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-gray-600">No results found.</p>
+    {% endif %}
 </div>

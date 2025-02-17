@@ -27,6 +27,10 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.conf import settings
 
+from django.db import transaction
+from django.utils.text import slugify
+from unidecode import unidecode
+
 
 class HomePageView(TemplateView):
     template_name = "pages/home.html"
@@ -781,83 +785,111 @@ def xp_report(request):
     return render(request, 'pages/user_report.html', context)
 
 
+def normalize_text(text):
+    """Normalize text by converting to lowercase and removing diacritics."""
+    return unidecode(text.strip().lower())
+
 def upload_book_categories(request):
     if request.method == "POST" and request.FILES.get("csv_file"):
         csv_file = request.FILES["csv_file"]
         try:
-            decoded_file = csv_file.read().decode("utf-8").splitlines()
-            reader = csv.DictReader(decoded_file, delimiter="\t")
-            for row in reader:
-                # Get or create author
-                author = None
-                if row["first_name"].strip() and row["last_name"].strip():
-                    author, _ = Author.objects.get_or_create(
-                        first_name=row["first_name"].strip(),
-                        last_name=row["last_name"].strip(),
+            with transaction.atomic():  # Wrap the entire operation in a transaction
+                decoded_file = csv_file.read().decode("utf-8").splitlines()
+                reader = csv.DictReader(decoded_file, delimiter="\t")
+
+                for row in reader:
+                    # Normalize author names
+                    author = None
+                    if row["first_name"].strip() and row["last_name"].strip():
+                        first_name = normalize_text(row["first_name"])
+                        last_name = normalize_text(row["last_name"])
+                        author, _ = Author.objects.get_or_create(
+                            first_name__iexact=first_name,
+                            last_name__iexact=last_name,
+                            defaults={
+                                'first_name': first_name,
+                                'last_name': last_name,
+                            }
+                        )
+
+                    # Normalize illustrator names
+                    illustrator = None
+                    if row["illustrator_first_name"].strip() and row["illustrator_last_name"].strip():
+                        first_name = normalize_text(row["illustrator_first_name"])
+                        last_name = normalize_text(row["illustrator_last_name"])
+                        illustrator, _ = Illustrator.objects.get_or_create(
+                            first_name__iexact=first_name,
+                            last_name__iexact=last_name,
+                            defaults={
+                                'first_name': first_name,
+                                'last_name': last_name,
+                            }
+                        )
+
+                    # Normalize book title and generate slug
+                    normalized_title = normalize_text(row["title"])
+                    base_slug = slugify(normalized_title)
+
+                    # Handle existing or new book
+                    try:
+                        # Try to find book by normalized title
+                        book = Book.objects.get(title__iexact=normalized_title)
+
+                        # Update book's author/illustrator if not already set
+                        if author and not book.author:
+                            book.author = author
+                        if illustrator and not book.illustrator:
+                            book.illustrator = illustrator
+                        book.save()
+
+                    except Book.DoesNotExist:
+                        # Create new book with unique slug
+                        counter = 1
+                        slug = base_slug
+                        while Book.objects.filter(slug=slug).exists():
+                            slug = f"{base_slug}-{counter}"
+                            counter += 1
+
+                        book = Book.objects.create(
+                            title=normalized_title,
+                            slug=slug,
+                            author=author,
+                            illustrator=illustrator
+                        )
+
+                    except Book.MultipleObjectsReturned:
+                        messages.error(
+                            request,
+                            f"Multiple books found with title '{normalized_title}'. Please resolve duplicates.",
+                        )
+                        continue
+
+                    # Get category and award level
+                    try:
+                        category = Category.objects.get(id=row["category"])
+                        award_level = AwardLevel.objects.get(id=row["level"])
+                    except (Category.DoesNotExist, AwardLevel.DoesNotExist) as e:
+                        messages.error(
+                            request,
+                            f"Invalid category or award level for book '{normalized_title}'. Please check your data.",
+                        )
+                        continue
+
+                    # Create or update book category
+                    BookCategory.objects.update_or_create(
+                        book=book,
+                        category=category,
+                        year=row["year"],
+                        defaults={"award_level": award_level},
                     )
 
-                # Get or create illustrator
-                illustrator = None
-                if row["illustrator_first_name"].strip() and row["illustrator_last_name"].strip():
-                    illustrator, _ = Illustrator.objects.get_or_create(
-                        first_name=row["illustrator_first_name"].strip(),
-                        last_name=row["illustrator_last_name"].strip(),
-                    )
+                messages.success(request, "Book categories uploaded successfully!")
+                return redirect("upload_book_categories")
 
-                # Handle existing or new book
-                try:
-                    book = Book.objects.get(title=row["title"].strip())
-                    # Update book's author/illustrator if not already set
-                    if author and not book.author:
-                        book.author = author
-                    if illustrator and not book.illustrator:
-                        book.illustrator = illustrator
-                    book.save()
-                except Book.DoesNotExist:
-                    book = Book.objects.create(
-                        title=row["title"].strip(),
-                        author=author,
-                        illustrator=illustrator
-                    )
-                except Book.MultipleObjectsReturned:
-                    messages.error(
-                        request,
-                        f"Multiple books found with title '{row['title']}'. Please resolve duplicates.",
-                    )
-                    continue
-
-                # Rest of the function remains the same...
-                try:
-                    category = Category.objects.get(id=row["category"])
-                except Category.DoesNotExist:
-                    messages.error(
-                        request,
-                        f"Category with ID {row['category']} does not exist. Please check your data.",
-                    )
-                    continue
-
-                try:
-                    award_level = AwardLevel.objects.get(id=row["level"])
-                except AwardLevel.DoesNotExist:
-                    messages.error(
-                        request,
-                        f"Award level with ID {row['level']} does not exist. Please check your data.",
-                    )
-                    continue
-
-                BookCategory.objects.update_or_create(
-                    book=book,
-                    category=category,
-                    year=row["year"],
-                    defaults={"award_level": award_level},
-                )
-
-            messages.success(request, "Book categories uploaded successfully!")
-            return redirect("upload_book_categories")
         except Exception as e:
-            messages.error(request, f"Error processing file: {e}")
-    return render(request, "pages/upload_book_categories.html")
+            messages.error(request, f"Error processing file: {str(e)}")
 
+    return render(request, "pages/upload_book_categories.html")
 
 def search_view(request):
     query = request.GET.get('q', '')
@@ -993,7 +1025,7 @@ def lookup_book(request, pk):
     author = book.author
 
     params = {
-        'api_key': settings.ASIN_DATA_API_KEY,
+        'api_key': 'E945927E67D4422398408C6CCB64513F',
         'type': 'search',
         'amazon_domain': 'amazon.com',
         'search_term': f'{title} {author}',
@@ -1016,21 +1048,13 @@ def lookup_book(request, pk):
             'image': item['image']
         } for item in data.get('search_results', [])]
 
-        # Render the results partial template
-        html = render_to_string('pages/partials/book_results.html', {
+        # Return the rendered HTML directly instead of wrapping in JSON
+        return render(request, 'pages/partials/book_results.html', {
             'results': results,
             'book_id': pk
         })
-
-        return JsonResponse({
-            'html': html,
-            'success': True
-        })
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        })
+        return HttpResponse(f"Error: {str(e)}", status=400)
 
 def update_book_from_api(request, pk):
     if request.method == "POST":
@@ -1038,26 +1062,25 @@ def update_book_from_api(request, pk):
         asin = request.POST.get('asin')
         image_url = request.POST.get('image')
 
-        # Update ASIN
-        if asin and not book.asin:
-            book.asin = asin
+        try:
+            # Update ASIN
+            if asin and not book.asin:
+                book.asin = asin
 
-        # Download and save image if missing
-        if image_url and not book.image:
-            try:
+            # Download and save image if missing
+            if image_url and not book.image:
                 response = requests.get(image_url)
                 if response.status_code == 200:
                     from django.core.files.base import ContentFile
                     image_name = f"{book.pk}_cover.jpg"
                     book.image.save(image_name, ContentFile(response.content), save=True)
-            except Exception as e:
-                return JsonResponse({'success': False, 'error': str(e)})
 
-        book.save()
-        return JsonResponse({
-            'success': True,
-            'asin': book.asin,
-            'image_url': book.image.url if book.image else None
-        })
+            book.save()
 
-    return JsonResponse({'success': False}, status=400)
+            # Return the updated row HTML
+            return render(request, 'pages/partials/book_row.html', {'book': book})
+
+        except Exception as e:
+            return HttpResponse(f"Error: {str(e)}", status=400)
+
+    return HttpResponse("Invalid request", status=400)
