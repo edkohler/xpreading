@@ -34,3 +34,4 @@ beautifulsoup4
 django-environ
 amazon-paapi5
 unidecode
+black

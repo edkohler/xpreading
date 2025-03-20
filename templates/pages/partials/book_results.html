@@ -10,7 +10,7 @@
                 {% endif %}
                 <div class="flex-grow">
                     <h4 class="text-lg font-semibold mb-2">{{ result.title }}</h4>
-                    <p class="text-gray-600 mb-2">ASIN: {{ result.asin }}</p>
+                    <p class="text-gray-600 mb-2">ASIN:<a href="https://www.amazon.com/dp/{{ result.asin }}" target="_blank">{{ result.asin }}</a></p>
                     <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                             hx-post="{% url 'update_book_from_api' book_id %}"
                             hx-vals='{"asin": "{{ result.asin }}", "image": "{{ result.image }}"}'
