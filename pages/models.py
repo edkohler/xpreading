@@ -1,13 +1,14 @@
-from django.db import models
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.utils.text import slugify
-from django.contrib.auth import get_user_model
-import re
-from django_project.storage_backends import MediaStorage
-
 import os
+import re
 import uuid
+
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
+from django.db import models
+from django.utils.text import slugify
+
+from django_project.storage_backends import MediaStorage
 
 
 def upload_to_book_images(instance, filename):
@@ -96,14 +97,19 @@ class Book(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
+            # Truncate title if it's too long (allowing space for author names)
+            title_slug = slugify(self.title)[:100]  # Allocate more space for title
+            first_name_slug = slugify(self.author.first_name)[:40]
+            last_name_slug = slugify(self.author.last_name)[:40]
+
+            # Join the components
             self.slug = "-".join(
                 (
-                    slugify(self.title),
-                    slugify(self.author.first_name),
-                    slugify(self.author.last_name),
+                    title_slug,
+                    first_name_slug,
+                    last_name_slug,
                 )
-            )[:200]
-
+            )[:200]  # Keep the overall length constraint
         super().save(*args, **kwargs)
 
     def __str__(self):

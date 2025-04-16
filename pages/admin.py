@@ -1,26 +1,12 @@
 from django.contrib import admin
+from import_export.admin import ImportExportModelAdmin
 
 # Register your models here.
-from .models import (
-    Author,
-    Book,
-    Category,
-    AwardLevel,
-    BookCategory,
-    Library,
-    WebPlatform,
-    UserBook,
-    UserBookCategory,
-    Illustrator,
-)
-from import_export.admin import ImportExportModelAdmin
-from .resources import (
-    LibraryResource,
-    BookResource,
-    AuthorResource,
-    BookCategoryResource,
-    CategoryResource,
-)
+from .models import (Author, AwardLevel, Book, BookCategory, Category,
+                     Illustrator, Library, UserBook, UserBookCategory,
+                     WebPlatform)
+from .resources import (AuthorResource, BookCategoryResource, BookResource,
+                        CategoryResource, LibraryResource)
 
 
 @admin.register(Author)

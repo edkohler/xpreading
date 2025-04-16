@@ -1,0 +1,93 @@
+{% extends "_base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Consolidate Authors</h1>
+
+    <p class="alert alert-info">
+        This will move all books from the secondary author to the primary author,
+        then delete the secondary author record.
+    </p>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'author_consolidate_process' %}">
+        {% csrf_token %}
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        Primary Author (Keep)
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="primary_author">Select Primary Author:</label>
+                            <select name="primary_author" id="primary_author" class="form-control" required>
+                                <option value="">-- Select Primary Author --</option>
+                                {% for author in authors %}
+                                <option value="{{ author.id }}">
+                                    {{ author.last_name }}, {{ author.first_name }} ({{ author.books.count }} books)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        Secondary Author (Will be deleted)
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="secondary_author">Select Secondary Author:</label>
+                            <select name="secondary_author" id="secondary_author" class="form-control" required>
+                                <option value="">-- Select Secondary Author --</option>
+                                {% for author in authors %}
+                                <option value="{{ author.id }}">
+                                    {{ author.last_name }}, {{ author.first_name }} ({{ author.books.count }} books)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to consolidate these authors? This cannot be undone.')">
+                Consolidate Authors
+            </button>
+            <a href="{% url 'author_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add validation to prevent selecting the same author for both primary and secondary
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(event) {
+        const primaryAuthor = document.getElementById('primary_author').value;
+        const secondaryAuthor = document.getElementById('secondary_author').value;
+
+        if (primaryAuthor === secondaryAuthor) {
+            event.preventDefault();
+            alert('Primary and secondary authors must be different.');
+        }
+    });
+});
+</script>
+{% endblock %}

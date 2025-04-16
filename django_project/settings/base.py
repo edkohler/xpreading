@@ -1,10 +1,9 @@
-from pathlib import Path
-import os
-import environ
 import logging
+import os
+from pathlib import Path
+
+import environ
 import sentry_sdk
-
-
 
 sentry_sdk.init(
     dsn="https://382707f0c49ac83738b5f83aa6df88b7@o4508541680091136.ingest.us.sentry.io/4508541680418816",

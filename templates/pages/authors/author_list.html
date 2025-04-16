@@ -1,0 +1,154 @@
+{% extends "_base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Author List</h1>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Consolidate Authors
+        </div>
+        <div class="card-body">
+            <p class="alert alert-info">
+                Select a primary author (to keep) and a secondary author (to be removed), then click "Consolidate" to move all books to the primary author.
+            </p>
+
+            <form id="consolidate-form" method="post" action="{% url 'author_consolidate_process' %}">
+                {% csrf_token %}
+                <div class="text-center mb-3">
+                    <button type="submit" class="btn btn-danger" id="consolidate-btn" disabled>
+                        Consolidate Authors
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Last Name</th>
+                <th>First Name</th>
+                <th>Book Count</th>
+                <th>Primary (Keep)</th>
+                <th>Secondary (Remove)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for author in authors %}
+            <tr>
+                <td>{{ author.last_name }}</td>
+                <td>{{ author.first_name }}</td>
+                <td>{{ author.books.count }}</td>
+                <td>
+                    <div class="form-check">
+                        <input class="form-check-input primary-radio" type="radio" name="primary_author"
+                               value="{{ author.id }}" form="consolidate-form" id="primary_{{ author.id }}">
+                    </div>
+                </td>
+                <td>
+                    <div class="form-check">
+                        <input class="form-check-input secondary-radio" type="radio" name="secondary_author"
+                               value="{{ author.id }}" form="consolidate-form" id="secondary_{{ author.id }}">
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No authors found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const primaryRadios = document.querySelectorAll('.primary-radio');
+    const secondaryRadios = document.querySelectorAll('.secondary-radio');
+    const consolidateBtn = document.getElementById('consolidate-btn');
+    const form = document.getElementById('consolidate-form');
+
+    // Function to check if both radio buttons are selected
+    function checkSelections() {
+        let primarySelected = false;
+        let secondarySelected = false;
+        let primaryValue = null;
+        let secondaryValue = null;
+
+        // Check if primary is selected
+        primaryRadios.forEach(radio => {
+            if (radio.checked) {
+                primarySelected = true;
+                primaryValue = radio.value;
+            }
+        });
+
+        // Check if secondary is selected
+        secondaryRadios.forEach(radio => {
+            if (radio.checked) {
+                secondarySelected = true;
+                secondaryValue = radio.value;
+            }
+        });
+
+        // Enable button only if both are selected and are different
+        if (primarySelected && secondarySelected && primaryValue !== secondaryValue) {
+            consolidateBtn.disabled = false;
+        } else {
+            consolidateBtn.disabled = true;
+        }
+    }
+
+    // Add event listeners to all radio buttons
+    primaryRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            // Disable the corresponding secondary radio
+            document.getElementById('secondary_' + this.value).disabled = true;
+
+            // Enable all other secondary radios
+            secondaryRadios.forEach(secRadio => {
+                if (secRadio.value !== this.value) {
+                    secRadio.disabled = false;
+                }
+            });
+
+            checkSelections();
+        });
+    });
+
+    secondaryRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            // Disable the corresponding primary radio
+            document.getElementById('primary_' + this.value).disabled = true;
+
+            // Enable all other primary radios
+            primaryRadios.forEach(primRadio => {
+                if (primRadio.value !== this.value) {
+                    primRadio.disabled = false;
+                }
+            });
+
+            checkSelections();
+        });
+    });
+
+    // Add form submit handler with confirmation
+    form.addEventListener('submit', function(event) {
+        if (!confirm('Are you sure you want to consolidate these authors? This cannot be undone.')) {
+            event.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views import HomePageView, AboutPageView, BooksByCategoryView
 from . import views
+from .views import AboutPageView, BooksByCategoryView, HomePageView
 
 urlpatterns = [
     path("", views.category_list_sorted_by_year, name="home"),
@@ -106,4 +106,9 @@ urlpatterns = [
     ),
     path("search/", views.search_view, name="search"),
     path("search/autocomplete/", views.search_autocomplete, name="search_autocomplete"),
+
+    #consolidate duplicate authors
+    path('authors/', views.AuthorListView.as_view(), name='author_list'),
+    path('authors/consolidate/process/', views.AuthorConsolidateView.as_view(), name='author_consolidate_process'),
+
 ]

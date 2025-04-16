@@ -1,48 +1,37 @@
-from django.views.generic import TemplateView
-from django.shortcuts import render, get_object_or_404, Http404, redirect
-from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import (
-    Category,
-    UserBookCategory,
-    BookCategory,
-    Book,
-    Library,
-    UserBook,
-    UserFavoriteLibrary,
-    AwardYearLike,
-    AwardLevel,
-    Author,
-    Illustrator,
-)
-import uuid
-import re
-from django.utils.timezone import now, timedelta
-from django.core.mail import send_mail
-from collections import defaultdict
-from django.http import JsonResponse, HttpResponse
-from django.views.decorators.http import require_POST
-from django.db.models import Count, Sum
-from django.contrib.auth.mixins import LoginRequiredMixin
-import json
-import requests
-from django.contrib.admin.views.decorators import staff_member_required
-from django.db.models import Q
-from django.views.decorators.csrf import csrf_exempt
-from .forms import BookCategoryForm
-from django.template.loader import render_to_string
-
-import os
-from bs4 import BeautifulSoup
-from django.urls import path
 import csv
-from django.contrib import messages
+import json
+import os
+import re
+import uuid
+from collections import defaultdict
 
-from django.core.paginator import Paginator
+import requests
+from bs4 import BeautifulSoup
 from django.conf import settings
-
+from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.mail import send_mail
+from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models import Count, Q, Sum
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import Http404, get_object_or_404, redirect, render
+from django.template.loader import render_to_string
+from django.urls import path, reverse
 from django.utils.text import slugify
+from django.utils.timezone import now, timedelta
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.views.generic import TemplateView
 from unidecode import unidecode
+
+from .forms import BookCategoryForm
+from .models import (Author, AwardLevel, AwardYearLike, Book, BookCategory,
+                     Category, Illustrator, Library, UserBook,
+                     UserBookCategory, UserFavoriteLibrary)
 
 
 class HomePageView(TemplateView):
@@ -1284,3 +1273,54 @@ def update_book_from_api(request, pk):
             return HttpResponse(f"Error: {str(e)}", status=400)
 
     return HttpResponse("Invalid request", status=400)
+
+
+
+class AuthorListView(View):
+    def get(self, request):
+        # Get all authors ordered by last_name, then first_name
+        authors = Author.objects.all().order_by('last_name', 'first_name')
+        return render(request, 'pages/authors/author_list.html', {'authors': authors})
+
+
+class AuthorConsolidateView(View):
+    @transaction.atomic
+    def post(self, request):
+        primary_author_id = request.POST.get('primary_author')
+        secondary_author_id = request.POST.get('secondary_author')
+
+        # Validate inputs
+        if not primary_author_id or not secondary_author_id:
+            messages.error(request, "Both primary and secondary authors must be selected.")
+            return redirect('author_list')
+
+        if primary_author_id == secondary_author_id:
+            messages.error(request, "Primary and secondary authors must be different.")
+            return redirect('author_list')
+
+        # Get author objects
+        try:
+            primary_author = Author.objects.get(pk=primary_author_id)
+            secondary_author = Author.objects.get(pk=secondary_author_id)
+        except Author.DoesNotExist:
+            messages.error(request, "One or both of the selected authors do not exist.")
+            return redirect('author_list')
+
+        # Get all books by the secondary author
+        secondary_books = Book.objects.filter(author=secondary_author)
+
+        # Update all books to use the primary author
+        for book in secondary_books:
+            book.author = primary_author
+            book.save()
+
+        # Delete the secondary author
+        secondary_author.delete()
+
+        messages.success(
+            request,
+            f"Successfully consolidated {secondary_author} into {primary_author}. "
+            f"{secondary_books.count()} books were updated."
+        )
+
+        return redirect('author_list')

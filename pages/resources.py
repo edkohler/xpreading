@@ -1,5 +1,6 @@
 from import_export import resources
-from .models import Library, Book, Author, BookCategory, Illustrator, Category
+
+from .models import Author, Book, BookCategory, Category, Illustrator, Library
 
 
 class LibraryResource(resources.ModelResource):
