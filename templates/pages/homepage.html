@@ -13,6 +13,11 @@
 
 </ul>
 
+<main class="container">
+        <div class="row">
+            <!-- Blog Posts -->
+            <div class="col-md-8">
+
 <h2>Get Started</h2>
 <ol>
 <li><a href="{%url 'account_signup' %}">Sign up</a> for an account (or <a href="{%url 'account_login'%}">login).</li>
@@ -38,4 +43,45 @@
 <hr>
 
 We aim to help motivated readers stay interested through project based reading. Find a book you like? Find out what awards it has won and use that as your path to more interesting reads.
+</div>
+<div class="col-md-4">
+
+<nav id="sidebar">
+<div class="container my-1">
+        <h3 class="mb-1">Most Read Books</h3>
+
+        {% if completed_books %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Rank</th>
+                            <th scope="col">Book Title</th>
+                            <th scope="col">Author</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for book in completed_books %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td><a href="{% url 'book_detail' book.book.slug %}">{{ book.book.title }}</a></td>
+                            <td>{{ book.book.author }}</td>
+
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                No completed books found in the database.
+            </div>
+        {% endif %}
+    </div>
+</nav>
+
+</div>
+</main>
+</container>
 {% endblock content %}

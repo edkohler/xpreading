@@ -128,13 +128,21 @@ def category_list_sorted_by_year(request):
         "bookcategory_set__book", "bookcategory_set__award_level"
     )
 
+    completed_books = (
+    UserBook.objects.all()
+    .annotate(book_count=Count('book'))  # Count occurrences
+    .order_by('-book_count')[:10]  # Order by count and limit to 10
+
+    )
+
     # Organize categories by year in descending order
     sorted_categories = {}
     for category in categories:
         book_categories = category.bookcategory_set.all().order_by("-year")
         sorted_categories[category] = book_categories
 
-    context = {"sorted_categories": sorted_categories}
+    context = {"sorted_categories": sorted_categories,
+               "completed_books": completed_books}
     return render(request, "pages/homepage.html", context)
 
 
@@ -1275,8 +1283,7 @@ def update_book_from_api(request, pk):
     return HttpResponse("Invalid request", status=400)
 
 
-
-class AuthorListView(View):
+class AuthorListView(LoginRequiredMixin, View):
     def get(self, request):
         # Get all authors ordered by last_name, then first_name
         authors = Author.objects.all().order_by('last_name', 'first_name')

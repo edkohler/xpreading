@@ -36,7 +36,7 @@
 <ul>
   {% for book_category in categories %}
     <li>
-      <a href="{% url 'category_detail' book_category.category.slug %}">{{ book_category.category.name }}</a>
+      <a href="{% url 'category_detail' book_category.category.slug %}#{{ book_category.year }}">{{ book_category.category.name }}</a>
       ({{ book_category.year }})
       {% if book_category.award_level %}
         - {{ book_category.award_level.name }}
