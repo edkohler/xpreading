@@ -121,6 +121,14 @@ def mark_book_unread(request, book_id):
     )
     return HttpResponse(html)
 
+def completed_books_lookup(books_to_list):
+    return UserBook.objects.all().annotate(book_count=Count('book')).order_by('-book_count')[:books_to_list]
+
+
+def most_completed_books_view(request):
+    most_completed_books = completed_books_lookup(25)
+    return render(request, 'pages/most_completed_books.html', {'most_completed_books': most_completed_books})
+
 
 def category_list_sorted_by_year(request):
     # Fetch all categories with their associated BookCategory objects
@@ -128,12 +136,7 @@ def category_list_sorted_by_year(request):
         "bookcategory_set__book", "bookcategory_set__award_level"
     )
 
-    completed_books = (
-    UserBook.objects.all()
-    .annotate(book_count=Count('book'))  # Count occurrences
-    .order_by('-book_count')[:10]  # Order by count and limit to 10
-
-    )
+    completed_books = completed_books_lookup(10)
 
     # Organize categories by year in descending order
     sorted_categories = {}

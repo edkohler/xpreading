@@ -112,5 +112,5 @@ urlpatterns = [
     path('authors/consolidate/process/', views.AuthorConsolidateView.as_view(), name='author_consolidate_process'),
 
     #most completed books sidebar
-    #path('reports/most-completed-books/', views.most_completed_books, name='most_completed_books'),
+    path('most_completed_books/', views.most_completed_books_view, name='most_completed_books'),
 ]
