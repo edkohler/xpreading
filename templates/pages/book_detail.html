@@ -31,7 +31,7 @@
 
   </div>
 
-  <hr>
+  <hr/>
 <h2>Awards</h2>
 <ul>
   {% for book_category in categories %}
@@ -84,6 +84,29 @@
   {% endif %}
   </tbody>
 </table>
+
+
+<hr/>
+
+{% if other_books_by_author %}
+<div class="other-books-section">
+    <h3>More Award Winning Books by {{ book.author }}</h3>
+    <div class="other-books-list">
+        {% for other_book in other_books_by_author %}
+            <div class="other-book-item">
+                <a href="{% url 'book_detail' other_book.slug %}">
+                    {% if other_book.image %}
+                        <img src="{{ other_book.image.url}}" alt="{{ other_book.title }}" class="other-book-cover" style="max-width: 100px;">
+                    {% else %}
+                        <div class="no-cover">No Cover</div>
+                    {% endif %}
+                    <h4>{{ other_book.title }}</h4>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 
 
 

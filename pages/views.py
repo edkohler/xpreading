@@ -126,7 +126,7 @@ def completed_books_lookup(books_to_list):
 
 
 def most_completed_books_view(request):
-    most_completed_books = completed_books_lookup(25)
+    most_completed_books = completed_books_lookup(100)
     return render(request, 'pages/most_completed_books.html', {'most_completed_books': most_completed_books})
 
 
@@ -172,6 +172,9 @@ def book_detail(request, book_slug):
     favorite_libraries = []
     other_libraries = []
 
+    other_books_by_author = Book.objects.filter(author=book.author).exclude(id=book.id)
+
+
     if request.user.is_authenticated:
         favorite_library_ids = UserFavoriteLibrary.objects.filter(
             user=request.user
@@ -195,6 +198,7 @@ def book_detail(request, book_slug):
         "libraries": libraries,
         "favorite_libraries": favorite_libraries,
         "user_book": user_book,
+        "other_books_by_author": other_books_by_author,
     }
     return render(request, "pages/book_detail.html", context)
 
