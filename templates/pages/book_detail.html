@@ -99,8 +99,8 @@
                         <img src="{{ other_book.image.url}}" alt="{{ other_book.title }}" class="other-book-cover" style="max-width: 100px;">
                     {% else %}
                         <div class="no-cover">No Cover</div>
-                    {% endif %}
-                    <h4>{{ other_book.title }}</h4>
+                    {% endif %}</a> 
+                    <a href="{% url 'book_detail' other_book.slug %}">{{ other_book.title }}</a>
                 </a>
             </div>
         {% endfor %}

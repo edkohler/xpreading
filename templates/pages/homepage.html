@@ -46,41 +46,41 @@ We aim to help motivated readers stay interested through project based reading. 
 </div>
 <div class="col-md-5">
 
-<nav id="sidebar">
-<div class="container my-2">
-        <h3 class="mb-2">Most Read Books</h3>
+        <nav id="sidebar">
+                <div class="container my-2">
+                        <h3 class="mb-2">Most Read Books</h3>
 
-        {% if completed_books %}
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th scope="col">Rank</th>
-                            <th scope="col">Title</th>
-                            <th scope="col">Author</th>
+                        {% if completed_books %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Rank</th>
+                                            <th scope="col">Title</th>
+                                            <th scope="col">Author</th>
 
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for book in completed_books %}
-                        <tr>
-                            <td class="text-nowrap top">{{ forloop.counter }}. {%if book.book.image%}<a href="{% url 'book_detail' book.book.slug %}"><img src="{{ book.book.image.url }}" alt="{{ book.book.title }}" style="max-width: 50px;"/></a>{%endif%}</td>
-                            <td><a href="{% url 'book_detail' book.book.slug %}">{{ book.book.title }}</a></td>
-                            <td>{{ book.book.author }}</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for book in completed_books %}
+                                        <tr>
+                                            <td class="text-nowrap top">{{ forloop.counter }}. {%if book.image%}<a href="{% url 'book_detail' book.slug %}"><img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-width: 50px;"/></a>{%endif%}</td>
+                                            <td><a href="{% url 'book_detail' book.slug %}">{{ book.title }}</a></td>
+                                            <td>{{ book.author }}</td>
 
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <a href="{%url 'most_completed_books'%}">View Top 100</a>
-            </div>
-        {% else %}
-            <div class="alert alert-info">
-                No completed books found in the database.
-            </div>
-        {% endif %}
-    </div>
-</nav>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <a href="{%url 'most_completed_books'%}">View Top 100</a>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                No completed books found in the database.
+                            </div>
+                        {% endif %}
+                    </div>
+                </nav>
 
 </div>
 </main>

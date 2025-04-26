@@ -121,8 +121,13 @@ def mark_book_unread(request, book_id):
     )
     return HttpResponse(html)
 
+
 def completed_books_lookup(books_to_list):
-    return UserBook.objects.all().annotate(book_count=Count('book')).order_by('-book_count')[:books_to_list]
+    return (
+        Book.objects.filter(userbook__isnull=False)
+        .annotate(user_count=Count('userbook'))
+        .order_by('-user_count')[:books_to_list]
+    )
 
 
 def most_completed_books_view(request):
