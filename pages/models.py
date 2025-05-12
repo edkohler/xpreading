@@ -27,7 +27,7 @@ class Category(models.Model):
     new_books_release_day_of_year = models.IntegerField(
         blank=True, null=True
     )  # Day of the year when new books are released
-    slug = models.SlugField(unique=True, blank=True)
+    slug = models.SlugField(max_length=256, unique=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -87,7 +87,7 @@ class Book(models.Model):
     page_count = models.IntegerField(blank=True, null=True)
     bibliocommons_id = models.CharField(max_length=20, blank=True, null=True)
     asin = models.CharField(max_length=20, blank=True, null=True)
-    slug = models.SlugField(blank=True, unique=True)
+    slug = models.SlugField(max_length=256, blank=True, unique=True)
     image = models.ImageField(
         upload_to=upload_to_book_images,  # Use the custom function
         storage=MediaStorage(),
