@@ -27,6 +27,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 from unidecode import unidecode
+from django.core.cache import cache
+from django.views.decorators.cache import cache_page
 
 from .forms import BookCategoryForm
 from .models import (Author, AwardLevel, AwardYearLike, Book, BookCategory,
@@ -123,24 +125,31 @@ def mark_book_unread(request, book_id):
 
 
 def completed_books_lookup(books_to_list):
-    return (
-        Book.objects.filter(userbook__isnull=False)
-        .annotate(user_count=Count('userbook'))
-        .order_by('-user_count')[:books_to_list]
-    )
+    cache_key = f'completed_books_{books_to_list}'
+    result = cache.get(cache_key)
+
+    if result is None:
+        result = list(
+            Book.objects.filter(userbook__isnull=False)
+            .annotate(user_count=Count('userbook'))
+            .order_by('-user_count')[:books_to_list]
+        )
+        # Cache for 1 hour 
+        cache.set(cache_key, result, 3600)
+
+    return result
 
 
+@cache_page(60 * 60)  # Cache for an hour
 def most_completed_books_view(request):
     most_completed_books = completed_books_lookup(100)
     return render(request, 'pages/most_completed_books.html', {'most_completed_books': most_completed_books})
 
-
+@cache_page(60 * 360)
 def category_list_sorted_by_year(request):
-    # Fetch all categories with their associated BookCategory objects
     categories = Category.objects.all().prefetch_related(
         "bookcategory_set__book", "bookcategory_set__award_level"
     )
-
     completed_books = completed_books_lookup(10)
 
     # Organize categories by year in descending order
@@ -149,8 +158,11 @@ def category_list_sorted_by_year(request):
         book_categories = category.bookcategory_set.all().order_by("-year")
         sorted_categories[category] = book_categories
 
-    context = {"sorted_categories": sorted_categories,
-               "completed_books": completed_books}
+    context = {
+        "sorted_categories": sorted_categories,
+        "completed_books": completed_books
+    }
+
     return render(request, "pages/homepage.html", context)
 
 
