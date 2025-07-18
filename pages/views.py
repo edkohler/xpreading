@@ -5,6 +5,9 @@ import re
 import uuid
 from collections import defaultdict
 
+import logging
+import traceback
+
 import requests
 from bs4 import BeautifulSoup
 from django.conf import settings
@@ -30,10 +33,13 @@ from unidecode import unidecode
 from django.core.cache import cache
 from django.views.decorators.cache import cache_page
 
+
 from .forms import BookCategoryForm
 from .models import (Author, AwardLevel, AwardYearLike, Book, BookCategory,
                      Category, Illustrator, Library, UserBook,
                      UserBookCategory, UserFavoriteLibrary)
+
+logger = logging.getLogger(__name__)
 
 
 class HomePageView(TemplateView):
@@ -134,7 +140,7 @@ def completed_books_lookup(books_to_list):
             .annotate(user_count=Count('userbook'))
             .order_by('-user_count')[:books_to_list]
         )
-        # Cache for 1 hour 
+        # Cache for 1 hour
         cache.set(cache_key, result, 3600)
 
     return result
@@ -677,7 +683,7 @@ def incomplete_books_view(request):
         | Q(bibliocommons_id__isnull=True)
         | Q(bibliocommons_id="")
         | Q(page_count__isnull=True)
-    )
+    ).order_by('-id')
 
     return render(request, "pages/incomplete_books.html", {"books": books})
 
@@ -896,6 +902,20 @@ def normalize_text(text):
     """Normalize text by converting to lowercase and removing diacritics."""
     return unidecode(text.strip().lower())
 
+def truncate_to_nearest_space(text, max_length=50):
+    """Truncate text to the nearest space not exceeding max_length characters."""
+    if len(text) <= max_length:
+        return text
+
+    # Find the last space before the max_length limit
+    last_space_pos = text[:max_length+1].rfind(' ')
+
+    # If no space found, just truncate at max_length
+    if last_space_pos == -1:
+        return text[:max_length]
+
+    return text[:last_space_pos]
+
 
 def upload_book_categories(request):
     if request.method == "POST" and request.FILES.get("csv_file"):
@@ -950,6 +970,8 @@ def upload_book_categories(request):
                     # Book title handling - keep original formatting
                     title_original = row["title"].strip()
                     title_normalized = normalize_text(row["title"])
+                    # Truncate the normalized title to nearest space under 50 chars
+                    title_normalized = truncate_to_nearest_space(title_normalized, 50)
                     base_slug = slugify(title_normalized)
 
                     # Handle existing or new book

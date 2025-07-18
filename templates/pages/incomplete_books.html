@@ -18,7 +18,7 @@
     <tbody>
         {% for book in books %}
         <tr>
-            <td><a href="https://www.amazon.com/s?k={{ book.title }}+{{ book.author }}&i=stripbooks" target="_blank">{{ book.title }}</a></td>
+            <td><a href="https://www.amazon.com/s?k={{ book.title|urlencode }}+{{ book.author }}&i=stripbooks" target="_blank">{{ book.title }}</a></td>
             <td>{{ book.author }}</td>
             <td>
                 <form hx-post="{% url 'update_book_field' book.pk 'asin' %}" hx-trigger="change">
@@ -34,7 +34,7 @@
                 <form hx-post="{% url 'update_book_field' book.pk 'bibliocommons_id' %}" hx-trigger="change">
                     <input type="text" name="value" value="{{ book.bibliocommons_id|default:'' }}" placeholder="Enter Bibliocommons ID" />
                 </form>
-                | <a href="https://hclib.bibliocommons.com/v2/search?query={{ book.title }}+{{ book.author }}&searchType=smart&f_PRIMARY_LANGUAGE=eng" target="_blank">Biblio</a>
+                | <a href="https://hclib.bibliocommons.com/v2/search?query={{ book.title|urlencode }}+{{ book.author }}&searchType=smart&f_PRIMARY_LANGUAGE=eng" target="_blank">Biblio</a>
             </td>
             <td>
                 {% if book.image %}
