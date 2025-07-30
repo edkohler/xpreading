@@ -1331,9 +1331,29 @@ def update_book_from_api(request, pk):
 
 class AuthorListView(LoginRequiredMixin, View):
     def get(self, request):
-        # Get all authors ordered by last_name, then first_name
-        authors = Author.objects.all().order_by('last_name', 'first_name')
-        return render(request, 'pages/authors/author_list.html', {'authors': authors})
+        # Find first names that appear more than once
+        duplicate_first_names = Author.objects.values('first_name').annotate(
+            count=Count('first_name')
+        ).filter(count__gt=1).values_list('first_name', flat=True)
+        # Find last names that appear more than once
+        duplicate_last_names = Author.objects.values('last_name').annotate(
+            count=Count('last_name')
+        ).filter(count__gt=1).values_list('last_name', flat=True)
+        # Filter authors to only include those with duplicate first OR last names
+        authors = Author.objects.filter(
+            Q(first_name__in=duplicate_first_names) |
+            Q(last_name__in=duplicate_last_names)
+        ).order_by('last_name', 'first_name')
+
+        # Convert to list and add highlighting flag for consecutive same first names
+        authors_list = list(authors)
+        for i, author in enumerate(authors_list):
+            if i > 0 and author.first_name == authors_list[i-1].first_name:
+                author.highlight_consecutive = True
+            else:
+                author.highlight_consecutive = False
+
+        return render(request, 'pages/authors/author_list.html', {'authors': authors_list})
 
 
 class AuthorConsolidateView(View):

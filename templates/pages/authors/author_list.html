@@ -46,7 +46,7 @@
         </thead>
         <tbody>
             {% for author in authors %}
-            <tr>
+            <tr{% if author.highlight_consecutive %} style="background-color: yellow;"{% endif %}>
                 <td>{{ author.last_name }}</td>
                 <td>{{ author.first_name }}</td>
                 <td>{{ author.books.count }}</td>
