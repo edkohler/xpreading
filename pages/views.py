@@ -1208,7 +1208,7 @@ def lookup_book(request, pk):
         # Extract relevant information from search results
         results = [
             {"title": item["title"], "asin": item["asin"], "image": item["image"]}
-            for item in data.get("search_results", [])
+            for item in data.get("search_results", [])[:4]  # Slice for first four results
         ]
 
         # Return the rendered HTML directly instead of wrapping in JSON
