@@ -3,7 +3,8 @@
 {% block title %}XP Reading - Student Reading List Challenges{% endblock %}
 
 {% block content %}
-
+<div class="row">
+<div class="col-md-7">
 <h1>XP Reading</h1>
 <ul>
 <li>Find great lists of award winning books to read.</li>
@@ -13,42 +14,7 @@
 
 </ul>
 
-<main class="container">
-        <div class="row">
-            <!-- Blog Posts -->
-            <div class="col-md-7">
-
-<h2>Get Started</h2>
-<ol>
-<li><a href="{%url 'account_signup' %}">Sign up</a> for an account (or <a href="{%url 'account_login'%}">login).</li>
-<li>Select a <a href="{%url 'award_year_list' %}">book list or lists</a> that interest you.</li>
-<li>Mark the books on your lists that you've already read as read.</li>
-<li>Select your <a href="{%url 'library_list'%}">local library or libraries</a>. We'll use this to check what's in stock.</li>
-<li><a href="{%url 'my_books'%}">Track your progress</a> on book list challenges.</li>
-<li>Review your <a href="{%url 'my_to_read_list'%}">to-read list</a>, use <strong>Power Search</strong> to look up which books from your reading list are available at each library branch in your community.</li>
-</ol>
-<hr/>
-<h2>Book Categories</h2>
-<div class="row">
-{% for category, book_categories in sorted_categories.items %}
-
-
-
-        <h5 class="card-title"><a href="{% url 'category_detail' category.slug %}">{{ category.name }}</a></h5>
-        <p class="card-text">{{ category.description|truncatechars:240}}</p>
-
-{% endfor %}
-</div>
-
-<hr>
-
-We aim to help motivated readers stay interested through project based reading. Find a book you like? Find out what awards it has won and use that as your path to more interesting reads.
-</div>
-<div class="col-md-5">
-
-        <nav id="sidebar">
-                <div class="container my-2">
-                        <h3 class="mb-2">Most Read Books</h3>
+ <h3 class="mb-2">Most Read Books</h3>
 
                         {% if completed_books %}
                             <div class="table-responsive">
@@ -80,9 +46,50 @@ We aim to help motivated readers stay interested through project based reading. 
                             </div>
                         {% endif %}
                     </div>
+
+                    <div class="col-md-5">
+
+        <nav id="sidebar">
+                <div class="container my-2">
+                        <h2>Get Started</h2>
+<ol>
+<li><a href="{%url 'account_signup' %}">Sign up</a> for an account (or <a href="{%url 'account_login'%}">login).</li>
+<li>Select a <a href="{%url 'award_year_list' %}">book list or lists</a> that interest you.</li>
+<li>Mark the books on your lists that you've already read as read.</li>
+<li>Select your <a href="{%url 'library_list'%}">local library or libraries</a>. We'll use this to check what's in stock.</li>
+<li><a href="{%url 'my_books'%}">Track your progress</a> on book list challenges.</li>
+<li>Review your <a href="{%url 'my_to_read_list'%}">to-read list</a>, use <strong>Power Search</strong> to look up which books from your reading list are available at each library branch in your community.</li>
+</ol>
+<hr/>
                 </nav>
 
 </div>
+
+                </div>
+
+
+        <div class="row">
+            <!-- Blog Posts -->
+            <div class="col-md-7">
+
+
+<h2>Book Categories</h2>
+<div class="row">
+{% for category, book_categories in sorted_categories.items %}
+
+
+
+        <h5 class="card-title"><a href="{% url 'category_detail' category.slug %}">{{ category.name }}</a></h5>
+        <p class="card-text">{{ category.description|truncatechars:240}}</p>
+
+{% endfor %}
+</div>
+
+<hr>
+
+We aim to help motivated readers stay interested through project based reading. Find a book you like? Find out what awards it has won and use that as your path to more interesting reads.
+</div>
+
 </main>
 </container>
 {% endblock content %}
