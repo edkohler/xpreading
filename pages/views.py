@@ -29,10 +29,11 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
-from unidecode import unidecode
 from django.core.cache import cache
 from django.views.decorators.cache import cache_page
 
+import unicodedata
+import unidecode
 
 from .forms import BookCategoryForm
 from .models import (Author, AwardLevel, AwardYearLike, Book, BookCategory,
@@ -60,7 +61,7 @@ def category_detail(request, slug):
     books = (
         BookCategory.objects.filter(category=category)
         .select_related("book", "award_level")
-        .order_by("-year")
+        .order_by("-year","award_level")
     )
 
     # Get the UserBook objects for the current user
@@ -917,98 +918,252 @@ def truncate_to_nearest_space(text, max_length=50):
     return text[:last_space_pos]
 
 
+def normalize_text_advanced(text):
+    """
+    Advanced text normalization for better Unicode matching
+    """
+    if not text:
+        return ""
+
+    # Strip whitespace
+    text = text.strip()
+
+    # Normalize Unicode (NFD = decomposed form)
+    text = unicodedata.normalize('NFD', text)
+
+    # Remove diacritical marks (accents, etc.)
+    text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
+
+    # Convert to lowercase
+    text = text.lower()
+
+    return text
+
+def normalize_text_transliterate(text):
+    """
+    Alternative normalization using transliteration to ASCII
+    """
+    if not text:
+        return ""
+
+    # Strip and convert to ASCII equivalents
+    text = text.strip()
+    text = unidecode.unidecode(text).lower()
+
+    return text
+
+def find_author_flexible(first_name, last_name):
+    """
+    Flexible author search using multiple normalization strategies
+    """
+    # Original values
+    first_original = first_name.strip()
+    last_original = last_name.strip()
+
+    # Multiple normalization approaches
+    first_normalized = normalize_text_advanced(first_original)
+    last_normalized = normalize_text_advanced(last_original)
+
+    first_transliterated = normalize_text_transliterate(first_original)
+    last_transliterated = normalize_text_transliterate(last_original)
+
+    # Try to find existing author using multiple strategies
+    author = None
+
+    # Strategy 1: Exact case-insensitive match
+    try:
+        author = Author.objects.get(
+            first_name__iexact=first_original,
+            last_name__iexact=last_original
+        )
+        return author, first_original, last_original
+    except (Author.DoesNotExist, Author.MultipleObjectsReturned):
+        pass
+
+    # Strategy 2: Unicode normalized match
+    try:
+        # Search for authors where normalized names match
+        candidates = Author.objects.all()
+        for candidate in candidates:
+            candidate_first_norm = normalize_text_advanced(candidate.first_name)
+            candidate_last_norm = normalize_text_advanced(candidate.last_name)
+
+            if (candidate_first_norm == first_normalized and
+                candidate_last_norm == last_normalized):
+                return candidate, first_original, last_original
+    except:
+        pass
+
+    # Strategy 3: Transliterated ASCII match
+    try:
+        candidates = Author.objects.all()
+        for candidate in candidates:
+            candidate_first_trans = normalize_text_transliterate(candidate.first_name)
+            candidate_last_trans = normalize_text_transliterate(candidate.last_name)
+
+            if (candidate_first_trans == first_transliterated and
+                candidate_last_trans == last_transliterated):
+                return candidate, first_original, last_original
+    except:
+        pass
+
+    # If no match found, return None to create new author
+    return None, first_original, last_original
+
+
+def find_illustrator_flexible(first_name, last_name):
+    """
+    Flexible illustrator search (same logic as author search)
+    """
+    # Original values
+    first_original = first_name.strip()
+    last_original = last_name.strip()
+
+    # Multiple normalization approaches
+    first_normalized = normalize_text_advanced(first_original)
+    last_normalized = normalize_text_advanced(last_original)
+
+    first_transliterated = normalize_text_transliterate(first_original)
+    last_transliterated = normalize_text_transliterate(last_original)
+
+    # Try to find existing illustrator using multiple strategies
+    illustrator = None
+
+    # Strategy 1: Exact case-insensitive match
+    try:
+        illustrator = Illustrator.objects.get(
+            first_name__iexact=first_original,
+            last_name__iexact=last_original
+        )
+        return illustrator, first_original, last_original
+    except (Illustrator.DoesNotExist, Illustrator.MultipleObjectsReturned):
+        pass
+
+    # Strategy 2: Unicode normalized match
+    try:
+        candidates = Illustrator.objects.all()
+        for candidate in candidates:
+            candidate_first_norm = normalize_text_advanced(candidate.first_name)
+            candidate_last_norm = normalize_text_advanced(candidate.last_name)
+
+            if (candidate_first_norm == first_normalized and
+                candidate_last_norm == last_normalized):
+                return candidate, first_original, last_original
+    except:
+        pass
+
+    # Strategy 3: Transliterated ASCII match
+    try:
+        candidates = Illustrator.objects.all()
+        for candidate in candidates:
+            candidate_first_trans = normalize_text_transliterate(candidate.first_name)
+            candidate_last_trans = normalize_text_transliterate(candidate.last_name)
+
+            if (candidate_first_trans == first_transliterated and
+                candidate_last_trans == last_transliterated):
+                return candidate, first_original, last_original
+    except:
+        pass
+
+    return None, first_original, last_original
+
+
 def upload_book_categories(request):
     if request.method == "POST" and request.FILES.get("csv_file"):
         csv_file = request.FILES["csv_file"]
         try:
-            with transaction.atomic():  # Wrap the entire operation in a transaction
-                decoded_file = csv_file.read().decode("utf-8").splitlines()
+            with transaction.atomic():
+                # Ensure proper UTF-8 decoding
+                decoded_file = csv_file.read().decode("utf-8-sig").splitlines()  # utf-8-sig handles BOM
                 reader = csv.DictReader(decoded_file, delimiter="\t")
 
                 for row in reader:
-                    # Author handling - keep original formatting
+                    # Enhanced Author handling
                     author = None
                     if row["first_name"].strip() and row["last_name"].strip():
-                        # Use normalized versions for lookup
-                        first_name_normalized = normalize_text(row["first_name"])
-                        last_name_normalized = normalize_text(row["last_name"])
-                        # But keep original formatting for creation
-                        first_name_original = row["first_name"].strip()
-                        last_name_original = row["last_name"].strip()
-
-                        author, _ = Author.objects.get_or_create(
-                            first_name__iexact=first_name_normalized,
-                            last_name__iexact=last_name_normalized,
-                            defaults={
-                                "first_name": first_name_original,
-                                "last_name": last_name_original,
-                            },
+                        author_result, first_orig, last_orig = find_author_flexible(
+                            row["first_name"], row["last_name"]
                         )
 
-                    # Illustrator handling - keep original formatting
+                        if author_result:
+                            author = author_result
+                        else:
+                            # Create new author
+                            author = Author.objects.create(
+                                first_name=first_orig,
+                                last_name=last_orig,
+                            )
+
+                    # Enhanced Illustrator handling (similar logic)
                     illustrator = None
-                    if (
-                        row["illustrator_first_name"].strip()
-                        and row["illustrator_last_name"].strip()
-                    ):
-                        # Use normalized versions for lookup
-                        first_name_normalized = normalize_text(row["illustrator_first_name"])
-                        last_name_normalized = normalize_text(row["illustrator_last_name"])
-                        # But keep original formatting for creation
-                        first_name_original = row["illustrator_first_name"].strip()
-                        last_name_original = row["illustrator_last_name"].strip()
+                    if (row["illustrator_first_name"].strip() and
+                        row["illustrator_last_name"].strip()):
 
-                        illustrator, _ = Illustrator.objects.get_or_create(
-                            first_name__iexact=first_name_normalized,
-                            last_name__iexact=last_name_normalized,
-                            defaults={
-                                "first_name": first_name_original,
-                                "last_name": last_name_original,
-                            },
+                        # Apply same flexible matching for illustrators
+                        illustrator_result, first_orig, last_orig = find_illustrator_flexible(
+                            row["illustrator_first_name"], row["illustrator_last_name"]
                         )
 
-                    # Book title handling - keep original formatting
+                        if illustrator_result:
+                            illustrator = illustrator_result
+                        else:
+                            illustrator = Illustrator.objects.create(
+                                first_name=first_orig,
+                                last_name=last_orig,
+                            )
+
+                    # Book title handling - enhanced for Unicode
                     title_original = row["title"].strip()
-                    title_normalized = normalize_text(row["title"])
-                    # Truncate the normalized title to nearest space under 50 chars
+                    title_normalized = normalize_text_advanced(row["title"])
                     title_normalized = truncate_to_nearest_space(title_normalized, 50)
-                    base_slug = slugify(title_normalized)
+                    base_slug = slugify(title_normalized, allow_unicode=True)  # Allow Unicode in slugs
 
                     # Handle existing or new book
                     try:
-                        # Try to find book by normalized title
-                        book = Book.objects.get(title__iexact=title_normalized)
+                        # Enhanced book search
+                        book = None
 
-                        # Update book's author/illustrator if not already set
-                        if author and not book.author:
-                            book.author = author
-                        if illustrator and not book.illustrator:
-                            book.illustrator = illustrator
-                        book.save()
+                        # Try exact match first
+                        try:
+                            book = Book.objects.get(title__iexact=title_original)
+                        except (Book.DoesNotExist, Book.MultipleObjectsReturned):
+                            # Try normalized match
+                            candidates = Book.objects.all()
+                            for candidate in candidates:
+                                if normalize_text_advanced(candidate.title) == title_normalized:
+                                    book = candidate
+                                    break
 
-                    except Book.DoesNotExist:
-                        # Create new book with unique slug
-                        counter = 1
-                        slug = base_slug
-                        while Book.objects.filter(slug=slug).exists():
-                            slug = f"{base_slug}-{counter}"
-                            counter += 1
+                        if book:
+                            # Update book's author/illustrator if not already set
+                            if author and not book.author:
+                                book.author = author
+                            if illustrator and not book.illustrator:
+                                book.illustrator = illustrator
+                            book.save()
+                        else:
+                            # Create new book with unique slug
+                            counter = 1
+                            slug = base_slug
+                            while Book.objects.filter(slug=slug).exists():
+                                slug = f"{base_slug}-{counter}"
+                                counter += 1
 
-                        book = Book.objects.create(
-                            title=title_original,  # Use original title formatting
-                            slug=slug,
-                            author=author,
-                            illustrator=illustrator,
-                        )
+                            book = Book.objects.create(
+                                title=title_original,
+                                slug=slug,
+                                author=author,
+                                illustrator=illustrator,
+                            )
 
-                    except Book.MultipleObjectsReturned:
+                    except Exception as book_error:
                         messages.error(
                             request,
-                            f"Multiple books found with title '{title_original}'. Please resolve duplicates.",
+                            f"Error processing book '{title_original}': {str(book_error)}",
                         )
                         continue
 
-                    # Get category and award level
+                    # Get category and award level (unchanged)
                     try:
                         category = Category.objects.get(id=row["category"])
                         award_level = AwardLevel.objects.get(id=row["level"])
@@ -1034,6 +1189,8 @@ def upload_book_categories(request):
             messages.error(request, f"Error processing file: {str(e)}")
 
     return render(request, "pages/upload_book_categories.html")
+
+
 
 
 def search_view(request):

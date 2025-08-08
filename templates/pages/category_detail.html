@@ -15,17 +15,17 @@
     <table class="table">
       <thead>
         <tr>
-          <th></th>
-          <th>Book</th>
-          <th>Author</th>
-          <th>Award Level</th>
-          <th>Completed</th>
+          <th width="10%"></th>
+          <th width="40%">Book</th>
+          <th width="20%">Author</th>
+          <th width="20%">Award Level</th>
+          <th width="10%">Completed</th>
         </tr>
       </thead>
       <tbody>
         {% for item in book_categories %}
           <tr>
-            <td>{%if item.book_category.book.image%}<a href="{% url 'book_detail' item.book_category.book.slug %}"><img src="{{ item.book_category.book.image.url }}" alt="{{ item.book_category.book.title }}" style="max-width: 24px;"/></a>{%endif%}</td>
+            <td style="text-align: center;">{%if item.book_category.book.image%}<a href="{% url 'book_detail' item.book_category.book.slug %}"><img src="{{ item.book_category.book.image.url }}" alt="{{ item.book_category.book.title }}" style="max-width: 24px;"/></a>{%endif%}</td>
             <td>
               <a href="{% url 'book_detail' item.book_category.book.slug %}">{{ item.book_category.book.title }}</a>
             </td>
