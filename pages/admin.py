@@ -11,17 +11,17 @@ from .resources import (AuthorResource, BookCategoryResource, BookResource,
 
 @admin.register(Author)
 class AuthorAdmin(ImportExportModelAdmin):
-    list_display = ("first_name", "last_name")
+    list_display = ("id","first_name", "last_name")
 
 
 @admin.register(Illustrator)
 class IllustratorAdmin(ImportExportModelAdmin):
-    list_display = ("first_name", "last_name")
+    list_display = ("id","first_name", "last_name")
 
 
 @admin.register(Book)
 class BookAdmin(ImportExportModelAdmin):
-    list_display = ("title", "author")
+    list_display = ("id","title", "author")
     search_fields = [
         "title",
         "author__first_name",
@@ -33,23 +33,23 @@ class BookAdmin(ImportExportModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(ImportExportModelAdmin):
-    list_display = ("name", "new_books_release_day_of_year")
+    list_display = ("id","name", "new_books_release_day_of_year")
 
 
 @admin.register(AwardLevel)
 class AwardLevelAdmin(admin.ModelAdmin):
-    list_display = ("name", "order")
+    list_display = ("id","name", "order")
 
 
 @admin.register(BookCategory)
 class BookCategoryAdmin(ImportExportModelAdmin):
-    list_display = ("book", "category", "year", "award_level")
+    list_display = ("id","book", "category", "year", "award_level")
     list_filter = ("category", "year", "award_level")
 
 
 @admin.register(Library)
 class LibraryAdmin(ImportExportModelAdmin):
-    list_display = ("name", "state", "url_prefix")
+    list_display = ("id","name", "state", "url_prefix")
     search_fields = ("name", "state")
 
 
@@ -60,9 +60,9 @@ class WebPlatformAdmin(admin.ModelAdmin):
 
 @admin.register(UserBook)
 class UserBookAdmin(admin.ModelAdmin):
-    list_display = ("user", "book", "completed")
+    list_display = ("id","user", "book", "completed")
 
 
 @admin.register(UserBookCategory)
 class UserBookCategoryAdmin(admin.ModelAdmin):
-    list_display = ("user", "book_category", "completed")
+    list_display = ("id","user", "book_category", "completed")

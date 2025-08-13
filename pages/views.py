@@ -40,6 +40,14 @@ from .models import (Author, AwardLevel, AwardYearLike, Book, BookCategory,
                      Category, Illustrator, Library, UserBook,
                      UserBookCategory, UserFavoriteLibrary)
 
+from .upload_utils import (
+    validate_upload_file,
+    cache_existing_books,
+    cache_existing_authors,
+    cache_existing_illustrators,
+    process_batch
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -903,171 +911,9 @@ def normalize_text(text):
     """Normalize text by converting to lowercase and removing diacritics."""
     return unidecode(text.strip().lower())
 
-def truncate_to_nearest_space(text, max_length=50):
-    """Truncate text to the nearest space not exceeding max_length characters."""
-    if len(text) <= max_length:
-        return text
-
-    # Find the last space before the max_length limit
-    last_space_pos = text[:max_length+1].rfind(' ')
-
-    # If no space found, just truncate at max_length
-    if last_space_pos == -1:
-        return text[:max_length]
-
-    return text[:last_space_pos]
 
 
-def normalize_text_advanced(text):
-    """
-    Advanced text normalization for better Unicode matching
-    """
-    if not text:
-        return ""
-
-    # Strip whitespace
-    text = text.strip()
-
-    # Normalize Unicode (NFD = decomposed form)
-    text = unicodedata.normalize('NFD', text)
-
-    # Remove diacritical marks (accents, etc.)
-    text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
-
-    # Convert to lowercase
-    text = text.lower()
-
-    return text
-
-def normalize_text_transliterate(text):
-    """
-    Alternative normalization using transliteration to ASCII
-    """
-    if not text:
-        return ""
-
-    # Strip and convert to ASCII equivalents
-    text = text.strip()
-    text = unidecode.unidecode(text).lower()
-
-    return text
-
-def find_author_flexible(first_name, last_name):
-    """
-    Flexible author search using multiple normalization strategies
-    """
-    # Original values
-    first_original = first_name.strip()
-    last_original = last_name.strip()
-
-    # Multiple normalization approaches
-    first_normalized = normalize_text_advanced(first_original)
-    last_normalized = normalize_text_advanced(last_original)
-
-    first_transliterated = normalize_text_transliterate(first_original)
-    last_transliterated = normalize_text_transliterate(last_original)
-
-    # Try to find existing author using multiple strategies
-    author = None
-
-    # Strategy 1: Exact case-insensitive match
-    try:
-        author = Author.objects.get(
-            first_name__iexact=first_original,
-            last_name__iexact=last_original
-        )
-        return author, first_original, last_original
-    except (Author.DoesNotExist, Author.MultipleObjectsReturned):
-        pass
-
-    # Strategy 2: Unicode normalized match
-    try:
-        # Search for authors where normalized names match
-        candidates = Author.objects.all()
-        for candidate in candidates:
-            candidate_first_norm = normalize_text_advanced(candidate.first_name)
-            candidate_last_norm = normalize_text_advanced(candidate.last_name)
-
-            if (candidate_first_norm == first_normalized and
-                candidate_last_norm == last_normalized):
-                return candidate, first_original, last_original
-    except:
-        pass
-
-    # Strategy 3: Transliterated ASCII match
-    try:
-        candidates = Author.objects.all()
-        for candidate in candidates:
-            candidate_first_trans = normalize_text_transliterate(candidate.first_name)
-            candidate_last_trans = normalize_text_transliterate(candidate.last_name)
-
-            if (candidate_first_trans == first_transliterated and
-                candidate_last_trans == last_transliterated):
-                return candidate, first_original, last_original
-    except:
-        pass
-
-    # If no match found, return None to create new author
-    return None, first_original, last_original
-
-
-def find_illustrator_flexible(first_name, last_name):
-    """
-    Flexible illustrator search (same logic as author search)
-    """
-    # Original values
-    first_original = first_name.strip()
-    last_original = last_name.strip()
-
-    # Multiple normalization approaches
-    first_normalized = normalize_text_advanced(first_original)
-    last_normalized = normalize_text_advanced(last_original)
-
-    first_transliterated = normalize_text_transliterate(first_original)
-    last_transliterated = normalize_text_transliterate(last_original)
-
-    # Try to find existing illustrator using multiple strategies
-    illustrator = None
-
-    # Strategy 1: Exact case-insensitive match
-    try:
-        illustrator = Illustrator.objects.get(
-            first_name__iexact=first_original,
-            last_name__iexact=last_original
-        )
-        return illustrator, first_original, last_original
-    except (Illustrator.DoesNotExist, Illustrator.MultipleObjectsReturned):
-        pass
-
-    # Strategy 2: Unicode normalized match
-    try:
-        candidates = Illustrator.objects.all()
-        for candidate in candidates:
-            candidate_first_norm = normalize_text_advanced(candidate.first_name)
-            candidate_last_norm = normalize_text_advanced(candidate.last_name)
-
-            if (candidate_first_norm == first_normalized and
-                candidate_last_norm == last_normalized):
-                return candidate, first_original, last_original
-    except:
-        pass
-
-    # Strategy 3: Transliterated ASCII match
-    try:
-        candidates = Illustrator.objects.all()
-        for candidate in candidates:
-            candidate_first_trans = normalize_text_transliterate(candidate.first_name)
-            candidate_last_trans = normalize_text_transliterate(candidate.last_name)
-
-            if (candidate_first_trans == first_transliterated and
-                candidate_last_trans == last_transliterated):
-                return candidate, first_original, last_original
-    except:
-        pass
-
-    return None, first_original, last_original
-
-
+'''
 def upload_book_categories(request):
     if request.method == "POST" and request.FILES.get("csv_file"):
         csv_file = request.FILES["csv_file"]
@@ -1190,7 +1036,7 @@ def upload_book_categories(request):
 
     return render(request, "pages/upload_book_categories.html")
 
-
+'''
 
 
 def search_view(request):
@@ -1361,7 +1207,7 @@ def lookup_book(request, pk):
     try:
         api_result = requests.get("https://api.asindataapi.com/request", params)
         data = api_result.json()
-
+        print(data)
         # Extract relevant information from search results
         results = [
             {"title": item["title"], "asin": item["asin"], "image": item["image"]}
@@ -1554,3 +1400,84 @@ class AuthorConsolidateView(View):
         )
 
         return redirect('author_list')
+
+def upload_book_categories(request):
+    if request.method == "POST" and request.FILES.get("csv_file"):
+        csv_file = request.FILES["csv_file"]
+        try:
+            # First, validate the file and get row count
+            validation_result = validate_upload_file(csv_file)
+            if not validation_result['is_valid']:
+                for error in validation_result['errors']:
+                    messages.error(request, error)
+                return render(request, "pages/upload_book_categories.html")
+
+            total_rows = validation_result['total_rows']
+            messages.info(request, f"File validated successfully. Processing {total_rows} records...")
+
+            # Reset file pointer after validation
+            csv_file.seek(0)
+
+            # Process in batches to avoid timeout
+            batch_size = 100  # Adjust based on your server capacity
+            processed_count = 0
+            error_count = 0
+
+            # Pre-load existing data to reduce database queries
+            existing_books_cache = cache_existing_books()
+            existing_authors_cache = cache_existing_authors()
+            existing_illustrators_cache = cache_existing_illustrators()
+            categories_cache = {cat.id: cat for cat in Category.objects.all()}
+            award_levels_cache = {level.id: level for level in AwardLevel.objects.all()}
+
+            # Decode file once
+            decoded_file = csv_file.read().decode("utf-8-sig").splitlines()
+            reader = csv.DictReader(decoded_file, delimiter="\t")
+
+            # Process in batches
+            batch = []
+            for row_num, row in enumerate(reader, 1):
+                batch.append((row_num, row))
+
+                if len(batch) >= batch_size:
+                    success, errors = process_batch(
+                        batch, existing_books_cache, existing_authors_cache,
+                        existing_illustrators_cache, categories_cache, award_levels_cache
+                    )
+                    processed_count += success
+                    error_count += errors
+                    batch = []
+
+                    # Optional: Add progress message for very large uploads
+                    if row_num % 500 == 0:
+                        messages.info(request, f"Processed {row_num} of {total_rows} records...")
+
+            # Process remaining batch
+            if batch:
+                success, errors = process_batch(
+                    batch, existing_books_cache, existing_authors_cache,
+                    existing_illustrators_cache, categories_cache, award_levels_cache
+                )
+                processed_count += success
+                error_count += errors
+
+            # Clear caches after processing
+            cache.delete_many(['existing_books', 'existing_authors', 'existing_illustrators'])
+
+            if error_count > 0:
+                messages.warning(
+                    request,
+                    f"Upload completed with {error_count} errors. {processed_count} records processed successfully."
+                )
+            else:
+                messages.success(
+                    request,
+                    f"Book categories uploaded successfully! {processed_count} records processed."
+                )
+
+            return redirect("upload_book_categories")
+
+        except Exception as e:
+            messages.error(request, f"Error processing file: {str(e)}")
+
+    return render(request, "pages/upload_book_categories.html")
