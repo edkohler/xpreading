@@ -29,7 +29,7 @@
             <td>
               <a href="{% url 'book_detail' item.book_category.book.slug %}">{{ item.book_category.book.title }}</a>
             </td>
-            <td><a href="{%url 'author_detail' item.book_category.book.author.id %}">{{ item.book_category.book.author.first_name }} {{ item.book_category.book.author.last_name }}</a></td>
+            <td><a href="{%url 'author_detail' item.book_category.book.author.id %}">{{ item.book_category.book.author.full_name }}</a></td>
             <td>
               {% if item.book_category.award_level %}
                 {{ item.book_category.award_level.name }}

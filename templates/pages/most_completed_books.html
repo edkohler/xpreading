@@ -5,7 +5,7 @@
 <h1>Most Read Books by XP Reading Readers</h1>
     <ol>
         {% for book in most_completed_books %}
-            <li>{%if book.image%}<a href="{% url 'book_detail' book.slug %}"><img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-width: 50px;"/></a>{%endif%} <a href="{% url 'book_detail' book.slug%}">{{ book.book.title }}</a> by <a href="{%url 'author_detail' book.author.id%}">{{ book.author}}</a></li><br/>
+            <li>{%if book.image%}<a href="{% url 'book_detail' book.slug %}"><img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-width: 50px;"/></a>{%endif%} <a href="{% url 'book_detail' book.slug%}">{{ book.book.title }}</a> by <a href="{%url 'author_detail' book.author.id%}">{{ book.author.full_name}}</a></li><br/>
         {% empty %}
             <li>No books found.</li>
         {% endfor %}

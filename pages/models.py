@@ -60,16 +60,52 @@ class Author(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
 
+    @property
+    def full_name(self):
+        """
+        Returns the full name of the author.
+        If first and last names are the same, returns only the first name.
+        """
+        if self.first_name.strip().lower() == self.last_name.strip().lower():
+            return self.first_name.strip()
+        return f"{self.first_name.strip()} {self.last_name.strip()}".strip()
+
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return self.full_name
+
+    class Meta:
+        # Add indexes for better search performance
+        indexes = [
+            models.Index(fields=['first_name']),
+            models.Index(fields=['last_name']),
+            models.Index(fields=['first_name', 'last_name']),
+        ]
 
 
 class Illustrator(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
 
+    @property
+    def full_name(self):
+        """
+        Returns the full name of the illustrator.
+        If first and last names are the same, returns only the first name.
+        """
+        if self.first_name.strip().lower() == self.last_name.strip().lower():
+            return self.first_name.strip()
+        return f"{self.first_name.strip()} {self.last_name.strip()}".strip()
+
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return self.full_name
+
+    class Meta:
+        # Add indexes for better search performance
+        indexes = [
+            models.Index(fields=['first_name']),
+            models.Index(fields=['last_name']),
+            models.Index(fields=['first_name', 'last_name']),
+        ]
 
 
 class Book(models.Model):

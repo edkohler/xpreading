@@ -32,7 +32,7 @@
                                         <tr>
                                             <td class="text-nowrap top">{{ forloop.counter }}. {%if book.image%}<a href="{% url 'book_detail' book.slug %}"><img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-width: 50px;"/></a>{%endif%}</td>
                                             <td><a href="{% url 'book_detail' book.slug %}">{{ book.title }}</a></td>
-                                            <td>{{ book.author }}</td>
+                                            <td>{{ book.author.full_name }}</td>
 
                                         </tr>
                                         {% endfor %}
