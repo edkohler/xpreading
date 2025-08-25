@@ -94,7 +94,7 @@
                 $('#book-' + bookId).replaceWith(data);
             })
             .fail(function(xhr) {
-                alert('Error: ' + xhr.responseText);
+                // Silently handle errors - just re-enable the button
                 button.prop('disabled', false).text('Enrich');
             });
         });
