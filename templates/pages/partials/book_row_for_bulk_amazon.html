@@ -1,0 +1,22 @@
+<tr id="book-{{ book.id }}" class="updated-row">
+    <td>{{ book.title }}</td>
+    <td>{{ book.author }}</td>
+    <td>
+        {% if not book.asin %}ASIN {% endif %}
+        {% if not book.page_count %}Page Count {% endif %}
+        {% if not book.image %}Image {% endif %}
+        {% if book.asin and book.page_count and book.image %}
+            <span class="text-success">Complete</span>
+        {% endif %}
+    </td>
+    <td>
+        {% if book.asin and book.page_count and book.image %}
+            <span class="text-success">✓ Complete</span>
+        {% else %}
+            <button class="enrich-btn btn btn-sm btn-secondary"
+                    data-book-id="{{ book.id }}">
+                Enrich
+            </button>
+        {% endif %}
+    </td>
+</tr>

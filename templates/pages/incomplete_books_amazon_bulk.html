@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Books Missing Data</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Books Missing Data ({{ total_count }} total)</h1>
+
+        <!-- Add CSRF token as a meta tag for easy access -->
+        <meta name="csrf-token" content="{{ csrf_token }}">
+
+        <!-- Alternative: Hidden input field -->
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+        <div class="bulk-actions">
+            <button id="bulk-enrich" class="btn btn-primary">
+                Enrich Next 10 Books
+            </button>
+            <div id="bulk-status"></div>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Missing Fields</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in books %}
+                <tr id="book-{{ book.id }}">
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.author }}</td>
+                    <td>
+                        {% if not book.asin %}ASIN {% endif %}
+                        {% if not book.page_count %}Page Count {% endif %}
+                        {% if not book.image %}Image {% endif %}
+                    </td>
+                    <td>
+                        <button class="enrich-btn btn btn-sm btn-secondary"
+                                data-book-id="{{ book.id }}">
+                            Enrich
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if books.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ books.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ books.number }} of {{ books.paginator.num_pages }}
+                </span>
+
+                {% if books.has_next %}
+                    <a href="?page={{ books.next_page_number }}">next</a>
+                    <a href="?page={{ books.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+    <script>
+    $(document).ready(function() {
+        // Get CSRF token from meta tag or hidden input
+        function getCsrfToken() {
+            return $('meta[name=csrf-token]').attr('content') ||
+                   $('[name=csrfmiddlewaretoken]').val();
+        }
+
+        // Individual book enrichment
+        $('.enrich-btn').click(function() {
+            const bookId = $(this).data('book-id');
+            const button = $(this);
+
+            button.prop('disabled', true).text('Processing...');
+
+            $.post(`/books/${bookId}/enrich/`, {
+                csrfmiddlewaretoken: getCsrfToken()
+            })
+            .done(function(data) {
+                $('#book-' + bookId).replaceWith(data);
+            })
+            .fail(function(xhr) {
+                alert('Error: ' + xhr.responseText);
+                button.prop('disabled', false).text('Enrich');
+            });
+        });
+
+        // Bulk enrichment
+        $('#bulk-enrich').click(function() {
+            const button = $(this);
+            const statusDiv = $('#bulk-status');
+
+            button.prop('disabled', true).text('Processing...');
+            statusDiv.html('<div class="alert alert-info">Processing books...</div>');
+
+            $.post('/books/bulk-enrich/', {
+                limit: 10,
+                csrfmiddlewaretoken: getCsrfToken()
+            })
+            .done(function(data) {
+                if (data.success) {
+                    statusDiv.html(`<div class="alert alert-success">${data.message}</div>`);
+                    // Reload page to show updated results
+                    setTimeout(function() {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    statusDiv.html(`<div class="alert alert-danger">Error: ${data.error}</div>`);
+                }
+            })
+            .fail(function(xhr) {
+                statusDiv.html(`<div class="alert alert-danger">Request failed</div>`);
+            })
+            .always(function() {
+                button.prop('disabled', false).text('Enrich Next 10 Books');
+            });
+        });
+    });
+    </script>
+
+    <style>
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    .table th, .table td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+    .table th { background-color: #f2f2f2; }
+    .btn { padding: 6px 12px; border: none; cursor: pointer; text-decoration: none; display: inline-block; }
+    .btn-primary { background-color: #007bff; color: white; }
+    .btn-secondary { background-color: #6c757d; color: white; }
+    .btn-sm { padding: 4px 8px; font-size: 12px; }
+    .bulk-actions { margin: 20px 0; }
+    .alert { padding: 10px; margin: 10px 0; border-radius: 4px; }
+    .alert-info { background-color: #d1ecf1; color: #0c5460; }
+    .alert-success { background-color: #d4edda; color: #155724; }
+    .alert-danger { background-color: #f8d7da; color: #721c24; }
+    .pagination { margin: 20px 0; }
+    .pagination a { color: #007bff; text-decoration: none; padding: 8px; }
+    </style>
+</body>
+</html>

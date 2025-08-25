@@ -35,6 +35,10 @@ from django.views.decorators.cache import cache_page
 import unicodedata
 import unidecode
 
+import time
+from .services import AmazonBookMatcher, BookDataEnricher#, get_books_needing_enrichment
+
+
 from .forms import BookCategoryForm
 from .models import (Author, AwardLevel, AwardYearLike, Book, BookCategory,
                      Category, Illustrator, Library, UserBook,
@@ -913,132 +917,6 @@ def normalize_text(text):
 
 
 
-'''
-def upload_book_categories(request):
-    if request.method == "POST" and request.FILES.get("csv_file"):
-        csv_file = request.FILES["csv_file"]
-        try:
-            with transaction.atomic():
-                # Ensure proper UTF-8 decoding
-                decoded_file = csv_file.read().decode("utf-8-sig").splitlines()  # utf-8-sig handles BOM
-                reader = csv.DictReader(decoded_file, delimiter="\t")
-
-                for row in reader:
-                    # Enhanced Author handling
-                    author = None
-                    if row["first_name"].strip() and row["last_name"].strip():
-                        author_result, first_orig, last_orig = find_author_flexible(
-                            row["first_name"], row["last_name"]
-                        )
-
-                        if author_result:
-                            author = author_result
-                        else:
-                            # Create new author
-                            author = Author.objects.create(
-                                first_name=first_orig,
-                                last_name=last_orig,
-                            )
-
-                    # Enhanced Illustrator handling (similar logic)
-                    illustrator = None
-                    if (row["illustrator_first_name"].strip() and
-                        row["illustrator_last_name"].strip()):
-
-                        # Apply same flexible matching for illustrators
-                        illustrator_result, first_orig, last_orig = find_illustrator_flexible(
-                            row["illustrator_first_name"], row["illustrator_last_name"]
-                        )
-
-                        if illustrator_result:
-                            illustrator = illustrator_result
-                        else:
-                            illustrator = Illustrator.objects.create(
-                                first_name=first_orig,
-                                last_name=last_orig,
-                            )
-
-                    # Book title handling - enhanced for Unicode
-                    title_original = row["title"].strip()
-                    title_normalized = normalize_text_advanced(row["title"])
-                    title_normalized = truncate_to_nearest_space(title_normalized, 50)
-                    base_slug = slugify(title_normalized, allow_unicode=True)  # Allow Unicode in slugs
-
-                    # Handle existing or new book
-                    try:
-                        # Enhanced book search
-                        book = None
-
-                        # Try exact match first
-                        try:
-                            book = Book.objects.get(title__iexact=title_original)
-                        except (Book.DoesNotExist, Book.MultipleObjectsReturned):
-                            # Try normalized match
-                            candidates = Book.objects.all()
-                            for candidate in candidates:
-                                if normalize_text_advanced(candidate.title) == title_normalized:
-                                    book = candidate
-                                    break
-
-                        if book:
-                            # Update book's author/illustrator if not already set
-                            if author and not book.author:
-                                book.author = author
-                            if illustrator and not book.illustrator:
-                                book.illustrator = illustrator
-                            book.save()
-                        else:
-                            # Create new book with unique slug
-                            counter = 1
-                            slug = base_slug
-                            while Book.objects.filter(slug=slug).exists():
-                                slug = f"{base_slug}-{counter}"
-                                counter += 1
-
-                            book = Book.objects.create(
-                                title=title_original,
-                                slug=slug,
-                                author=author,
-                                illustrator=illustrator,
-                            )
-
-                    except Exception as book_error:
-                        messages.error(
-                            request,
-                            f"Error processing book '{title_original}': {str(book_error)}",
-                        )
-                        continue
-
-                    # Get category and award level (unchanged)
-                    try:
-                        category = Category.objects.get(id=row["category"])
-                        award_level = AwardLevel.objects.get(id=row["level"])
-                    except (Category.DoesNotExist, AwardLevel.DoesNotExist) as e:
-                        messages.error(
-                            request,
-                            f"Invalid category or award level for book '{title_original}'. Please check your data.",
-                        )
-                        continue
-
-                    # Create or update book category
-                    BookCategory.objects.update_or_create(
-                        book=book,
-                        category=category,
-                        year=row["year"],
-                        defaults={"award_level": award_level},
-                    )
-
-                messages.success(request, "Book categories uploaded successfully!")
-                return redirect("upload_book_categories")
-
-        except Exception as e:
-            messages.error(request, f"Error processing file: {str(e)}")
-
-    return render(request, "pages/upload_book_categories.html")
-
-'''
-
-
 def search_view(request):
     query = request.GET.get("q", "")
 
@@ -1192,7 +1070,7 @@ def lookup_book(request, pk):
     author = book.author
 
     params = {
-        "api_key": "E945927E67D4422398408C6CCB64513F",
+        "api_key": settings.ASINDATAAPI,
         "type": "search",
         "amazon_domain": "amazon.com",
         "search_term": f"{title} {author}",
@@ -1481,3 +1359,101 @@ def upload_book_categories(request):
             messages.error(request, f"Error processing file: {str(e)}")
 
     return render(request, "pages/upload_book_categories.html")
+
+
+'''Update books using amazon api'''
+def amazon_api_incomplete_books_view(request):
+    """Enhanced view to show books with missing data and enrichment options"""
+    books = get_books_needing_enrichment()
+
+    # Add pagination if needed
+    paginator = Paginator(books, 25)  # Show 25 books per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'books': page_obj,
+        'total_count': books.count(),
+    }
+
+    return render(request, 'pages/incomplete_books_amazon_bulk.html', context)
+
+
+def enrich_book_view(request, pk):
+    """View to enrich a single book via AJAX"""
+    if request.method == "POST":
+        success, message = enrich_single_book(pk)
+
+        if success:
+            book = Book.objects.get(pk=pk)
+            return render(request, "pages/partials/book_row.html", {"book": book})
+        else:
+            return HttpResponse(f"Error: {message}", status=400)
+
+    return HttpResponse("Invalid request", status=400)
+
+def get_books_needing_enrichment():
+    """Get queryset of books that need data enrichment"""
+    return Book.objects.filter(
+        Q(asin__isnull=True) | Q(asin="") |
+        Q(page_count__isnull=True) |
+        Q(image__isnull=True) | Q(image="")
+    ).select_related('author').order_by('-id')
+
+
+def bulk_enrich_books_view(request):
+    """View to start bulk enrichment process"""
+    if request.method == "POST":
+        limit = int(request.POST.get('limit', 10))
+
+        try:
+            api_key = getattr(settings, 'ASINDATAAPI', None)
+            amazon_matcher = AmazonBookMatcher(api_key)
+            enricher = BookDataEnricher(amazon_matcher)
+
+            books = get_books_needing_enrichment()[:limit]
+            processed = 0
+            updated = 0
+
+            for book in books:
+                try:
+                    if enricher.enrich_book(book):
+                        updated += 1
+                    processed += 1
+                    time.sleep(1)  # Rate limiting
+                except Exception as e:
+                    print(f"Error processing {book.title}: {e}")
+                    processed += 1
+
+            return JsonResponse({
+                'success': True,
+                'processed': processed,
+                'updated': updated,
+                'message': f'Processed {processed} books, updated {updated}'
+            })
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+
+def enrich_single_book(book_id):
+    """Utility function to enrich a single book by ID"""
+    try:
+        book = Book.objects.get(id=book_id)
+        api_key = getattr(settings, 'ASINDATAAPI', None)
+
+        if not api_key:
+            return False, "API key not configured"
+
+        amazon_matcher = AmazonBookMatcher(api_key)
+        enricher = BookDataEnricher(amazon_matcher)
+
+        success = enricher.enrich_book(book)
+        return success, "Book enriched successfully" if success else "No updates made"
+
+    except Book.DoesNotExist:
+        return False, "Book not found"
+    except Exception as e:
+        return False, str(e)
