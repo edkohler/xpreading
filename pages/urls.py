@@ -115,7 +115,7 @@ urlpatterns = [
     path('most_completed_books/', views.most_completed_books_view, name='most_completed_books'),
 
     #bulk update books with amazon api
-    path('books/incomplete/', views.amazon_api_incomplete_books_view, name='incomplete_books'),
+    path('books/incomplete/', views.amazon_api_incomplete_books_view, name='incomplete_books_bulk'),
     path('books/<int:pk>/enrich/', views.enrich_book_view, name='enrich_book'),
     path('books/bulk-enrich/', views.bulk_enrich_books_view, name='bulk_enrich_books'),
 

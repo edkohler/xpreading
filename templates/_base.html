@@ -102,6 +102,7 @@
                 {% if user.is_superuser %}
                 <li><a class="dropdown-item" href="/admin/">Admin</a></li>
                 <li><a class="dropdown-item" href="{% url 'incomplete_books' %}">Incomplete Books</a></li>
+                <li><a class="dropdown-item" href="{% url 'incomplete_books_bulk' %}">Incomplete Books Bulk</a></li>
                 <li><a class="dropdown-item" href="{% url 'books_without_images' %}">No Images</a></li>
                 <li><a class="dropdown-item" href="{% url 'upload_book_categories' %}">Upload Book Categories</a></li>
                 {% endif %}
