@@ -239,6 +239,7 @@ class Library(models.Model):
         "WebPlatform", on_delete=models.CASCADE, blank=True, null=True
     )
     bibliocommons_id = models.CharField(max_length=400, blank=True)
+    bibliocommons_number = models.IntegerField(blank=True, null=True)
 
     class Meta:
         ordering = ["state", "name"]  # Sort by state, then name

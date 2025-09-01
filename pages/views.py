@@ -36,6 +36,12 @@ import unicodedata
 import unidecode
 
 import time
+
+import urllib.parse
+import urllib.request
+import xml.etree.ElementTree as ET
+from django.views.decorators.http import require_http_methods
+
 from .services import AmazonBookMatcher, BookDataEnricher#, get_books_needing_enrichment
 
 
@@ -601,6 +607,7 @@ def get_unique_books_per_branch(request, library_id):
     book_ids = request.GET.get("books", "").split(",")
     base_url = f"https://gateway.bibliocommons.com/v2/libraries/{library_id}/bibs/"
     url_suffix = "/availability?locale=en-US"
+    #examle url: https://gateway.bibliocommons.com/v2/libraries/hclib/bibs/S109C5966261/availability?locale=en-US
 
     # Initialize branch data
     branch_unique_books = defaultdict(set)
@@ -1069,6 +1076,7 @@ def lookup_book(request, pk):
     title = book.title
     author = book.author
 
+    #https://app.asindataapi.com/account
     params = {
         "api_key": settings.ASINDATAAPI,
         "type": "search",
@@ -1367,7 +1375,7 @@ def amazon_api_incomplete_books_view(request):
     books = get_books_needing_enrichment()
 
     # Add pagination if needed
-    paginator = Paginator(books, 25)  # Show 25 books per page
+    paginator = Paginator(books, 100)  # Show 25 books per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -1457,3 +1465,138 @@ def enrich_single_book(book_id):
         return False, "Book not found"
     except Exception as e:
         return False, str(e)
+
+
+#bibliocommons update functions:
+def no_bibliocommons(request):
+    """Display books with missing bibliocommons_id fields"""
+    from django.db import models
+
+    books = Book.objects.filter(
+        models.Q(bibliocommons_id__isnull=True) |
+        models.Q(bibliocommons_id__exact='')
+    ).select_related('author').order_by('title')
+
+    context = {
+        'books': books,
+    }
+    return render(request, 'pages/no_bibliocommons.html', context)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def enhance_book(request, book_id):
+    """Enhance a book with bibliocommons data from RSS feed"""
+    try:
+        book = get_object_or_404(Book, id=book_id)
+
+        # Construct the search query: "title lastname, firstname"
+        query = f"{book.title} {book.author.last_name}, {book.author.first_name}"
+        encoded_query = urllib.parse.quote(query)
+
+        # RSS URL
+        rss_url = f"https://gateway.bibliocommons.com/v2/libraries/hclib/rss/search?query={encoded_query}&searchType=smart&f_PRIMARY_LANGUAGE=eng&view=groupe"
+
+        # Fetch and parse RSS
+        try:
+            with urllib.request.urlopen(rss_url) as response:
+                rss_data = response.read()
+        except urllib.error.URLError as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error fetching RSS: {str(e)}'
+            })
+
+        # Parse XML
+        try:
+            root = ET.fromstring(rss_data)
+        except ET.ParseError as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error parsing RSS XML: {str(e)}'
+            })
+
+        # Find matching item
+        bibliocommons_id = None
+        found_match = False
+
+        for item in root.findall('.//item'):
+            # Get title
+            title_elem = item.find('title')
+            if title_elem is None:
+                continue
+            item_title = title_elem.text.strip() if title_elem.text else ""
+
+            # Get creator (author)
+            creator_elem = item.find('.//{http://purl.org/dc/elements/1.1/}creator')
+            if creator_elem is None:
+                continue
+            item_creator = creator_elem.text.strip() if creator_elem.text else ""
+
+            # Get format
+            format_elem = item.find('format')
+            if format_elem is None:
+                continue
+            item_format = format_elem.text.strip() if format_elem.text else ""
+
+            # Get link
+            link_elem = item.find('link')
+            if link_elem is None:
+                continue
+            item_link = link_elem.text.strip() if link_elem.text else ""
+
+            # Check for matches
+            title_match = book.title.lower().strip() in item_title.lower().strip()
+            expected_author = f"{book.author.last_name}, {book.author.first_name}"
+            author_match = expected_author.lower().strip() == item_creator.lower().strip()
+            format_match = item_format in ['BK', 'LPRINT']
+
+            if title_match and author_match and format_match:
+                # Extract bibliocommons ID from link
+                # Link format: https://hclib.bibliocommons.com/item/show/6496020109
+                if '/item/show/' in item_link:
+                    #isolate number from RSS
+                    bibliocommons_id = item_link.split('/')[-1]
+                    #convert to final format ("S" + library id + "C" + BookID)
+                    bibliocommons_id = "S" + bibliocommons_id[7:] + "C" + bibliocommons_id[:7]
+
+                    found_match = True
+                    break
+
+        if found_match and bibliocommons_id:
+            # Update the book record
+            book.bibliocommons_id = bibliocommons_id
+            book.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': f'Book enhanced with bibliocommons ID: {bibliocommons_id}',
+                'bibliocommons_id': bibliocommons_id
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': 'No matching record found'
+            })
+
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Unexpected error: {str(e)}'
+        })
+
+
+def update_bibliocommons_id(request, book_id):
+    """Manual update of bibliocommons_id via form submission"""
+    if request.method == 'POST':
+        book = get_object_or_404(Book, id=book_id)
+        bibliocommons_id = request.POST.get('bibliocommons_id', '').strip()
+
+        if bibliocommons_id:
+            book.bibliocommons_id = bibliocommons_id
+            book.save()
+            messages.success(request, f'Bibliocommons ID updated for "{book.title}"')
+        else:
+            messages.error(request, 'Please provide a valid bibliocommons ID')
+
+    return redirect('no_bibliocommons')

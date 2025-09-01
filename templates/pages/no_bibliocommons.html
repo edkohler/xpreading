@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Books Missing Bibliocommons ID</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007cba;
+            padding-bottom: 10px;
+        }
+        .book-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .book-table th,
+        .book-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .book-table th {
+            background-color: #007cba;
+            color: white;
+            font-weight: bold;
+        }
+        .book-table tr:hover {
+            background-color: #f1f1f1;
+        }
+        .enhance-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .enhance-btn:hover {
+            background-color: #218838;
+        }
+        .enhance-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .not-found-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: not-allowed;
+            font-size: 14px;
+        }
+        .bibliocommons-input {
+            width: 150px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .update-btn {
+            background-color: #007cba;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        .update-btn:hover {
+            background-color: #0056b3;
+        }
+        .status-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            color: #007cba;
+            font-weight: bold;
+        }
+        .book-count {
+            color: #666;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Books Missing Bibliocommons ID</h1>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="status-message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if books %}
+            <div class="book-count">
+                Found {{ books.count }} book{{ books.count|pluralize }} missing Bibliocommons ID
+            </div>
+
+            <table class="book-table">
+                <thead>
+                    <tr>
+                        <th>Author First Name</th>
+                        <th>Author Last Name</th>
+                        <th>Title</th>
+                        <th>Bibliocommons ID</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for book in books %}
+                        <tr id="book-row-{{ book.id }}">
+                            <td>{{ book.author.first_name }}</td>
+                            <td>{{ book.author.last_name }}</td>
+                            <td>{{ book.title }}</td>
+                            <td>
+                                <form method="post" action="{% url 'update_bibliocommons_id' book.id %}" style="display: inline-flex; align-items: center;">
+                                    {% csrf_token %}
+                                    <input type="text"
+                                           name="bibliocommons_id"
+                                           class="bibliocommons-input"
+                                           value="{{ book.bibliocommons_id|default:'' }}"
+                                           id="bibliocommons-{{ book.id }}"
+                                           placeholder="Enter ID">
+                                    <button type="submit" class="update-btn">Update</button>
+                                </form>
+                            </td>
+                            <td>
+                                <button class="enhance-btn"
+                                        onclick="enhanceBook({{ book.id }})"
+                                        id="enhance-btn-{{ book.id }}">
+                                    Enhance
+                                </button>
+                                <div id="status-{{ book.id }}" style="margin-top: 5px; font-size: 12px;"></div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="status-message success">
+                <strong>Great!</strong> All books have Bibliocommons IDs assigned.
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        async function enhanceBook(bookId) {
+            const btn = document.getElementById(`enhance-btn-${bookId}`);
+            const status = document.getElementById(`status-${bookId}`);
+            const input = document.getElementById(`bibliocommons-${bookId}`);
+
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.textContent = 'Enhancing...';
+            status.innerHTML = '<span class="loading">Searching RSS feed...</span>';
+
+            try {
+                const response = await fetch(`/enhance_book/${bookId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update the input field
+                    input.value = data.bibliocommons_id;
+
+                    // Show success message
+                    status.innerHTML = `<span class="success" style="padding: 2px 6px; border-radius: 3px;">✓ Enhanced</span>`;
+
+                    // Keep button disabled but change text
+                    btn.textContent = 'Enhanced';
+                    btn.className = 'enhance-btn';
+                    btn.style.backgroundColor = '#28a745';
+                } else {
+                    // Show not found
+                    status.innerHTML = `<span class="error" style="padding: 2px 6px; border-radius: 3px;">${data.message}</span>`;
+                    btn.textContent = 'Not Found';
+                    btn.className = 'not-found-btn';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                status.innerHTML = `<span class="error" style="padding: 2px 6px; border-radius: 3px;">Error occurred</span>`;
+                btn.disabled = false;
+                btn.textContent = 'Enhance';
+            }
+        }
+
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Auto-hide messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelectorAll('.status-message');
+            messages.forEach(function(message) {
+                setTimeout(function() {
+                    message.style.opacity = '0';
+                    setTimeout(function() {
+                        message.remove();
+                    }, 300);
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+</html>

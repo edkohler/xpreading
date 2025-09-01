@@ -119,4 +119,12 @@ urlpatterns = [
     path('books/<int:pk>/enrich/', views.enrich_book_view, name='enrich_book'),
     path('books/bulk-enrich/', views.bulk_enrich_books_view, name='bulk_enrich_books'),
 
+    path('no_bibliocommons/', views.no_bibliocommons, name='no_bibliocommons'),
+
+    # AJAX endpoint to enhance book with RSS data
+    path('enhance_book/<int:book_id>/', views.enhance_book, name='enhance_book'),
+
+    # Manual update of bibliocommons_id
+    path('update_bibliocommons/<int:book_id>/', views.update_bibliocommons_id, name='update_bibliocommons_id'),
+
 ]
