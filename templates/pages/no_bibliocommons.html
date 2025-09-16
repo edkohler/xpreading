@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
+{# templates/pages/book_list.html #}
+{% extends "_base.html" %}
+{% block title %}Books with Missing Fields{% endblock %}
+{% block content %}
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Books Missing Bibliocommons ID</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -149,16 +148,13 @@
                             <td>{{ book.author.last_name }}</td>
                             <td>{{ book.title }}</td>
                             <td>
-                                <form method="post" action="{% url 'update_bibliocommons_id' book.id %}" style="display: inline-flex; align-items: center;">
-                                    {% csrf_token %}
-                                    <input type="text"
-                                           name="bibliocommons_id"
-                                           class="bibliocommons-input"
-                                           value="{{ book.bibliocommons_id|default:'' }}"
-                                           id="bibliocommons-{{ book.id }}"
-                                           placeholder="Enter ID">
-                                    <button type="submit" class="update-btn">Update</button>
-                                </form>
+                                <button hx-on:click="copyTextToClipboard('myElementId_{{book.id}}')">Copy</button>
+    <div hidden id="myElementId_{{book.id}}">https://www.google.com/search?q={{ book.author.first_name }}+{{ book.author.last_name }}+{{ book.title }}+%22bibliocommons%22</div>
+
+
+                                <form hx-post="{% url 'update_book_field' book.pk 'bibliocommons_id' %}" hx-trigger="change">
+                    <input type="text" name="value" value="{{ book.bibliocommons_id|default:'' }}" placeholder="Enter Bibliocommons ID" />
+                </form>
                             </td>
                             <td>
                                 <button class="enhance-btn"
@@ -206,10 +202,10 @@
                     input.value = data.bibliocommons_id;
 
                     // Show success message
-                    status.innerHTML = `<span class="success" style="padding: 2px 6px; border-radius: 3px;">✓ Enhanced</span>`;
+                    status.innerHTML = `<span class="success" style="padding: 2px 6px; border-radius: 3px;">✓ Done</span>`;
 
                     // Keep button disabled but change text
-                    btn.textContent = 'Enhanced';
+                    btn.textContent = 'Done';
                     btn.className = 'enhance-btn';
                     btn.style.backgroundColor = '#28a745';
                 } else {
@@ -222,7 +218,7 @@
                 console.error('Error:', error);
                 status.innerHTML = `<span class="error" style="padding: 2px 6px; border-radius: 3px;">Error occurred</span>`;
                 btn.disabled = false;
-                btn.textContent = 'Enhance';
+                btn.textContent = 'Error';
             }
         }
 
@@ -255,5 +251,90 @@
             });
         });
     </script>
-</body>
-</html>
+
+
+
+<script>
+function copySearchUrl(firstName, lastName, title, buttonElement) {
+    // Debug: Log the values to see what we're getting
+    console.log('Debug - firstName:', firstName);
+    console.log('Debug - lastName:', lastName);
+    console.log('Debug - title:', title);
+
+    // Construct the search query
+    const searchQuery = `${firstName} ${lastName} ${title} "bibliocommons"`;
+    console.log('Debug - searchQuery:', searchQuery);
+
+    // URL encode the search query
+    const encodedQuery = encodeURIComponent(searchQuery);
+
+    // Construct the full Google search URL
+    const searchUrl = `https://www.google.com/search?q=${encodedQuery}`;
+    console.log('Debug - final URL:', searchUrl);
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(searchUrl).then(function() {
+        // Success feedback
+        const originalText = buttonElement.textContent;
+        const originalColor = buttonElement.style.backgroundColor;
+
+        buttonElement.textContent = 'Copied!';
+        buttonElement.style.backgroundColor = '#28a745';
+
+        // Reset button after 2 seconds
+        setTimeout(function() {
+            buttonElement.textContent = originalText;
+            buttonElement.style.backgroundColor = originalColor;
+        }, 2000);
+    }).catch(function(err) {
+        // Fallback for older browsers or if clipboard API fails
+        console.error('Could not copy text: ', err);
+
+        // Create a temporary textarea element for fallback
+        const textArea = document.createElement('textarea');
+        textArea.value = searchUrl;
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+            document.execCommand('copy');
+            const originalText = buttonElement.textContent;
+            const originalColor = buttonElement.style.backgroundColor;
+
+            buttonElement.textContent = 'Copied!';
+            buttonElement.style.backgroundColor = '#28a745';
+
+            setTimeout(function() {
+                buttonElement.textContent = originalText;
+                buttonElement.style.backgroundColor = originalColor;
+            }, 2000);
+        } catch (err) {
+            console.error('Fallback copy failed: ', err);
+            alert('Copy failed. Please copy the URL manually.');
+        }
+
+        document.body.removeChild(textArea);
+    });
+}
+
+
+    function copyTextToClipboard(elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            navigator.clipboard.writeText(element.innerText || element.value)
+                .then(() => {
+                    console.log('Text copied to clipboard!');
+                    // Optionally provide user feedback, e.g., change button text temporarily
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                });
+        }
+    }
+</script>
+
+
+
+
+{% endblock %}

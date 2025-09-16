@@ -17,7 +17,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
-from django.db import transaction
+from django.db import transaction, models
 from django.db.models import Count, Q, Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import Http404, get_object_or_404, redirect, render
@@ -1470,7 +1470,6 @@ def enrich_single_book(book_id):
 #bibliocommons update functions:
 def no_bibliocommons(request):
     """Display books with missing bibliocommons_id fields"""
-    from django.db import models
 
     books = Book.objects.filter(
         models.Q(bibliocommons_id__isnull=True) |
@@ -1491,11 +1490,12 @@ def enhance_book(request, book_id):
         book = get_object_or_404(Book, id=book_id)
 
         # Construct the search query: "title lastname, firstname"
-        query = f"{book.title} {book.author.last_name}, {book.author.first_name}"
+        #query = f"{book.title} {book.author.last_name}, {book.author.first_name}"
+        query = f"{book.title} {book.author.last_name}"
         encoded_query = urllib.parse.quote(query)
 
-        # RSS URL
-        rss_url = f"https://gateway.bibliocommons.com/v2/libraries/hclib/rss/search?query={encoded_query}&searchType=smart&f_PRIMARY_LANGUAGE=eng&view=groupe"
+        # RSS URL (includes library code. Update this to dynamic field.)
+        rss_url = f"https://gateway.bibliocommons.com/v2/libraries/bpl/rss/search?query={encoded_query}&searchType=smart&f_PRIMARY_LANGUAGE=eng&view=groupe"
 
         # Fetch and parse RSS
         try:
@@ -1532,7 +1532,7 @@ def enhance_book(request, book_id):
             if creator_elem is None:
                 continue
             item_creator = creator_elem.text.strip() if creator_elem.text else ""
-
+            print(item_creator)
             # Get format
             format_elem = item.find('format')
             if format_elem is None:
@@ -1547,11 +1547,19 @@ def enhance_book(request, book_id):
 
             # Check for matches
             title_match = book.title.lower().strip() in item_title.lower().strip()
-            expected_author = f"{book.author.last_name}, {book.author.first_name}"
-            author_match = expected_author.lower().strip() == item_creator.lower().strip()
+            print(f'title match: {title_match}')
+            #expected_author = f"{book.author.last_name}, {book.author.first_name}"
+            expected_author = f"{book.author.last_name}"
+            print(expected_author)
+            #author_match = expected_author.lower().strip() == item_creator.lower().strip()
+            author_match = expected_author.lower().strip() == item_creator.split(",")[0].lower().strip()
+            print(f'author match: {author_match}')
             format_match = item_format in ['BK', 'LPRINT']
+            print(f'format match: {format_match}')
+
 
             if title_match and author_match and format_match:
+                print("all fields matched")
                 # Extract bibliocommons ID from link
                 # Link format: https://hclib.bibliocommons.com/item/show/6496020109
                 if '/item/show/' in item_link:
@@ -1561,6 +1569,8 @@ def enhance_book(request, book_id):
                     bibliocommons_id = "S" + bibliocommons_id[7:] + "C" + bibliocommons_id[:7]
 
                     found_match = True
+                    print(f'found match: {found_match}')
+                    print(f'Bibliocommons ID: {bibliocommons_id}')
                     break
 
         if found_match and bibliocommons_id:
