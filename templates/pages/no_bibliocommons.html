@@ -256,16 +256,22 @@
 
 <script>
 function copySearchUrl(firstName, lastName, title, buttonElement) {
-    // Debug: Log the values to see what we're getting
-    console.log('Debug - firstName:', firstName);
-    console.log('Debug - lastName:', lastName);
-    console.log('Debug - title:', title);
+    // Clean and sanitize inputs by removing any null/undefined values
+    const cleanFirstName = (firstName || '').trim();
+    const cleanLastName = (lastName || '').trim();
+    const cleanTitle = (title || '').trim();
 
-    // Construct the search query
-    const searchQuery = `${firstName} ${lastName} ${title} "bibliocommons"`;
+    // Debug: Log the cleaned values
+    console.log('Debug - firstName:', cleanFirstName);
+    console.log('Debug - lastName:', cleanLastName);
+    console.log('Debug - title:', cleanTitle);
+
+    // Construct the search query with cleaned values
+    const searchQuery = `${cleanTitle} ${cleanFirstName} ${cleanLastName} "bibliocommons"`.trim();
     console.log('Debug - searchQuery:', searchQuery);
 
-    // URL encode the search query
+    // URL encode the search query - this handles ALL special characters
+    // including: : ? # & = + @ ! $ ' ( ) * , ; / %
     const encodedQuery = encodeURIComponent(searchQuery);
 
     // Construct the full Google search URL
@@ -277,7 +283,6 @@ function copySearchUrl(firstName, lastName, title, buttonElement) {
         // Success feedback
         const originalText = buttonElement.textContent;
         const originalColor = buttonElement.style.backgroundColor;
-
         buttonElement.textContent = 'Copied!';
         buttonElement.style.backgroundColor = '#28a745';
 
@@ -293,6 +298,8 @@ function copySearchUrl(firstName, lastName, title, buttonElement) {
         // Create a temporary textarea element for fallback
         const textArea = document.createElement('textarea');
         textArea.value = searchUrl;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
@@ -301,7 +308,6 @@ function copySearchUrl(firstName, lastName, title, buttonElement) {
             document.execCommand('copy');
             const originalText = buttonElement.textContent;
             const originalColor = buttonElement.style.backgroundColor;
-
             buttonElement.textContent = 'Copied!';
             buttonElement.style.backgroundColor = '#28a745';
 
@@ -313,11 +319,9 @@ function copySearchUrl(firstName, lastName, title, buttonElement) {
             console.error('Fallback copy failed: ', err);
             alert('Copy failed. Please copy the URL manually.');
         }
-
         document.body.removeChild(textArea);
     });
 }
-
 
     function copyTextToClipboard(elementId) {
         const element = document.getElementById(elementId);

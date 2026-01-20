@@ -1474,7 +1474,7 @@ def no_bibliocommons(request):
     books = Book.objects.filter(
         models.Q(bibliocommons_id__isnull=True) |
         models.Q(bibliocommons_id__exact='')
-    ).select_related('author').order_by('title')
+    ).select_related('author').order_by('-id')
 
     context = {
         'books': books,
