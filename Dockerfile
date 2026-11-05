@@ -23,8 +23,9 @@ RUN set -ex && \
 COPY . /code
 
 ENV SECRET_KEY "vHisE4lDcnrRzzhmPTqO5SJn6kVjrbva7AdW2PaCAVZYuvioVs"
-RUN python manage.py collectstatic --noinput
+RUN DATABASE_URL=sqlite:////tmp/build.db python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
 CMD ["gunicorn","--bind",":8000","--workers","2","django_project.wsgi"]
+

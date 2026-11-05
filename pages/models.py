@@ -326,3 +326,4 @@ class AwardYearLike(models.Model):
 
     def __str__(self):
         return f"{self.user.username} likes {self.category.name} ({self.year})"
+
