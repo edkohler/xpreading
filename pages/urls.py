@@ -1,10 +1,11 @@
 from django.urls import path
 
 from . import views
-from .views import AboutPageView, BooksByCategoryView, HomePageView
+from .views import AboutPageView, BooksByCategoryView, HomePageView, ads_txt
 
 urlpatterns = [
     path("", views.category_list_sorted_by_year, name="home"),
+    path("ads.txt", ads_txt),
     path("about/", AboutPageView.as_view(), name="about"),
     path(
         "terms-and-conditions/", views.terms_and_conditions, name="terms_and_conditions"

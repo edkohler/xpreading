@@ -12,6 +12,10 @@ from .resources import (AuthorResource, BookCategoryResource, BookResource,
 @admin.register(Author)
 class AuthorAdmin(ImportExportModelAdmin):
     list_display = ("id","first_name", "last_name")
+    search_fields = [
+            "first_name",
+            "last_name",
+        ]
 
 
 @admin.register(Illustrator)

@@ -68,6 +68,14 @@ class HomePageView(TemplateView):
 class AboutPageView(TemplateView):
     template_name = "pages/about.html"
 
+#for google adsense
+def ads_txt(request):
+    # Replace with your actual publisher ID provided by AdSense/AdMob
+    lines = [
+        "google.com, pub-0817194908454952, DIRECT, f08c47fec0942fa0",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
+
 
 @login_required
 def profile_view(request):
