@@ -27,6 +27,9 @@ class Category(models.Model):
     new_books_release_day_of_year = models.IntegerField(
         blank=True, null=True
     )  # Day of the year when new books are released
+    min_age = models.IntegerField(blank=True, null=True)  # Minimum recommended age
+    max_age = models.IntegerField(blank=True, null=True)  # Maximum recommended age
+    wiki = models.URLField(blank=True, null=True)  # Link to Wikipedia page
     slug = models.SlugField(max_length=256, unique=True, blank=True)
 
     def save(self, *args, **kwargs):
