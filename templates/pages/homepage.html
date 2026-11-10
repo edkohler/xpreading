@@ -45,6 +45,35 @@
                                 No completed books found in the database.
                             </div>
                         {% endif %}
+
+ <h3 class="mb-2 mt-4">Most Popular Book Lists</h3>
+
+                        {% if popular_categories %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Rank</th>
+                                            <th scope="col">Category</th>
+                                            <th scope="col">Readers</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for category in popular_categories %}
+                                        <tr>
+                                            <td class="text-nowrap">{{ forloop.counter }}.</td>
+                                            <td><a href="{% url 'category_detail' category.slug %}">{{ category.name }}</a></td>
+                                            <td>{{ category.user_count }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                No saved categories yet.
+                            </div>
+                        {% endif %}
                     </div>
 
                     <div class="col-md-5">

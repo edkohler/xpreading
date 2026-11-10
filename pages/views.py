@@ -173,6 +173,26 @@ def completed_books_lookup(books_to_list):
     return result
 
 
+def popular_categories_lookup(categories_to_list):
+    cache_key = f"popular_categories_{categories_to_list}"
+    result = cache.get(cache_key)
+
+    if result is None:
+        result = list(
+            Category.objects.annotate(
+                user_count=Count(
+                    "bookcategory__userbookcategory__user", distinct=True
+                )
+            )
+            .filter(user_count__gt=0)
+            .order_by("-user_count", "name")[:categories_to_list]
+        )
+        # Cache for 1 hour
+        cache.set(cache_key, result, 3600)
+
+    return result
+
+
 @cache_page(60 * 60)  # Cache for an hour
 def most_completed_books_view(request):
     most_completed_books = completed_books_lookup(100)
@@ -184,6 +204,7 @@ def category_list_sorted_by_year(request):
         "bookcategory_set__book", "bookcategory_set__award_level"
     )
     completed_books = completed_books_lookup(10)
+    popular_categories = popular_categories_lookup(10)
 
     # Organize categories by year in descending order
     sorted_categories = {}
@@ -193,7 +214,8 @@ def category_list_sorted_by_year(request):
 
     context = {
         "sorted_categories": sorted_categories,
-        "completed_books": completed_books
+        "completed_books": completed_books,
+        "popular_categories": popular_categories,
     }
 
     return render(request, "pages/homepage.html", context)
