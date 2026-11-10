@@ -55,7 +55,7 @@
                                         <tr>
                                             <th scope="col">Rank</th>
                                             <th scope="col">Category</th>
-                                            <th scope="col">Readers</th>
+                                            
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -63,7 +63,7 @@
                                         <tr>
                                             <td class="text-nowrap">{{ forloop.counter }}.</td>
                                             <td><a href="{% url 'category_detail' category.slug %}">{{ category.name }}</a></td>
-                                            <td>{{ category.user_count }}</td>
+                                            
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -103,16 +103,13 @@
 
 
 <h2>Book Categories</h2>
-<div class="row">
+<ul>
 {% for category, book_categories in sorted_categories.items %}
 
-
-
-        <h5 class="card-title"><a href="{% url 'category_detail' category.slug %}">{{ category.name }}</a></h5>
-        <p class="card-text">{{ category.description|truncatechars:240}}</p>
+        <li><a href="{% url 'category_detail' category.slug %}">{{ category.name }}</a></li>
 
 {% endfor %}
-</div>
+</ul>
 
 <hr>
 
