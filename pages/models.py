@@ -134,6 +134,7 @@ class Book(models.Model):
         null=True,
     )
     summary = models.TextField(blank=True, null=True)
+    
 
     def save(self, *args, **kwargs):
         if not self.slug:
