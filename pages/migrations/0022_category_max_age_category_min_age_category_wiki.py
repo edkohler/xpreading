@@ -11,11 +11,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name="book",
-            name="summary",
-            field=models.TextField(blank=True, null=True),
-        ),
-        migrations.AddField(
             model_name="category",
             name="max_age",
             field=models.IntegerField(blank=True, null=True),
