@@ -86,9 +86,10 @@
 </table>
 
 
-<hr/>
+
 
 {% if other_books_by_author %}
+<hr/>
 <div class="other-books-section">
     <h3>More Award Winning Books by {{ book.author.full_name }}</h3>
     <div class="other-books-list">
@@ -127,7 +128,12 @@ document.getElementById('mark-as-read').addEventListener('change', function() {
 });
 </script>
 
-<hr/>
-<a href="javascript:history.back()">Back</a>
 
+{% if book.summary %}
+<hr/>
+<h2>Summary</h2>
+<p>{{ book.summary | safe }}</p>
+{% endif %}
+<hr/>
+<br/>
 {% endblock content %}
