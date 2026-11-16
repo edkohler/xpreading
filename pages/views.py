@@ -1145,6 +1145,107 @@ def illustrator_detail(request, illustrator_id):
     )
 
 
+AMAZON_LOOKUP_RESULTS_SHOWN = 2
+PRINT_BOOK_FORMATS = ("paperback", "hardcover")
+
+
+def _normalize_match_text(value):
+    """Lowercase, strip accents and punctuation, and collapse whitespace."""
+    value = unidecode.unidecode(str(value or "")).lower()
+    value = value.replace("&", " and ")
+    value = re.sub(r"[^\w\s]", " ", value)
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def _title_variants(title):
+    """
+    The Amazon title as-is, plus the title with trailing (...) / [...] groups
+    removed, since Amazon routinely appends series or edition notes such as
+    "(Newbery Medal Book)" or "[Paperback]".
+    """
+    variants = {_normalize_match_text(title)}
+    stripped = str(title or "")
+    while True:
+        shorter = re.sub(r"\s*[\(\[][^\(\)\[\]]*[\)\]]\s*$", "", stripped)
+        if shorter == stripped:
+            break
+        stripped = shorter
+        variants.add(_normalize_match_text(stripped))
+    return variants
+
+
+def _result_author_names(item):
+    """Collect author names from an ASIN Data API search result."""
+    names = []
+    authors = item.get("authors") or []
+    if isinstance(authors, list):
+        for a in authors:
+            if isinstance(a, dict):
+                names.append(a.get("name", ""))
+            else:
+                names.append(str(a))
+    for key in ("author", "brand"):
+        val = item.get(key)
+        if isinstance(val, dict):
+            names.append(val.get("name", ""))
+        elif val:
+            names.append(str(val))
+    return [n for n in (_normalize_match_text(n) for n in names) if n]
+
+
+def _result_format(item):
+    """
+    Return the lowercase format name ("paperback", "hardcover", "kindle", ...)
+    of the specific ASIN in this search result, or "" if it can't be determined.
+    """
+    for key in ("book_format", "format", "binding"):
+        if item.get(key):
+            return str(item[key]).lower()
+    price = item.get("price") or {}
+    if isinstance(price, dict) and price.get("name"):
+        return str(price["name"]).lower()
+    prices = item.get("prices") or []
+    if prices and isinstance(prices[0], dict) and prices[0].get("name"):
+        return str(prices[0]["name"]).lower()
+    return ""
+
+
+def _is_exact_amazon_match(item, book):
+    """Same title, same author, and a paperback or hardcover edition."""
+    target_title = _normalize_match_text(book.title)
+    if not target_title or target_title not in _title_variants(item.get("title")):
+        return False
+
+    target_author = _normalize_match_text(book.author)
+    if not target_author or target_author not in _result_author_names(item):
+        return False
+
+    fmt = _result_format(item)
+    return any(f in fmt for f in PRINT_BOOK_FORMATS)
+
+
+def _apply_amazon_result(book, asin, image_url):
+    """Save ASIN, cover image and page count onto a book from an Amazon result."""
+    if asin and not book.asin:
+        book.asin = asin
+
+    if image_url and not book.image:
+        response = requests.get(image_url)
+        if response.status_code == 200:
+            from django.core.files.base import ContentFile
+
+            image_name = f"{book.pk}_cover.jpg"
+            book.image.save(image_name, ContentFile(response.content), save=True)
+
+    if not book.page_count and asin:
+        result = extract_page_count(lookup_page_count_on_amazon(asin), asin)
+        if result:
+            _, page_count_value = result
+            book.page_count = page_count_value
+
+    book.save()
+
+
 def lookup_book(request, pk):
     book = get_object_or_404(Book, pk=pk)
 
@@ -1169,13 +1270,29 @@ def lookup_book(request, pk):
     try:
         api_result = requests.get("https://api.asindataapi.com/request", params)
         data = api_result.json()
-        print(data)
-        # Extract relevant information from search results
+        search_results = data.get("search_results", [])
+
+        # If any result is an exact match (same title + author, paperback or
+        # hardcover), accept it automatically and return the updated row.
+        exact = next(
+            (item for item in search_results if _is_exact_amazon_match(item, book)),
+            None,
+        )
+        if exact:
+            _apply_amazon_result(book, exact.get("asin"), exact.get("image"))
+            response = render(
+                request,
+                "pages/partials/book_row.html",
+                {"book": book, "auto_matched": True},
+            )
+            # The button targets the results <div>; swap the whole row instead.
+            response["HX-Retarget"] = f"#book-row-{book.pk}"
+            response["HX-Reswap"] = "outerHTML"
+            return response
+
         results = [
             {"title": item["title"], "asin": item["asin"], "image": item["image"]}
-            for item in data.get("search_results", [])[
-                :4
-            ]  # Slice for first four results
+            for item in search_results[:AMAZON_LOOKUP_RESULTS_SHOWN]
         ]
 
         # Return the rendered HTML directly instead of wrapping in JSON
@@ -1258,32 +1375,9 @@ def update_book_from_api(request, pk):
         book = get_object_or_404(Book, pk=pk)
         asin = request.POST.get("asin")
         image_url = request.POST.get("image")
-        page_count = request.POST.get("page_count")
 
         try:
-            # Update ASIN
-            if asin and not book.asin:
-                book.asin = asin
-
-            # Download and save image if missing
-            if image_url and not book.image:
-                response = requests.get(image_url)
-                if response.status_code == 200:
-                    from django.core.files.base import ContentFile
-
-                    image_name = f"{book.pk}_cover.jpg"
-                    book.image.save(
-                        image_name, ContentFile(response.content), save=True
-                    )
-
-            if not book.page_count:
-                result = extract_page_count(lookup_page_count_on_amazon(asin), asin)
-                if result:
-                    # Extract just the page count (second item in the tuple)
-                    _, page_count_value = result
-                    book.page_count = page_count_value
-
-            book.save()
+            _apply_amazon_result(book, asin, image_url)
 
             # Return the updated row HTML
             return render(request, "pages/partials/book_row.html", {"book": book})

@@ -1,4 +1,4 @@
-<tr>
+<tr id="book-row-{{ book.pk }}"{% if auto_matched %} class="bg-green-50"{% endif %}>
     <td><a href="https://www.amazon.com/s?k={{ book.title }}+{{ book.author }}&i=stripbooks" target="_blank">{{ book.title }}</a></td>
     <td>{{ book.author }}</td>
     <td>
@@ -20,6 +20,9 @@
     <td>
         {% if book.image %}
             <img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-height: 100px;">
+        {% endif %}
+        {% if auto_matched %}
+            <p class="text-green-700 text-sm">Exact Amazon match applied automatically.</p>
         {% endif %}
     </td>
     <td>

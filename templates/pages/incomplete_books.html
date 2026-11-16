@@ -17,7 +17,7 @@
     </thead>
     <tbody>
         {% for book in books %}
-        <tr>
+        <tr id="book-row-{{ book.pk }}">
             <td><a href="https://www.amazon.com/s?k={{ book.title|urlencode }}+{{ book.author }}&i=stripbooks" target="_blank">{{ book.title }}</a></td>
             <td>{{ book.author }}</td>
             <td>
