@@ -1,7 +1,76 @@
 {% extends '_base.html' %}
+{% load static %}
 {% load custom_filters %}
 
 {% block title %}Books in {{ category.name }} List - XP Reading{% endblock %}
+
+{% block css %}
+{{ block.super }}
+<style>
+  /* Category detail: books per award year in a wrapping flexbox.
+     --book-count is set per year in the template; one row holds that many
+     books, capped per breakpoint, and extra books wrap onto new rows. */
+  .book-flex {
+    --book-gap: 1rem;
+    --books-per-row: min(var(--book-count, 2), 2);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem var(--book-gap);
+  }
+  @media (min-width: 576px) {
+    .book-flex { --books-per-row: min(var(--book-count, 3), 3); }
+  }
+  @media (min-width: 768px) {
+    .book-flex { --books-per-row: min(var(--book-count, 4), 4); }
+  }
+  @media (min-width: 992px) {
+    .book-flex { --books-per-row: min(var(--book-count, 6), 6); }
+  }
+  .book-flex-item {
+    flex: 0 0 calc((100% - (var(--books-per-row) - 1) * var(--book-gap)) / var(--books-per-row));
+    max-width: 220px; /* keeps one- or two-book years from getting huge covers */
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .book-flex-cover img {
+    display: block;
+    width: 100%;
+    max-width: 220px;
+    max-height: 330px;
+    aspect-ratio: 2 / 3;
+    object-fit: contain;
+    background-color: var(--bs-tertiary-bg);
+  }
+  .book-flex-title {
+    font-size: 1rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+  .book-flex-title a {
+    text-decoration: none;
+  }
+  .book-flex-title a:hover {
+    text-decoration: underline;
+  }
+  .book-flex-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .book-flex-action {
+    margin-top: auto;
+    width: 100%;
+  }
+  .book-flex-action .btn {
+    --bs-btn-padding-y: .25rem;
+    --bs-btn-padding-x: .5rem;
+    --bs-btn-font-size: .875rem;
+    width: 100%;
+  }
+</style>
+{% endblock css %}
 
 {% block content %}
 
@@ -13,55 +82,48 @@
 {% if books_by_year %}
   {% for year, book_categories in books_by_year.items %}
 
-  <div id="{{year}}"></div>
-    <div class="d-flex align-items-center justify-content-between">
+  <section id="{{ year }}" class="mb-5">
+    <div class="d-flex align-items-center justify-content-between mb-3">
       <h2 class="mb-0">{{ year }}</h2>
       {% with year_award=year_awards|get_item:year %}
         {% include "pages/partials/award_like_button.html" with award=year_award is_liked=year_award.liked %}
       {% endwith %}
     </div>
-    <table class="table">
-      <thead>
-        <tr>
-          <th width="10%"></th>
-          <th width="40%">Book</th>
-          <th width="20%">Author</th>
-          <th width="20%">Award Level</th>
-          <th width="10%">Completed</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in book_categories %}
-          <tr>
-            <td style="text-align: center;">{%if item.book_category.book.image%}<a href="{% url 'book_detail' item.book_category.book.slug %}"><img src="{{ item.book_category.book.image.url }}" alt="{{ item.book_category.book.title }}" style="max-width: 24px;"/></a>{%endif%}</td>
-            <td>
-              <a href="{% url 'book_detail' item.book_category.book.slug %}">{{ item.book_category.book.title }}</a>
-            </td>
-            <td><a href="{%url 'author_detail' item.book_category.book.author.id %}">{{ item.book_category.book.author.full_name }}</a></td>
-            <td>
-              {% if item.book_category.award_level %}
-                {{ item.book_category.award_level.name }}
-              {% else %}
-                Nominee
-              {% endif %}
-            </td>
 
-              <td>
-                {% include 'pages/partials/book_read_button.html' with book=item.book_category.book completed=item.completed %}
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="book-flex" style="--book-count: {{ book_categories|length }};">
+      {% for item in book_categories %}
+        {% with book=item.book_category.book %}
+        <div class="book-flex-item">
+          <a href="{% url 'book_detail' book.slug %}" class="book-flex-cover d-block">
+            {% if book.image %}
+              <img src="{{ book.image.url }}" class="rounded-3" alt="{{ book.title }}" loading="lazy">
+            {% else %}
+              <img src="{% static 'images/no-image.svg' %}" class="rounded-3" alt="No image available for {{ book.title }}">
+            {% endif %}
+          </a>
+          <div class="book-flex-body mt-2">
+            <span class="badge {% if item.book_category.award_level %}text-bg-warning{% else %}text-bg-light border{% endif %} mb-1">
+              {% if item.book_category.award_level %}{{ item.book_category.award_level.name }}{% else %}Nominee{% endif %}
+            </span>
+            <h3 class="book-flex-title mb-1">
+              <a href="{% url 'book_detail' book.slug %}">{{ book.title }}</a>
+            </h3>
+            {% if book.author %}
+              <p class="small text-muted mb-2"><a class="text-muted" href="{% url 'author_detail' book.author.id %}">{{ book.author.full_name }}</a></p>
+            {% endif %}
+            <div class="book-flex-action">
+              {% include 'pages/partials/book_read_button.html' with book=book completed=item.completed %}
+            </div>
+          </div>
+        </div>
+        {% endwith %}
+      {% endfor %}
+    </div>
+  </section>
 
   {% endfor %}
 {% else %}
   <p>No books found in this category.</p>
 {% endif %}
-
-
-
-
-
 
 {% endblock content %}

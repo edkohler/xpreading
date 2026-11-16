@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300" role="img" aria-label="No Image">
+  <rect width="200" height="300" fill="#e9ecef"/>
+  <rect x="8" y="8" width="184" height="284" fill="none" stroke="#ced4da" stroke-width="2" stroke-dasharray="6 6"/>
+  <g fill="none" stroke="#adb5bd" stroke-width="4" stroke-linejoin="round">
+    <path d="M70 110 h28 a6 6 0 0 1 6 6 v52 a6 6 0 0 0 -6 -6 h-28 z"/>
+    <path d="M130 110 h-28 a6 6 0 0 0 -6 6 v52 a6 6 0 0 1 6 -6 h28 z"/>
+  </g>
+  <text x="100" y="205" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="20" fill="#6c757d">No Image</text>
+</svg>
