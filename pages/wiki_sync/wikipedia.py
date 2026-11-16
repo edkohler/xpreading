@@ -159,6 +159,7 @@ def _strip_templates(text, names):
 
 def clean_wikitext(text):
     """Shrink wikitext for the extractor without losing list/table structure."""
+    text = text.replace("\x00", "")
     # Cut trailing reference-type sections (keep everything before the first one).
     m = DROP_SECTIONS.search(text)
     if m:

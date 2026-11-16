@@ -224,6 +224,17 @@ class SyncTest(TestCase):
             PendingAward.objects.filter(status=PendingAward.STATUS_PENDING).count(), 0
         )
 
+    def test_control_characters_are_stripped(self):
+        self.entries = [
+            entry(self.cat, 2026, "Nul\x00 Title", [("A\x00", "Writer\x00")], "Winner"),
+        ]
+        self.entries[0]["source_text"] = "row\x00text\x07"
+        self._run()
+        p = PendingAward.objects.get()
+        self.assertEqual(p.title, "Nul Title")
+        self.assertEqual(p.author_last_name, "Writer")
+        self.assertEqual(p.source_text, "rowtext")
+
     def test_dry_run_writes_nothing(self):
         out = self._run("--dry-run")
         self.assertIn("A Sea of Lemon Trees", out)

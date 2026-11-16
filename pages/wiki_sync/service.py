@@ -4,7 +4,9 @@ import logging
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 
-from django.db import IntegrityError, transaction
+import re
+
+from django.db import DatabaseError, IntegrityError, transaction
 from django.db.models import Max
 from django.utils import timezone
 
@@ -55,6 +57,20 @@ def pages_to_categories(category_ids=None):
         if title:
             groups[title].append(c)
     return dict(groups)
+
+
+_CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+
+
+def _sanitize(value):
+    """Strip NUL/control characters (PostgreSQL rejects NUL) from LLM output."""
+    if isinstance(value, str):
+        return _CONTROL_CHARS.sub("", value)
+    if isinstance(value, list):
+        return [_sanitize(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _sanitize(v) for k, v in value.items()}
+    return value
 
 
 def _person(p):
@@ -126,6 +142,7 @@ def sync_page(
         entries, notes, usage = extractor.extract_entries(
             title, since, contexts, levels, text, model=model
         )
+        entries, notes = _sanitize(entries), _sanitize(notes or "")
         result.revid, result.usage = revid, usage
         if notes:
             result.message = notes[:300]
@@ -230,6 +247,11 @@ def sync_page(
             result.created += 1
         except IntegrityError:
             result.previously_reviewed += 1
+        except DatabaseError as exc:  # one bad row must not stop the run
+            log.warning(
+                "wiki sync: could not save %r for %s: %s", title_txt, title, exc
+            )
+            result.dropped += 1
 
     if not dry_run:
         now = timezone.now()
@@ -281,17 +303,21 @@ def run_sync(
             stdout.write(
                 f"  {title} ({len(cats)} categor{'y' if len(cats) == 1 else 'ies'}) ..."
             )
-        results.append(
-            sync_page(
-                title,
-                cats,
-                since_year=since_year,
-                dry_run=dry_run,
-                model=model,
-                index=index,
-                stdout=stdout,
+        try:
+            results.append(
+                sync_page(
+                    title,
+                    cats,
+                    since_year=since_year,
+                    dry_run=dry_run,
+                    model=model,
+                    index=index,
+                    stdout=stdout,
+                )
             )
-        )
+        except Exception as exc:  # keep going with the other pages
+            log.exception("wiki sync crashed on %s", title)
+            results.append(PageResult(title, "error", message=str(exc)[:300]))
     return results
 
 
