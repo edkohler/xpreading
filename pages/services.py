@@ -40,66 +40,69 @@ class AmazonBookMatcher:
 
     def find_exact_match(self, search_results, target_title, target_author):
         """Find exact matches for title and author in search results"""
-        if not search_results or 'search_results' not in search_results:
+        if not search_results or "search_results" not in search_results:
             return None
 
         # Normalize strings for comparison
         target_title_normalized = self._normalize_title(target_title)
         target_author_normalized = self._normalize_name(target_author)
 
-        for result in search_results['search_results']:
-            result_title_normalized = self._normalize_title(result.get('title', ''))
+        for result in search_results["search_results"]:
+            result_title_normalized = self._normalize_title(result.get("title", ""))
 
             # Check for title match
-            if target_title_normalized in result_title_normalized or result_title_normalized in target_title_normalized:
+            if (
+                target_title_normalized in result_title_normalized
+                or result_title_normalized in target_title_normalized
+            ):
                 # Look for paperback or hardcover versions
-                paperback_asin = self._find_format_asin(result, 'paperback')
-                hardcover_asin = self._find_format_asin(result, 'hardcover')
+                paperback_asin = self._find_format_asin(result, "paperback")
+                hardcover_asin = self._find_format_asin(result, "hardcover")
 
                 if paperback_asin or hardcover_asin:
                     return {
-                        'asin': paperback_asin or hardcover_asin,  # Prefer paperback
-                        'title': result.get('title'),
-                        'image_url': result.get('image'),
-                        'rating': result.get('rating'),
-                        'format': 'paperback' if paperback_asin else 'hardcover'
+                        "asin": paperback_asin or hardcover_asin,  # Prefer paperback
+                        "title": result.get("title"),
+                        "image_url": result.get("image"),
+                        "rating": result.get("rating"),
+                        "format": "paperback" if paperback_asin else "hardcover",
                     }
 
         return None
 
     def _normalize_title(self, title):
         """Normalize title for comparison"""
-        return re.sub(r'[^\w\s]', '', title.lower()).strip()
+        return re.sub(r"[^\w\s]", "", title.lower()).strip()
 
     def _normalize_name(self, name):
         """Normalize author name for comparison"""
-        return re.sub(r'[^\w\s]', '', str(name).lower()).strip()
+        return re.sub(r"[^\w\s]", "", str(name).lower()).strip()
 
     def _find_format_asin(self, result, format_type):
         """Find ASIN for specific format (paperback/hardcover)"""
         # Check main result
-        if format_type.lower() in result.get('price', {}).get('name', '').lower():
-            return result.get('asin')
+        if format_type.lower() in result.get("price", {}).get("name", "").lower():
+            return result.get("asin")
 
         # Check other formats
-        for fmt in result.get('other_formats', []):
-            if format_type.lower() in fmt.get('title', '').lower():
-                return fmt.get('asin')
+        for fmt in result.get("other_formats", []):
+            if format_type.lower() in fmt.get("title", "").lower():
+                return fmt.get("asin")
 
         # Check prices array
-        for price in result.get('prices', []):
-            if format_type.lower() in price.get('name', '').lower():
-                return price.get('asin')
+        for price in result.get("prices", []):
+            if format_type.lower() in price.get("name", "").lower():
+                return price.get("asin")
 
         return None
 
     def get_product_details(self, asin):
         """Get detailed product information for a specific ASIN"""
         params = {
-            'api_key': self.api_key,
-            'amazon_domain': 'amazon.com',
-            'asin': asin,
-            'type': 'product'
+            "api_key": self.api_key,
+            "amazon_domain": "amazon.com",
+            "asin": asin,
+            "type": "product",
         }
 
         try:
@@ -140,21 +143,21 @@ class BookDataEnricher:
         updated_fields = []
 
         # Update ASIN if missing
-        if not book.asin and match['asin']:
-            book.asin = match['asin']
-            updated_fields.append('ASIN')
+        if not book.asin and match["asin"]:
+            book.asin = match["asin"]
+            updated_fields.append("ASIN")
 
         # Download and save image if missing
-        if not book.image and match.get('image_url'):
-            if self._download_image(book, match['image_url']):
-                updated_fields.append('image')
+        if not book.image and match.get("image_url"):
+            if self._download_image(book, match["image_url"]):
+                updated_fields.append("image")
 
         # Get page count if missing
         if not book.page_count and book.asin:
             page_count = self._get_page_count(book.asin)
             if page_count:
                 book.page_count = page_count
-                updated_fields.append('page_count')
+                updated_fields.append("page_count")
 
         if updated_fields:
             book.save()
@@ -174,7 +177,7 @@ class BookDataEnricher:
             book.image.save(
                 image_name,
                 ContentFile(response.content),
-                save=False  # Don't save the model yet
+                save=False,  # Don't save the model yet
             )
             print(f"    Downloaded image")
             return True
@@ -200,20 +203,22 @@ class BookDataEnricher:
                 data = amazon_product_json
 
             # Access the specifications_flat field
-            specs_flat = data.get('product', {}).get('specifications_flat', '')
+            specs_flat = data.get("product", {}).get("specifications_flat", "")
 
             # Use regex to find the page count
-            match = re.search(r'(\d+)\s+pages', specs_flat)
+            match = re.search(r"(\d+)\s+pages", specs_flat)
             if match:
                 page_count = int(match.group(1))
                 print(f"    Found page count: {page_count}")
                 return page_count
 
             # Fallback: look in the specifications list
-            specifications = data.get('product', {}).get('specifications', [])
+            specifications = data.get("product", {}).get("specifications", [])
             for spec in specifications:
-                if 'Hardcover' in spec.get('name', '') or 'Paperback' in spec.get('name', ''):
-                    match = re.search(r'(\d+)\s+pages', spec.get('value', ''))
+                if "Hardcover" in spec.get("name", "") or "Paperback" in spec.get(
+                    "name", ""
+                ):
+                    match = re.search(r"(\d+)\s+pages", spec.get("value", ""))
                     if match:
                         page_count = int(match.group(1))
                         print(f"    Found page count: {page_count}")

@@ -107,25 +107,34 @@ urlpatterns = [
     ),
     path("search/", views.search_view, name="search"),
     path("search/autocomplete/", views.search_autocomplete, name="search_autocomplete"),
-
-    #consolidate duplicate authors
-    path('authors/', views.AuthorListView.as_view(), name='author_list'),
-    path('authors/consolidate/process/', views.AuthorConsolidateView.as_view(), name='author_consolidate_process'),
-
-    #most completed books sidebar
-    path('most_completed_books/', views.most_completed_books_view, name='most_completed_books'),
-
-    #bulk update books with amazon api
-    path('books/incomplete/', views.amazon_api_incomplete_books_view, name='incomplete_books_bulk'),
-    path('books/<int:pk>/enrich/', views.enrich_book_view, name='enrich_book'),
-    path('books/bulk-enrich/', views.bulk_enrich_books_view, name='bulk_enrich_books'),
-
-    path('no_bibliocommons/', views.no_bibliocommons, name='no_bibliocommons'),
-
+    # consolidate duplicate authors
+    path("authors/", views.AuthorListView.as_view(), name="author_list"),
+    path(
+        "authors/consolidate/process/",
+        views.AuthorConsolidateView.as_view(),
+        name="author_consolidate_process",
+    ),
+    # most completed books sidebar
+    path(
+        "most_completed_books/",
+        views.most_completed_books_view,
+        name="most_completed_books",
+    ),
+    # bulk update books with amazon api
+    path(
+        "books/incomplete/",
+        views.amazon_api_incomplete_books_view,
+        name="incomplete_books_bulk",
+    ),
+    path("books/<int:pk>/enrich/", views.enrich_book_view, name="enrich_book"),
+    path("books/bulk-enrich/", views.bulk_enrich_books_view, name="bulk_enrich_books"),
+    path("no_bibliocommons/", views.no_bibliocommons, name="no_bibliocommons"),
     # AJAX endpoint to enhance book with RSS data
-    path('enhance_book/<int:book_id>/', views.enhance_book, name='enhance_book'),
-
+    path("enhance_book/<int:book_id>/", views.enhance_book, name="enhance_book"),
     # Manual update of bibliocommons_id
-    path('update_bibliocommons/<int:book_id>/', views.update_bibliocommons_id, name='update_bibliocommons_id'),
-
+    path(
+        "update_bibliocommons/<int:book_id>/",
+        views.update_bibliocommons_id,
+        name="update_bibliocommons_id",
+    ),
 ]

@@ -42,20 +42,33 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from django.views.decorators.http import require_http_methods
 
-from .services import AmazonBookMatcher, BookDataEnricher#, get_books_needing_enrichment
+from .services import (
+    AmazonBookMatcher,
+    BookDataEnricher,
+)  # , get_books_needing_enrichment
 
 
 from .forms import BookCategoryForm
-from .models import (Author, AwardLevel, AwardYearLike, Book, BookCategory,
-                     Category, Illustrator, Library, UserBook,
-                     UserBookCategory, UserFavoriteLibrary)
+from .models import (
+    Author,
+    AwardLevel,
+    AwardYearLike,
+    Book,
+    BookCategory,
+    Category,
+    Illustrator,
+    Library,
+    UserBook,
+    UserBookCategory,
+    UserFavoriteLibrary,
+)
 
 from .upload_utils import (
     validate_upload_file,
     cache_existing_books,
     cache_existing_authors,
     cache_existing_illustrators,
-    process_batch
+    process_batch,
 )
 
 logger = logging.getLogger(__name__)
@@ -68,7 +81,8 @@ class HomePageView(TemplateView):
 class AboutPageView(TemplateView):
     template_name = "pages/about.html"
 
-#for google adsense
+
+# for google adsense
 def ads_txt(request):
     # Replace with your actual publisher ID provided by AdSense/AdMob
     lines = [
@@ -87,7 +101,7 @@ def category_detail(request, slug):
     books = (
         BookCategory.objects.filter(category=category)
         .select_related("book", "book__author", "award_level")
-        .order_by("-year","award_level")
+        .order_by("-year", "award_level")
     )
 
     # Get the UserBook objects for the current user
@@ -174,14 +188,14 @@ def mark_book_unread(request, book_id):
 
 
 def completed_books_lookup(books_to_list):
-    cache_key = f'completed_books_{books_to_list}'
+    cache_key = f"completed_books_{books_to_list}"
     result = cache.get(cache_key)
 
     if result is None:
         result = list(
             Book.objects.filter(userbook__isnull=False)
-            .annotate(user_count=Count('userbook'))
-            .order_by('-user_count')[:books_to_list]
+            .annotate(user_count=Count("userbook"))
+            .order_by("-user_count")[:books_to_list]
         )
         # Cache for 1 hour
         cache.set(cache_key, result, 3600)
@@ -196,9 +210,7 @@ def popular_categories_lookup(categories_to_list):
     if result is None:
         result = list(
             Category.objects.annotate(
-                user_count=Count(
-                    "bookcategory__userbookcategory__user", distinct=True
-                )
+                user_count=Count("bookcategory__userbookcategory__user", distinct=True)
             )
             .filter(user_count__gt=0)
             .order_by("-user_count", "name")[:categories_to_list]
@@ -212,7 +224,12 @@ def popular_categories_lookup(categories_to_list):
 @cache_page(60 * 60)  # Cache for an hour
 def most_completed_books_view(request):
     most_completed_books = completed_books_lookup(100)
-    return render(request, 'pages/most_completed_books.html', {'most_completed_books': most_completed_books})
+    return render(
+        request,
+        "pages/most_completed_books.html",
+        {"most_completed_books": most_completed_books},
+    )
+
 
 @cache_page(60 * 360)
 def category_list_sorted_by_year(request):
@@ -261,7 +278,6 @@ def book_detail(request, book_slug):
     other_libraries = []
 
     other_books_by_author = Book.objects.filter(author=book.author).exclude(id=book.id)
-
 
     if request.user.is_authenticated:
         favorite_library_ids = UserFavoriteLibrary.objects.filter(
@@ -653,7 +669,7 @@ def get_unique_books_per_branch(request, library_id):
     book_ids = request.GET.get("books", "").split(",")
     base_url = f"https://gateway.bibliocommons.com/v2/libraries/{library_id}/bibs/"
     url_suffix = "/availability?locale=en-US"
-    #examle url: https://gateway.bibliocommons.com/v2/libraries/hclib/bibs/S109C5966261/availability?locale=en-US
+    # examle url: https://gateway.bibliocommons.com/v2/libraries/hclib/bibs/S109C5966261/availability?locale=en-US
 
     # Initialize branch data
     branch_unique_books = defaultdict(set)
@@ -749,7 +765,7 @@ def incomplete_books_view(request):
         | Q(bibliocommons_id__isnull=True)
         | Q(bibliocommons_id="")
         | Q(page_count__isnull=True)
-    ).order_by('-id')
+    ).order_by("-id")
 
     return render(request, "pages/incomplete_books.html", {"books": books})
 
@@ -967,7 +983,6 @@ def normalize_text(text):
     return unidecode(text.strip().lower())
 
 
-
 def search_view(request):
     query = request.GET.get("q", "")
 
@@ -1120,7 +1135,7 @@ def lookup_book(request, pk):
     title = book.title
     author = book.author
 
-    #https://app.asindataapi.com/account
+    # https://app.asindataapi.com/account
     params = {
         "api_key": settings.ASINDATAAPI,
         "type": "search",
@@ -1141,7 +1156,9 @@ def lookup_book(request, pk):
         # Extract relevant information from search results
         results = [
             {"title": item["title"], "asin": item["asin"], "image": item["image"]}
-            for item in data.get("search_results", [])[:4]  # Slice for first four results
+            for item in data.get("search_results", [])[
+                :4
+            ]  # Slice for first four results
         ]
 
         # Return the rendered HTML directly instead of wrapping in JSON
@@ -1152,9 +1169,6 @@ def lookup_book(request, pk):
         )
     except Exception as e:
         return HttpResponse(f"Error: {str(e)}", status=400)
-
-
-
 
 
 def extract_page_count(amazon_product_json, asin):
@@ -1177,48 +1191,50 @@ def extract_page_count(amazon_product_json, asin):
         data = amazon_product_json
 
     # Access the specifications_flat field
-    specs_flat = data.get('product', {}).get('specifications_flat', '')
+    specs_flat = data.get("product", {}).get("specifications_flat", "")
 
     # Use regex to find the page count
-    match = re.search(r'(\d+)\s+pages', specs_flat)
+    match = re.search(r"(\d+)\s+pages", specs_flat)
 
     if match:
-        print(asin,int(match.group(1)))
-        return (asin,int(match.group(1)))
+        print(asin, int(match.group(1)))
+        return (asin, int(match.group(1)))
 
     # Fallback: look in the specifications list
-    specifications = data.get('product', {}).get('specifications', [])
+    specifications = data.get("product", {}).get("specifications", [])
     for spec in specifications:
-        if 'Hardcover' in spec.get('name', '') or 'Paperback' in spec.get('name', ''):
-            match = re.search(r'(\d+)\s+pages', spec.get('value', ''))
+        if "Hardcover" in spec.get("name", "") or "Paperback" in spec.get("name", ""):
+            match = re.search(r"(\d+)\s+pages", spec.get("value", ""))
             if match:
-                print(asin,int(match.group(1)))
-                return (asin,int(match.group(1)))
+                print(asin, int(match.group(1)))
+                return (asin, int(match.group(1)))
 
     return None
 
+
 def lookup_page_count_on_amazon(asin):
-    #this
+    # this
 
     params = {
-    'api_key': 'E945927E67D4422398408C6CCB64513F',
-    'amazon_domain': 'amazon.com',
-    'asin': asin,
-    'type': 'product'
+        "api_key": "E945927E67D4422398408C6CCB64513F",
+        "amazon_domain": "amazon.com",
+        "asin": asin,
+        "type": "product",
     }
 
     # make the http GET request to ASIN Data API
-    api_result = requests.get('https://api.asindataapi.com/request', params)
+    api_result = requests.get("https://api.asindataapi.com/request", params)
 
     # print the JSON response from ASIN Data API
 
-    return(json.dumps(api_result.json()))
+    return json.dumps(api_result.json())
 
 
-#for asin in asins:
+# for asin in asins:
 #    extract_page_count(lookup_page_count_on_amazon(asin),asin)
 
-#page_count = extract_page_count(lookup_page_count_on_amazon('133823613X'),"133823613X")
+# page_count = extract_page_count(lookup_page_count_on_amazon('133823613X'),"133823613X")
+
 
 def update_book_from_api(request, pk):
     if request.method == "POST":
@@ -1244,14 +1260,13 @@ def update_book_from_api(request, pk):
                     )
 
             if not book.page_count:
-                result = extract_page_count(lookup_page_count_on_amazon(asin),asin)
+                result = extract_page_count(lookup_page_count_on_amazon(asin), asin)
                 if result:
                     # Extract just the page count (second item in the tuple)
                     _, page_count_value = result
                     book.page_count = page_count_value
 
             book.save()
-
 
             # Return the updated row HTML
             return render(request, "pages/partials/book_row.html", {"book": book})
@@ -1265,44 +1280,54 @@ def update_book_from_api(request, pk):
 class AuthorListView(LoginRequiredMixin, View):
     def get(self, request):
         # Find first names that appear more than once
-        duplicate_first_names = Author.objects.values('first_name').annotate(
-            count=Count('first_name')
-        ).filter(count__gt=1).values_list('first_name', flat=True)
+        duplicate_first_names = (
+            Author.objects.values("first_name")
+            .annotate(count=Count("first_name"))
+            .filter(count__gt=1)
+            .values_list("first_name", flat=True)
+        )
         # Find last names that appear more than once
-        duplicate_last_names = Author.objects.values('last_name').annotate(
-            count=Count('last_name')
-        ).filter(count__gt=1).values_list('last_name', flat=True)
+        duplicate_last_names = (
+            Author.objects.values("last_name")
+            .annotate(count=Count("last_name"))
+            .filter(count__gt=1)
+            .values_list("last_name", flat=True)
+        )
         # Filter authors to only include those with duplicate first OR last names
         authors = Author.objects.filter(
-            Q(first_name__in=duplicate_first_names) |
-            Q(last_name__in=duplicate_last_names)
-        ).order_by('last_name', 'first_name')
+            Q(first_name__in=duplicate_first_names)
+            | Q(last_name__in=duplicate_last_names)
+        ).order_by("last_name", "first_name")
 
         # Convert to list and add highlighting flag for consecutive same first names
         authors_list = list(authors)
         for i, author in enumerate(authors_list):
-            if i > 0 and author.first_name == authors_list[i-1].first_name:
+            if i > 0 and author.first_name == authors_list[i - 1].first_name:
                 author.highlight_consecutive = True
             else:
                 author.highlight_consecutive = False
 
-        return render(request, 'pages/authors/author_list.html', {'authors': authors_list})
+        return render(
+            request, "pages/authors/author_list.html", {"authors": authors_list}
+        )
 
 
 class AuthorConsolidateView(View):
     @transaction.atomic
     def post(self, request):
-        primary_author_id = request.POST.get('primary_author')
-        secondary_author_id = request.POST.get('secondary_author')
+        primary_author_id = request.POST.get("primary_author")
+        secondary_author_id = request.POST.get("secondary_author")
 
         # Validate inputs
         if not primary_author_id or not secondary_author_id:
-            messages.error(request, "Both primary and secondary authors must be selected.")
-            return redirect('author_list')
+            messages.error(
+                request, "Both primary and secondary authors must be selected."
+            )
+            return redirect("author_list")
 
         if primary_author_id == secondary_author_id:
             messages.error(request, "Primary and secondary authors must be different.")
-            return redirect('author_list')
+            return redirect("author_list")
 
         # Get author objects
         try:
@@ -1310,7 +1335,7 @@ class AuthorConsolidateView(View):
             secondary_author = Author.objects.get(pk=secondary_author_id)
         except Author.DoesNotExist:
             messages.error(request, "One or both of the selected authors do not exist.")
-            return redirect('author_list')
+            return redirect("author_list")
 
         # Get all books by the secondary author
         secondary_books = Book.objects.filter(author=secondary_author)
@@ -1326,10 +1351,11 @@ class AuthorConsolidateView(View):
         messages.success(
             request,
             f"Successfully consolidated {secondary_author} into {primary_author}. "
-            f"{secondary_books.count()} books were updated."
+            f"{secondary_books.count()} books were updated.",
         )
 
-        return redirect('author_list')
+        return redirect("author_list")
+
 
 def upload_book_categories(request):
     if request.method == "POST" and request.FILES.get("csv_file"):
@@ -1337,13 +1363,16 @@ def upload_book_categories(request):
         try:
             # First, validate the file and get row count
             validation_result = validate_upload_file(csv_file)
-            if not validation_result['is_valid']:
-                for error in validation_result['errors']:
+            if not validation_result["is_valid"]:
+                for error in validation_result["errors"]:
                     messages.error(request, error)
                 return render(request, "pages/upload_book_categories.html")
 
-            total_rows = validation_result['total_rows']
-            messages.info(request, f"File validated successfully. Processing {total_rows} records...")
+            total_rows = validation_result["total_rows"]
+            messages.info(
+                request,
+                f"File validated successfully. Processing {total_rows} records...",
+            )
 
             # Reset file pointer after validation
             csv_file.seek(0)
@@ -1371,8 +1400,12 @@ def upload_book_categories(request):
 
                 if len(batch) >= batch_size:
                     success, errors = process_batch(
-                        batch, existing_books_cache, existing_authors_cache,
-                        existing_illustrators_cache, categories_cache, award_levels_cache
+                        batch,
+                        existing_books_cache,
+                        existing_authors_cache,
+                        existing_illustrators_cache,
+                        categories_cache,
+                        award_levels_cache,
                     )
                     processed_count += success
                     error_count += errors
@@ -1380,29 +1413,37 @@ def upload_book_categories(request):
 
                     # Optional: Add progress message for very large uploads
                     if row_num % 500 == 0:
-                        messages.info(request, f"Processed {row_num} of {total_rows} records...")
+                        messages.info(
+                            request, f"Processed {row_num} of {total_rows} records..."
+                        )
 
             # Process remaining batch
             if batch:
                 success, errors = process_batch(
-                    batch, existing_books_cache, existing_authors_cache,
-                    existing_illustrators_cache, categories_cache, award_levels_cache
+                    batch,
+                    existing_books_cache,
+                    existing_authors_cache,
+                    existing_illustrators_cache,
+                    categories_cache,
+                    award_levels_cache,
                 )
                 processed_count += success
                 error_count += errors
 
             # Clear caches after processing
-            cache.delete_many(['existing_books', 'existing_authors', 'existing_illustrators'])
+            cache.delete_many(
+                ["existing_books", "existing_authors", "existing_illustrators"]
+            )
 
             if error_count > 0:
                 messages.warning(
                     request,
-                    f"Upload completed with {error_count} errors. {processed_count} records processed successfully."
+                    f"Upload completed with {error_count} errors. {processed_count} records processed successfully.",
                 )
             else:
                 messages.success(
                     request,
-                    f"Book categories uploaded successfully! {processed_count} records processed."
+                    f"Book categories uploaded successfully! {processed_count} records processed.",
                 )
 
             return redirect("upload_book_categories")
@@ -1413,22 +1454,24 @@ def upload_book_categories(request):
     return render(request, "pages/upload_book_categories.html")
 
 
-'''Update books using amazon api'''
+"""Update books using amazon api"""
+
+
 def amazon_api_incomplete_books_view(request):
     """Enhanced view to show books with missing data and enrichment options"""
     books = get_books_needing_enrichment()
 
     # Add pagination if needed
     paginator = Paginator(books, 100)  # Show 25 books per page
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     context = {
-        'books': page_obj,
-        'total_count': books.count(),
+        "books": page_obj,
+        "total_count": books.count(),
     }
 
-    return render(request, 'pages/incomplete_books_amazon_bulk.html', context)
+    return render(request, "pages/incomplete_books_amazon_bulk.html", context)
 
 
 def enrich_book_view(request, pk):
@@ -1444,22 +1487,29 @@ def enrich_book_view(request, pk):
 
     return HttpResponse("Invalid request", status=400)
 
+
 def get_books_needing_enrichment():
     """Get queryset of books that need data enrichment"""
-    return Book.objects.filter(
-        Q(asin__isnull=True) | Q(asin="") |
-        Q(page_count__isnull=True) |
-        Q(image__isnull=True) | Q(image="")
-    ).select_related('author').order_by('-id')
+    return (
+        Book.objects.filter(
+            Q(asin__isnull=True)
+            | Q(asin="")
+            | Q(page_count__isnull=True)
+            | Q(image__isnull=True)
+            | Q(image="")
+        )
+        .select_related("author")
+        .order_by("-id")
+    )
 
 
 def bulk_enrich_books_view(request):
     """View to start bulk enrichment process"""
     if request.method == "POST":
-        limit = int(request.POST.get('limit', 10))
+        limit = int(request.POST.get("limit", 10))
 
         try:
-            api_key = getattr(settings, 'ASINDATAAPI', None)
+            api_key = getattr(settings, "ASINDATAAPI", None)
             amazon_matcher = AmazonBookMatcher(api_key)
             enricher = BookDataEnricher(amazon_matcher)
 
@@ -1477,24 +1527,26 @@ def bulk_enrich_books_view(request):
                     print(f"Error processing {book.title}: {e}")
                     processed += 1
 
-            return JsonResponse({
-                'success': True,
-                'processed': processed,
-                'updated': updated,
-                'message': f'Processed {processed} books, updated {updated}'
-            })
+            return JsonResponse(
+                {
+                    "success": True,
+                    "processed": processed,
+                    "updated": updated,
+                    "message": f"Processed {processed} books, updated {updated}",
+                }
+            )
 
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
+            return JsonResponse({"success": False, "error": str(e)})
 
-    return JsonResponse({'success': False, 'error': 'Invalid request'})
+    return JsonResponse({"success": False, "error": "Invalid request"})
 
 
 def enrich_single_book(book_id):
     """Utility function to enrich a single book by ID"""
     try:
         book = Book.objects.get(id=book_id)
-        api_key = getattr(settings, 'ASINDATAAPI', None)
+        api_key = getattr(settings, "ASINDATAAPI", None)
 
         if not api_key:
             return False, "API key not configured"
@@ -1511,19 +1563,23 @@ def enrich_single_book(book_id):
         return False, str(e)
 
 
-#bibliocommons update functions:
+# bibliocommons update functions:
 def no_bibliocommons(request):
     """Display books with missing bibliocommons_id fields"""
 
-    books = Book.objects.filter(
-        models.Q(bibliocommons_id__isnull=True) |
-        models.Q(bibliocommons_id__exact='')
-    ).select_related('author').order_by('-id')
+    books = (
+        Book.objects.filter(
+            models.Q(bibliocommons_id__isnull=True)
+            | models.Q(bibliocommons_id__exact="")
+        )
+        .select_related("author")
+        .order_by("-id")
+    )
 
     context = {
-        'books': books,
+        "books": books,
     }
-    return render(request, 'pages/no_bibliocommons.html', context)
+    return render(request, "pages/no_bibliocommons.html", context)
 
 
 @csrf_exempt
@@ -1534,7 +1590,7 @@ def enhance_book(request, book_id):
         book = get_object_or_404(Book, id=book_id)
 
         # Construct the search query: "title lastname, firstname"
-        #query = f"{book.title} {book.author.last_name}, {book.author.first_name}"
+        # query = f"{book.title} {book.author.last_name}, {book.author.first_name}"
         query = f"{book.title} {book.author.last_name}"
         encoded_query = urllib.parse.quote(query)
 
@@ -1546,75 +1602,77 @@ def enhance_book(request, book_id):
             with urllib.request.urlopen(rss_url) as response:
                 rss_data = response.read()
         except urllib.error.URLError as e:
-            return JsonResponse({
-                'success': False,
-                'message': f'Error fetching RSS: {str(e)}'
-            })
+            return JsonResponse(
+                {"success": False, "message": f"Error fetching RSS: {str(e)}"}
+            )
 
         # Parse XML
         try:
             root = ET.fromstring(rss_data)
         except ET.ParseError as e:
-            return JsonResponse({
-                'success': False,
-                'message': f'Error parsing RSS XML: {str(e)}'
-            })
+            return JsonResponse(
+                {"success": False, "message": f"Error parsing RSS XML: {str(e)}"}
+            )
 
         # Find matching item
         bibliocommons_id = None
         found_match = False
 
-        for item in root.findall('.//item'):
+        for item in root.findall(".//item"):
             # Get title
-            title_elem = item.find('title')
+            title_elem = item.find("title")
             if title_elem is None:
                 continue
             item_title = title_elem.text.strip() if title_elem.text else ""
 
             # Get creator (author)
-            creator_elem = item.find('.//{http://purl.org/dc/elements/1.1/}creator')
+            creator_elem = item.find(".//{http://purl.org/dc/elements/1.1/}creator")
             if creator_elem is None:
                 continue
             item_creator = creator_elem.text.strip() if creator_elem.text else ""
             print(item_creator)
             # Get format
-            format_elem = item.find('format')
+            format_elem = item.find("format")
             if format_elem is None:
                 continue
             item_format = format_elem.text.strip() if format_elem.text else ""
 
             # Get link
-            link_elem = item.find('link')
+            link_elem = item.find("link")
             if link_elem is None:
                 continue
             item_link = link_elem.text.strip() if link_elem.text else ""
 
             # Check for matches
             title_match = book.title.lower().strip() in item_title.lower().strip()
-            print(f'title match: {title_match}')
-            #expected_author = f"{book.author.last_name}, {book.author.first_name}"
+            print(f"title match: {title_match}")
+            # expected_author = f"{book.author.last_name}, {book.author.first_name}"
             expected_author = f"{book.author.last_name}"
             print(expected_author)
-            #author_match = expected_author.lower().strip() == item_creator.lower().strip()
-            author_match = expected_author.lower().strip() == item_creator.split(",")[0].lower().strip()
-            print(f'author match: {author_match}')
-            format_match = item_format in ['BK', 'LPRINT']
-            print(f'format match: {format_match}')
-
+            # author_match = expected_author.lower().strip() == item_creator.lower().strip()
+            author_match = (
+                expected_author.lower().strip()
+                == item_creator.split(",")[0].lower().strip()
+            )
+            print(f"author match: {author_match}")
+            format_match = item_format in ["BK", "LPRINT"]
+            print(f"format match: {format_match}")
 
             if title_match and author_match and format_match:
                 print("all fields matched")
                 # Extract bibliocommons ID from link
                 # Link format: https://hclib.bibliocommons.com/item/show/6496020109
-                if '/item/show/' in item_link:
-                    #isolate number from RSS
-                    bibliocommons_id = item_link.split('/')[-1]
-                    #convert to final format ("S" + library id + "C" + BookID)
-                    bibliocommons_id = "S" + bibliocommons_id[7:] + "C" + bibliocommons_id[:7]
+                if "/item/show/" in item_link:
+                    # isolate number from RSS
+                    bibliocommons_id = item_link.split("/")[-1]
+                    # convert to final format ("S" + library id + "C" + BookID)
+                    bibliocommons_id = (
+                        "S" + bibliocommons_id[7:] + "C" + bibliocommons_id[:7]
+                    )
 
                     found_match = True
-                    print(f'found match: {found_match}')
-                    print(f'Bibliocommons ID: {bibliocommons_id}')
+                    print(f"found match: {found_match}")
+                    print(f"Bibliocommons ID: {bibliocommons_id}")
                     break
 
         if found_match and bibliocommons_id:
@@ -1622,35 +1680,35 @@ def enhance_book(request, book_id):
             book.bibliocommons_id = bibliocommons_id
             book.save()
 
-            return JsonResponse({
-                'success': True,
-                'message': f'Book enhanced with bibliocommons ID: {bibliocommons_id}',
-                'bibliocommons_id': bibliocommons_id
-            })
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": f"Book enhanced with bibliocommons ID: {bibliocommons_id}",
+                    "bibliocommons_id": bibliocommons_id,
+                }
+            )
         else:
-            return JsonResponse({
-                'success': False,
-                'message': 'No matching record found'
-            })
+            return JsonResponse(
+                {"success": False, "message": "No matching record found"}
+            )
 
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'Unexpected error: {str(e)}'
-        })
+        return JsonResponse(
+            {"success": False, "message": f"Unexpected error: {str(e)}"}
+        )
 
 
 def update_bibliocommons_id(request, book_id):
     """Manual update of bibliocommons_id via form submission"""
-    if request.method == 'POST':
+    if request.method == "POST":
         book = get_object_or_404(Book, id=book_id)
-        bibliocommons_id = request.POST.get('bibliocommons_id', '').strip()
+        bibliocommons_id = request.POST.get("bibliocommons_id", "").strip()
 
         if bibliocommons_id:
             book.bibliocommons_id = bibliocommons_id
             book.save()
             messages.success(request, f'Bibliocommons ID updated for "{book.title}"')
         else:
-            messages.error(request, 'Please provide a valid bibliocommons ID')
+            messages.error(request, "Please provide a valid bibliocommons ID")
 
-    return redirect('no_bibliocommons')
+    return redirect("no_bibliocommons")

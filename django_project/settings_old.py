@@ -19,7 +19,7 @@ env = environ.Env(
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Take environment variables from .env file
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 
 # Quick-start development settings - unsuitable for production
@@ -27,19 +27,39 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 # SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = "django-insecure-0peo@#x9jur3!h$ryje!$879xww8y1y66jx!%*#ymhg&jkozs2"
-SECRET_KEY = env('SECRET_KEY')
+# SECRET_KEY = "django-insecure-0peo@#x9jur3!h$ryje!$879xww8y1y66jx!%*#ymhg&jkozs2"
+SECRET_KEY = env("SECRET_KEY")
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = env("DEBUG")
 
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "katyreads.fly.dev", "www.xpreading.com", "*.xpreading.com", "xpreading.com"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "0.0.0.0",
+    "127.0.0.1",
+    "katyreads.fly.dev",
+    "www.xpreading.com",
+    "*.xpreading.com",
+    "xpreading.com",
+]
 
-CSRF_TRUSTED_ORIGINS = ['https://xpreading.com/', 'https://www.xpreading.com/', 'https://*.xpreading.com/', 'https://katyreads.fly.dev/', 'https://*.fly.dev']
-CSRF_ALLOWED_ORIGINS = ['https://xpreading.com/', 'https://www.xpreading.com/', 'https://*.xpreading.com/', 'https://katyreads.fly.dev/', 'https://*.fly.dev']
+CSRF_TRUSTED_ORIGINS = [
+    "https://xpreading.com/",
+    "https://www.xpreading.com/",
+    "https://*.xpreading.com/",
+    "https://katyreads.fly.dev/",
+    "https://*.fly.dev",
+]
+CSRF_ALLOWED_ORIGINS = [
+    "https://xpreading.com/",
+    "https://www.xpreading.com/",
+    "https://*.xpreading.com/",
+    "https://katyreads.fly.dev/",
+    "https://*.fly.dev",
+]
 
 # Application definition
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -62,8 +82,8 @@ INSTALLED_APPS = [
     # Local
     "accounts",
     "pages",
-    'import_export',
-    'storages',
+    "import_export",
+    "storages",
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
@@ -81,14 +101,14 @@ MIDDLEWARE = [
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
-    'google': {
+    "google": {
         # For each OAuth based provider, either add a ``SocialApp``
         # (``socialaccount`` app) containing the required client
         # credentials, or list them here:
-        'APP': {
-            'client_id': "env('GOOGLE_CLIENT_ID')",
-            'secret': "env('GOOGLE_CLIENT_SECRET')",
-            'key': ''
+        "APP": {
+            "client_id": "env('GOOGLE_CLIENT_ID')",
+            "secret": "env('GOOGLE_CLIENT_SECRET')",
+            "key": "",
         }
     }
 }
@@ -122,25 +142,24 @@ DATABASES = {
     # ImproperlyConfigured exception if not found
     #
     # The db() method is an alias for db_url().
-    'default': env.db(),
-
+    "default": env.db(),
     # read os.environ['SQLITE_URL']
-    'sqlite':{
-    "ENGINE": "django.db.backends.sqlite3",
+    "sqlite": {
+        "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
-}
+    },
 }
 
-#CACHES = {
-    # Read os.environ['CACHE_URL'] and raises
-    # ImproperlyConfigured exception if not found.
-    #
-    # The cache() method is an alias for cache_url().
+# CACHES = {
+# Read os.environ['CACHE_URL'] and raises
+# ImproperlyConfigured exception if not found.
+#
+# The cache() method is an alias for cache_url().
 #    'default': env.cache(),
 
-    # read os.environ['REDIS_URL']
+# read os.environ['REDIS_URL']
 #    'redis': env.cache_url('REDIS_URL')
-#}
+# }
 
 # For Docker/PostgreSQL usage uncomment this and comment the DATABASES config above
 # DATABASES = {
@@ -187,16 +206,16 @@ USE_I18N = True
 USE_TZ = True
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
-LOCALE_PATHS = [BASE_DIR / 'locale']
+LOCALE_PATHS = [BASE_DIR / "locale"]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#static-root
-#STATIC_ROOT = BASE_DIR / "staticfiles"
+# STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#static-url
-#STATIC_URL = "/static/"
+# STATIC_URL = "/static/"
 
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
 STATICFILES_DIRS = [BASE_DIR / "static"]
@@ -216,11 +235,11 @@ STORAGES = {
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/stable/ref/settings/#default-auto-field
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # django-crispy-forms
 # https://django-crispy-forms.readthedocs.io/en/latest/install.html#template-packs
-CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
@@ -260,16 +279,16 @@ ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 
-AWS_STORAGE_BUCKET_NAME = 'xpreading'
-AWS_LOCATION='static'
-AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+AWS_STORAGE_BUCKET_NAME = "xpreading"
+AWS_LOCATION = "static"
+AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
 AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
+    "CacheControl": "max-age=86400",
 }
 
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static/'),
+    os.path.join(BASE_DIR, "static/"),
 ]
 
 # Static Files

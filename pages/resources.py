@@ -100,4 +100,5 @@ class CategoryResource(resources.ModelResource):
             "new_books_release_day_of_year",
         )  # Order of fields
 
-#test
+
+# test

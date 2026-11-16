@@ -79,9 +79,9 @@ class Author(models.Model):
     class Meta:
         # Add indexes for better search performance
         indexes = [
-            models.Index(fields=['first_name']),
-            models.Index(fields=['last_name']),
-            models.Index(fields=['first_name', 'last_name']),
+            models.Index(fields=["first_name"]),
+            models.Index(fields=["last_name"]),
+            models.Index(fields=["first_name", "last_name"]),
         ]
 
 
@@ -105,9 +105,9 @@ class Illustrator(models.Model):
     class Meta:
         # Add indexes for better search performance
         indexes = [
-            models.Index(fields=['first_name']),
-            models.Index(fields=['last_name']),
-            models.Index(fields=['first_name', 'last_name']),
+            models.Index(fields=["first_name"]),
+            models.Index(fields=["last_name"]),
+            models.Index(fields=["first_name", "last_name"]),
         ]
 
 
@@ -134,7 +134,6 @@ class Book(models.Model):
         null=True,
     )
     summary = models.TextField(blank=True, null=True)
-    
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -150,7 +149,9 @@ class Book(models.Model):
                     first_name_slug,
                     last_name_slug,
                 )
-            )[:200]  # Keep the overall length constraint
+            )[
+                :200
+            ]  # Keep the overall length constraint
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -331,4 +332,3 @@ class AwardYearLike(models.Model):
 
     def __str__(self):
         return f"{self.user.username} likes {self.category.name} ({self.year})"
-

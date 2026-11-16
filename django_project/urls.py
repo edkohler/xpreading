@@ -8,9 +8,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/profile/", profile_view, name="account_profile"),
     path("accounts/", include("allauth.urls")),
-
     path("", include("pages.urls")),
-
 ]
 
 if settings.DEBUG:
