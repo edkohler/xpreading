@@ -86,7 +86,7 @@ def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug)
     books = (
         BookCategory.objects.filter(category=category)
-        .select_related("book", "award_level")
+        .select_related("book", "book__author", "award_level")
         .order_by("-year","award_level")
     )
 
@@ -109,9 +109,25 @@ def category_detail(request, slug):
                 }
             )
 
+    # Years of this category the user has liked (for the like/unlike buttons)
+    liked_years = set()
+    if request.user.is_authenticated:
+        liked_years = set(
+            AwardYearLike.objects.filter(
+                user=request.user, category=category
+            ).values_list("year", flat=True)
+        )
+
+    # Data for each year's like/unlike button (the partial expects category id)
+    year_awards = {
+        year: {"category": category.id, "year": year, "liked": year in liked_years}
+        for year in books_by_year
+    }
+
     context = {
         "category": category,
         "books_by_year": dict(books_by_year),
+        "year_awards": year_awards,
     }
     return render(request, "pages/category_detail.html", context)
 
@@ -872,10 +888,13 @@ def xp_report(request):
     completed_lists = []  # New list for completed awards
     near_complete_lists = []
     discoverable_lists = []  # For lists user hasn't liked yet
-    # Get all award categories and years with their book counts
-    award_list_data = BookCategory.objects.values("category", "year").annotate(
-        total_books=Count("book")
-    )
+    # Fetch every (category, year, book) row once and group in Python,
+    # instead of querying BookCategory once per category/year.
+    books_by_list = defaultdict(list)
+    for category_id, year, book_id in BookCategory.objects.values_list(
+        "category_id", "year", "book_id"
+    ):
+        books_by_list[(category_id, year)].append(book_id)
     # Get user's completed books
     user_completed_books = set(
         UserBook.objects.filter(user=user, completed=True).values_list(
@@ -888,16 +907,9 @@ def xp_report(request):
         for cat in Category.objects.values("id", "name", "slug")
     }
     # For each award list
-    for award_list in award_list_data:
-        category_id = award_list["category"]
-        year = award_list["year"]
-        total_books = award_list["total_books"]
-        # Get all books in this category/year
-        books_in_list = set(
-            BookCategory.objects.filter(category_id=category_id, year=year).values_list(
-                "book_id", flat=True
-            )
-        )
+    for (category_id, year), book_ids in books_by_list.items():
+        total_books = len(book_ids)
+        books_in_list = set(book_ids)
         # Check completion status
         completed_books_in_list = books_in_list & user_completed_books
         completion_ratio = len(completed_books_in_list) / total_books
@@ -912,6 +924,8 @@ def xp_report(request):
             "completed_count": len(completed_books_in_list),
             "total_books": total_books,
             "completion_percentage": round(completion_ratio * 100, 1),
+            # Used by the like/unlike button partial (expects category id)
+            "award": {"category": category_id, "year": year},
         }
         # Add to appropriate list based on whether it's liked and completion status
         if (category_id, year) in liked_award_years:

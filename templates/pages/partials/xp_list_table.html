@@ -1,0 +1,28 @@
+{% load custom_filters %}
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>List</th>
+            <th>Progress</th>
+            <th class="text-end"></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for list in lists %}
+        <tr>
+            <td>
+                <a href="{% url 'category_detail' slug=list.category_slug %}#{{ list.year }}">{{ list.category }} - {{ list.year }}</a>
+            </td>
+            <td style="min-width: 12rem;">
+                {{ list.completed_count }}/{{ list.total_books }} books
+                <div class="progress">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ list.completed_count|percent_complete:list.total_books }}%;" aria-valuenow="{{ list.completed_count|percent_complete:list.total_books }}" aria-valuemin="0" aria-valuemax="100">{{ list.completed_count|percent_complete:list.total_books }}%</div>
+                </div>
+            </td>
+            <td class="text-end">
+                {% include "pages/partials/award_like_button.html" with award=list.award is_liked=is_liked %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

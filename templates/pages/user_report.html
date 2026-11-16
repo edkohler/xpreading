@@ -46,51 +46,17 @@
 
 {% if completed_lists %}
     <h3>Completed Reading Lists</h3>
-    <ul>
-    {% for list in completed_lists %}
-        <li>
-            <a href="{% url 'category_detail' slug=list.category_slug %}#{{ list.year }}">{{ list.category }} - {{ list.year }}</a> -
-            {{ list.completed_count }}/{{ list.total_books }} books
-
-            <div class="progress">
-                <div class="progress-bar bg-success" role="progressbar" style="width: {{ list.completed_count|percent_complete:list.total_books }}%;" aria-valuenow="{{ list.completed_count|percent_complete:list.total_books }}" aria-valuemin="0" aria-valuemax="100">{{ list.completed_count|percent_complete:list.total_books }}%</div>
-              </div>
-        </li>
-    {% endfor %}
-    </ul>
+    {% include "pages/partials/xp_list_table.html" with lists=completed_lists is_liked=True %}
 {% endif %}
 
 {% if near_complete_lists %}
     <h3>Reading Lists In Progress</h3>
-    <ul>
-    {% for list in near_complete_lists %}
-        <li>
-            <a href="{% url 'category_detail' slug=list.category_slug %}#{{ list.year }}">{{ list.category }} - {{ list.year }}</a> -
-            {{ list.completed_count }}/{{ list.total_books }} books
-
-            <div class="progress">
-                <div class="progress-bar bg-success" role="progressbar" style="width: {{ list.completed_count|percent_complete:list.total_books }}%;" aria-valuenow="{{ list.completed_count|percent_complete:list.total_books }}" aria-valuemin="0" aria-valuemax="100">{{ list.completed_count|percent_complete:list.total_books }}%</div>
-              </div>
-        </li>
-    {% endfor %}
-    </ul>
+    {% include "pages/partials/xp_list_table.html" with lists=near_complete_lists is_liked=True %}
 {% endif %}
 
 {% if discoverable_lists %}
     <h3>Other Lists with Books You've Already Read</h3>
-    <ul>
-    {% for list in discoverable_lists %}
-        <li>
-            <a href="{% url 'category_detail' slug=list.category_slug %}#{{ list.year }}">{{ list.category }} - {{ list.year }}</a> -
-            {{ list.completed_count }}/{{ list.total_books }} books
-
-
-            <div class="progress">
-                <div class="progress-bar bg-success" role="progressbar" style="width: {{ list.completed_count|percent_complete:list.total_books }}%;" aria-valuenow="{{ list.completed_count|percent_complete:list.total_books }}" aria-valuemin="0" aria-valuemax="100">{{ list.completed_count|percent_complete:list.total_books }}%</div>
-              </div>
-        </li>
-    {% endfor %}
-    </ul>
+    {% include "pages/partials/xp_list_table.html" with lists=discoverable_lists is_liked=False %}
 {% endif %}
 
 <hr>
