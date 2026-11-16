@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+    "django.contrib.sitemaps",
     "allauth",
     "allauth.account",
     "allauth.socialaccount.providers.google",
@@ -88,6 +89,9 @@ TEMPLATES = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.CustomUser"
 SITE_ID = 1
+
+# Domain used for absolute URLs in /sitemap.xml and robots.txt
+SITEMAP_DOMAIN = env("SITEMAP_DOMAIN", default="xpreading.com")
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 

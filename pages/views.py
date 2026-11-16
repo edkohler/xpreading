@@ -91,6 +91,23 @@ def ads_txt(request):
     return HttpResponse("\n".join(lines), content_type="text/plain")
 
 
+def robots_txt(request):
+    lines = [
+        "User-agent: *",
+        "Disallow: /admin/",
+        "Disallow: /accounts/",
+        "Disallow: /data/",
+        "Disallow: /my-books/",
+        "Disallow: /my-award-lists/",
+        "Disallow: /my-to-read-list/",
+        "Disallow: /scrape-books/",
+        "Disallow: /search/autocomplete/",
+        "",
+        f"Sitemap: https://{settings.SITEMAP_DOMAIN}/sitemap.xml",
+    ]
+    return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")
+
+
 @login_required
 def profile_view(request):
     return render(request, "account/profile.html", {"user": request.user})
