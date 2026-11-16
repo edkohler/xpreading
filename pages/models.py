@@ -31,6 +31,19 @@ class Category(models.Model):
     max_age = models.IntegerField(blank=True, null=True)  # Maximum recommended age
     wiki = models.URLField(blank=True, null=True)  # Link to Wikipedia page
     slug = models.SlugField(max_length=256, unique=True, blank=True)
+    # Wikipedia sync (see pages/wiki_sync/ and `manage.py sync_wikipedia_awards`)
+    wiki_sync_enabled = models.BooleanField(
+        default=True,
+        help_text="Check this category's Wikipedia page for new books.",
+    )
+    wiki_sync_notes = models.TextField(
+        blank=True,
+        help_text=(
+            "Optional hints for the Wikipedia reader, e.g. 'Only the table under "
+            "the Picture Book heading belongs to this category' or 'Year column "
+            "is the publication year; our year is the award year (+1)'."
+        ),
+    )
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -332,3 +345,99 @@ class AwardYearLike(models.Model):
 
     def __str__(self):
         return f"{self.user.username} likes {self.category.name} ({self.year})"
+
+
+class WikiPageState(models.Model):
+    """One row per Wikipedia page that one or more categories point to."""
+
+    title = models.CharField(max_length=300, unique=True)  # e.g. "Newbery_Medal"
+    last_checked_at = models.DateTimeField(null=True, blank=True)
+    last_seen_revid = models.BigIntegerField(null=True, blank=True)
+    last_processed_revid = models.BigIntegerField(null=True, blank=True)
+    last_processed_at = models.DateTimeField(null=True, blank=True)
+    last_error = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["title"]
+
+    def __str__(self):
+        return self.title.replace("_", " ")
+
+    @property
+    def url(self):
+        return f"https://en.wikipedia.org/wiki/{self.title}"
+
+
+class PendingAward(models.Model):
+    """A book/award entry found on Wikipedia that is not yet in BookCategory.
+
+    Created by the sync command, reviewed and approved in the admin.
+    """
+
+    STATUS_PENDING = "pending"
+    STATUS_APPROVED = "approved"
+    STATUS_REJECTED = "rejected"
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "Pending review"),
+        (STATUS_APPROVED, "Approved"),
+        (STATUS_REJECTED, "Rejected"),
+    ]
+
+    MATCH_EXISTING = "existing_book"
+    MATCH_NEW = "new_book"
+    MATCH_CONFLICT = "check"
+    MATCH_CHOICES = [
+        (MATCH_EXISTING, "Existing book - add to category"),
+        (MATCH_NEW, "New book"),
+        (MATCH_CONFLICT, "Needs a look"),
+    ]
+
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    wiki_page = models.ForeignKey(
+        WikiPageState, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    wiki_revid = models.BigIntegerField(null=True, blank=True)
+    year = models.IntegerField()
+    title = models.CharField(max_length=200)
+    author_first_name = models.CharField(max_length=100, blank=True)
+    author_last_name = models.CharField(max_length=100)
+    illustrator_first_name = models.CharField(max_length=100, blank=True)
+    illustrator_last_name = models.CharField(max_length=100, blank=True)
+    award_level = models.ForeignKey(
+        AwardLevel, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    level_text = models.CharField(
+        max_length=100, blank=True, help_text="Level wording used on Wikipedia"
+    )
+    source_text = models.TextField(blank=True, help_text="Wikipedia text it came from")
+    match_type = models.CharField(max_length=20, choices=MATCH_CHOICES)
+    matched_book = models.ForeignKey(
+        Book, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    match_notes = models.TextField(blank=True)
+    normalized_key = models.CharField(max_length=255, editable=False)
+    status = models.CharField(
+        max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    book_category = models.ForeignKey(
+        BookCategory, on_delete=models.SET_NULL, null=True, blank=True
+    )
+
+    class Meta:
+        ordering = ["status", "category__name", "-year", "title"]
+        constraints = [
+            # A rejected proposal stays rejected: the sync never re-proposes it.
+            models.UniqueConstraint(
+                fields=["category", "year", "normalized_key"],
+                name="unique_pending_award",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.title} ({self.category.name} {self.year})"
+
+    @property
+    def author_display(self):
+        return f"{self.author_first_name} {self.author_last_name}".strip()
