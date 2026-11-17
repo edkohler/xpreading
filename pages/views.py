@@ -18,7 +18,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db import transaction, models
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, F, Q, Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import Http404, get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -220,8 +220,9 @@ def completed_books_lookup(books_to_list):
     return result
 
 
-def popular_categories_lookup(categories_to_list):
-    cache_key = f"popular_categories_{categories_to_list}"
+def popular_categories_lookup(categories_to_list, books_per_category=12, books_per_slide=4):
+    # v3: each category carries `.book_slides` (lists of books) for the homepage carousels
+    cache_key = f"popular_categories_v3_{categories_to_list}"
     result = cache.get(cache_key)
 
     if result is None:
@@ -232,6 +233,23 @@ def popular_categories_lookup(categories_to_list):
             .filter(user_count__gt=0)
             .order_by("-user_count", "name")[:categories_to_list]
         )
+        # Most recent books first, top award level first within a year
+        for category in result:
+            books, seen = [], set()
+            for bc in (
+                BookCategory.objects.filter(category=category)
+                .select_related("book")
+                .order_by("-year", F("award_level__order").asc(nulls_last=True))
+            ):
+                if bc.book_id not in seen:
+                    seen.add(bc.book_id)
+                    books.append(bc.book)
+                if len(books) >= books_per_category:
+                    break
+            category.book_slides = [
+                books[k : k + books_per_slide]
+                for k in range(0, len(books), books_per_slide)
+            ]
         # Cache for 1 hour
         cache.set(cache_key, result, 3600)
 

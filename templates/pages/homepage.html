@@ -1,4 +1,5 @@
 {% extends '_base.html' %}
+{% load static %}
 
 {% block title %}XP Reading - Student Reading List Challenges{% endblock %}
 
@@ -46,34 +47,65 @@
                             </div>
                         {% endif %}
 
- <h3 class="mb-2 mt-4">Most Popular Book Lists</h3>
+<h3 class="mb-3 mt-4">Most Popular Book Lists</h3>
 
-                        {% if popular_categories %}
-                            <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">Rank</th>
-                                            <th scope="col">Category</th>
-                                            
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for category in popular_categories %}
-                                        <tr>
-                                            <td class="text-nowrap">{{ forloop.counter }}.</td>
-                                            <td><a href="{% url 'category_detail' category.slug %}">{{ category.name }}</a></td>
-                                            
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
+{% if popular_categories %}
+  {% for category in popular_categories %}
+    <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h4 class="h5 mb-0">
+          <span class="badge text-bg-secondary me-1">#{{ forloop.counter }}</span>
+          <a href="{% url 'category_detail' category.slug %}">{{ category.name }}</a>
+        </h4>
+        {% if category.book_slides|length > 1 %}
+          <div class="btn-group btn-group-sm" role="group" aria-label="Browse {{ category.name }} books">
+            <button class="btn btn-outline-secondary" type="button" data-bs-target="#popular-list-{{ category.id }}" data-bs-slide="prev">
+              <span aria-hidden="true">&lsaquo;</span>
+              <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="btn btn-outline-secondary" type="button" data-bs-target="#popular-list-{{ category.id }}" data-bs-slide="next">
+              <span aria-hidden="true">&rsaquo;</span>
+              <span class="visually-hidden">Next</span>
+            </button>
+          </div>
+        {% endif %}
+      </div>
+
+      <div id="popular-list-{{ category.id }}" class="carousel slide" data-bs-ride="false" data-bs-wrap="false" data-bs-touch="true">
+        <div class="carousel-inner">
+          {% for slide in category.book_slides %}
+            <div class="carousel-item{% if forloop.first %} active{% endif %}">
+              <div class="row row-cols-4 g-2">
+                {% for book in slide %}
+                  <div class="col">
+                    <a href="{% url 'book_detail' book.slug %}" class="d-block">
+                      <div class="ratio" style="--bs-aspect-ratio: 150%;">
+                        {% if book.image %}
+                          <img src="{{ book.image.url }}" class="object-fit-contain bg-body-tertiary rounded" alt="{{ book.title }}" loading="lazy">
                         {% else %}
-                            <div class="alert alert-info">
-                                No saved categories yet.
-                            </div>
+                          <img src="{% static 'images/no-image.svg' %}" class="object-fit-contain bg-body-tertiary rounded" alt="No image available for {{ book.title }}">
                         {% endif %}
+                      </div>
+                    </a>
+                    <a href="{% url 'book_detail' book.slug %}" class="d-block small mt-1 lh-sm link-underline link-underline-opacity-0 link-underline-opacity-100-hover">{{ book.title }}</a>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% empty %}
+            <p class="text-muted small mb-0">No books in this list yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <div class="alert alert-info">
+    No saved categories yet.
+  </div>
+{% endif %}
+
+
                     </div>
 
                     <div class="col-md-5">
@@ -119,3 +151,4 @@ We aim to help motivated readers stay interested through project based reading. 
 </main>
 </container>
 {% endblock content %}
+
