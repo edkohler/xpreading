@@ -1018,6 +1018,31 @@ def normalize_text(text):
     return unidecode(text.strip().lower())
 
 
+def name_search_q(query, prefix=""):
+    """
+    Build a Q object matching a person's name against first_name/last_name.
+
+    A single-word query matches either field (existing behavior). A multi-word
+    query like "Angela Johnson" also matches when every word appears in either
+    the first or last name, so full names, reversed names ("Johnson Angela"),
+    and middle names stored in first_name ("Mary Pope Osborne") all match.
+    """
+    first = f"{prefix}first_name__icontains"
+    last = f"{prefix}last_name__icontains"
+    query = query.strip()
+
+    q = Q(**{first: query}) | Q(**{last: query})
+
+    terms = query.split()
+    if len(terms) > 1:
+        all_terms = Q()
+        for term in terms:
+            all_terms &= Q(**{first: term}) | Q(**{last: term})
+        q |= all_terms
+
+    return q
+
+
 def search_view(request):
     query = request.GET.get("q", "")
 
@@ -1033,20 +1058,14 @@ def search_view(request):
             },
         )
 
-    authors = Author.objects.filter(
-        Q(first_name__icontains=query) | Q(last_name__icontains=query)
-    ).distinct()
+    authors = Author.objects.filter(name_search_q(query)).distinct()
 
-    illustrators = Illustrator.objects.filter(
-        Q(first_name__icontains=query) | Q(last_name__icontains=query)
-    ).distinct()
+    illustrators = Illustrator.objects.filter(name_search_q(query)).distinct()
 
     books = Book.objects.filter(
         Q(title__icontains=query)
-        | Q(author__first_name__icontains=query)
-        | Q(author__last_name__icontains=query)
-        | Q(illustrator__first_name__icontains=query)
-        | Q(illustrator__last_name__icontains=query)
+        | name_search_q(query, prefix="author__")
+        | name_search_q(query, prefix="illustrator__")
         | Q(isbn__icontains=query)
     ).distinct()
 
@@ -1085,13 +1104,9 @@ def search_autocomplete(request):
             request, "pages/search/partials/autocomplete_results.html", {"results": []}
         )
 
-    authors = Author.objects.filter(
-        Q(first_name__icontains=query) | Q(last_name__icontains=query)
-    )[:5]
+    authors = Author.objects.filter(name_search_q(query))[:5]
 
-    illustrators = Illustrator.objects.filter(
-        Q(first_name__icontains=query) | Q(last_name__icontains=query)
-    )[:5]
+    illustrators = Illustrator.objects.filter(name_search_q(query))[:5]
 
     books = Book.objects.filter(Q(title__icontains=query))[:5]
 
