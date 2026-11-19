@@ -11,7 +11,9 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {% for author in authors %}
                         <div class="author-card p-4 border rounded">
-                            <h4 class="font-bold">{{ author }}</h4>
+                            <h4 class="font-bold">
+  <a href="{% url 'author_detail' author.id %}" class="text-blue-500 hover:underline">{{ author }}</a>
+</h4>
                             <p class="text-gray-600">{{ author.books.count }} books</p>
                         </div>
                     {% endfor %}
@@ -25,7 +27,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {% for illustrator in illustrators %}
                         <div class="author-card p-4 border rounded">
-                            <h4 class="font-bold">{{ illustrator }}</h4>
+                            <a href="{% url 'illustrator_detail' illustrator.id %}" class="text-blue-500 hover:underline">{{ illustrator }}</a>
                             <p class="text-gray-600">{{ illustrator.books.count }} books</p>
                         </div>
                     {% endfor %}
