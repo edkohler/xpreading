@@ -6,7 +6,8 @@ Find duplicate books in the database and merge them.
     python manage.py dedupe_books --apply              # merge high-confidence groups
     python manage.py dedupe_books --confidence medium  # include medium (or review)
     python manage.py dedupe_books --decisions dupes.csv --apply
-        # merge exactly the groups marked "merge" in the Decision column
+        # merge exactly the groups marked "merge" in the Decision column;
+        # the row whose action is "KEEP" is the book kept (move it to override)
 
 Merging a group:
   * keeps the most complete record (BiblioCommons ID, ASIN, page count, image,
@@ -133,6 +134,12 @@ class Command(BaseCommand):
             if len(members) < 2:
                 continue
             members.sort(key=lambda b: completeness(b, award_counts.get(b.id, 0)), reverse=True)
+            if g.get("keep") in books:  # KEEP chosen in the decisions file
+                members.sort(key=lambda b: b.id != g["keep"])
+            elif g.get("keep"):
+                self.stdout.write(self.style.ERROR(
+                    f"[{n}] KEEP book {g['keep']} no longer exists; skipping group"))
+                continue
             keeper, dups = members[0], members[1:]
             new_title = best_title(members, keeper)
 
@@ -214,12 +221,21 @@ class Command(BaseCommand):
         with open(path, newline="", encoding="utf-8-sig") as f:
             for row in csv.DictReader(f):
                 row = {k.strip().lower(): (v or "").strip() for k, v in row.items() if k}
-                g = groups.setdefault(row["group"], dict(ids=[], merge=False))
+                g = groups.setdefault(row["group"], dict(ids=[], merge=False, keep=[]))
                 g["ids"].append(int(row["id"]))
+                if row.get("action", "").upper() == "KEEP":
+                    g["keep"].append(int(row["id"]))
                 if row.get("decision", "").lower() == "merge":
                     g["merge"] = True
-        return [dict(ids=sorted(g["ids"]), confidence="decided", reasons=["from " + path])
-                for g in groups.values() if g["merge"]]
+        out = []
+        for name, g in groups.items():
+            if not g["merge"]:
+                continue
+            if len(g["keep"]) > 1:
+                raise CommandError(f"Group {name} in {path} has more than one KEEP row.")
+            out.append(dict(ids=sorted(g["ids"]), confidence="decided",
+                            reasons=["from " + path], keep=g["keep"][0] if g["keep"] else None))
+        return out
 
     # ------------------------------------------------------------------
     def _merge(self, keeper, dups, new_title, apply, keep_images):
