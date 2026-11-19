@@ -1,17 +1,17 @@
 <div class="search-results mt-4">
     {% if results %}
         {% for result in results %}
-        <div class="result-item border p-4 mb-4 bg-white rounded shadow-sm">
-            <div class="flex items-center gap-4">
+        <div class="result-item border p-3 mb-3 bg-body rounded shadow-sm">
+            <div class="d-flex align-items-center gap-3">
                 {% if result.image %}
                 <div class="flex-shrink-0">
-                    <img src="{{ result.image }}" alt="{{ result.title }}" class="w-24 h-auto object-cover">
+                    <img src="{{ result.image }}" alt="{{ result.title }}" class="img-fluid" style="width: 6rem;">
                 </div>
                 {% endif %}
-                <div class="flex-grow">
-                    <h4 class="text-lg font-semibold mb-2">{{ result.title }}</h4>
-                    <p class="text-gray-600 mb-2">ASIN:<a href="https://www.amazon.com/dp/{{ result.asin }}" target="_blank">{{ result.asin }}</a></p>
-                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                <div class="flex-grow-1">
+                    <h4 class="fs-5 fw-semibold mb-2">{{ result.title }}</h4>
+                    <p class="text-body-secondary mb-2">ASIN: <a href="https://www.amazon.com/dp/{{ result.asin }}" target="_blank">{{ result.asin }}</a></p>
+                    <button class="btn btn-primary"
                             hx-post="{% url 'update_book_from_api' book_id %}"
                             hx-vals='{"asin": "{{ result.asin }}", "image": "{{ result.image }}"}'
                             hx-target="closest tr"
@@ -23,6 +23,6 @@
         </div>
         {% endfor %}
     {% else %}
-        <p class="text-gray-600">No results found.</p>
+        <p class="text-body-secondary">No results found.</p>
     {% endif %}
 </div>

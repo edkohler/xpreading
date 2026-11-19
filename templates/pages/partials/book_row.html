@@ -1,4 +1,4 @@
-<tr id="book-row-{{ book.pk }}"{% if auto_matched %} class="bg-green-50"{% endif %}>
+<tr id="book-row-{{ book.pk }}"{% if auto_matched %} class="table-success"{% endif %}>
     <td><a href="https://www.amazon.com/s?k={{ book.title }}+{{ book.author }}&i=stripbooks" target="_blank">{{ book.title }}</a></td>
     <td>{{ book.author }}</td>
     <td>
@@ -22,12 +22,12 @@
             <img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-height: 100px;">
         {% endif %}
         {% if auto_matched %}
-            <p class="text-green-700 text-sm">Exact Amazon match applied automatically.</p>
+            <p class="text-success small mb-0">Exact Amazon match applied automatically.</p>
         {% endif %}
     </td>
     <td>
         {% if not book.asin or not book.image %}
-            <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            <button class="btn btn-success btn-sm"
                     hx-get="{% url 'lookup_book' book.pk %}"
                     hx-target="#results-{{ book.pk }}"
                     hx-trigger="click">

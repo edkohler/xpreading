@@ -1,28 +1,31 @@
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mb-3">
     {% for book in books %}
-        <div class="book-card p-4 border rounded">
-            {% if book.image %}
-                <a href="{%url 'book_detail' book.slug%}"><img src="{{ book.image.url }}" alt="{{ book.title }}" class="w-32 h-48 object-cover mb-2" width="100"></a>
-            {% endif %}
-            <h4 class="font-bold"><a href="{%url 'book_detail' book.slug%}">{{ book.title }}</a></h4>
-            <p class="text-gray-600">by {{ book.author }}</p>
-            {% if book.illustrator%}
-            <p class="text-gray-600">Illustrator: {{ book.illustrator }}</p>
-            {% endif %}
+        <div class="col">
+            <div class="book-card p-3 border rounded h-100">
+                {% if book.image %}
+                    <a href="{% url 'book_detail' book.slug %}"><img src="{{ book.image.url }}" alt="{{ book.title }}" class="object-fit-cover rounded mb-2" style="width: 8rem; height: 12rem;"></a>
+                {% endif %}
+                <h4 class="h6 fw-bold"><a href="{% url 'book_detail' book.slug %}">{{ book.title }}</a></h4>
+                <p class="text-body-secondary mb-1">by {{ book.author }}</p>
+                {% if book.illustrator %}
+                <p class="text-body-secondary mb-0">Illustrator: {{ book.illustrator }}</p>
+                {% endif %}
+            </div>
         </div>
     {% endfor %}
 </div>
 
 {% if books.has_next %}
-    <div class="text-center mt-4">
+    <div class="load-more text-center mt-2 mb-4">
         <button
-            class="bg-blue-500 text-white px-4 py-2 rounded"
-            hx-get="{% url 'search' %}?q={{ query }}&page={{ books.next_page_number }}"
-            hx-target="#books-container"
-            hx-swap="beforeend"
-            hx-indicator=".htmx-indicator"
+            class="btn btn-primary"
+            hx-get="{% url 'search' %}?q={{ query|urlencode }}&page={{ books.next_page_number }}"
+            hx-target="closest .load-more"
+            hx-swap="outerHTML"
+            hx-indicator="closest .load-more"
         >
             Load More Books
         </button>
+        <div class="htmx-indicator"><div class="spinner"></div></div>
     </div>
 {% endif %}

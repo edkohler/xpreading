@@ -127,22 +127,22 @@
     </div>
 
   </nav>
-  <form class="search-form relative w-full max-w-4xl mx-auto" action="{% url 'search' %}" method="get">
-    <div class="relative">
+  <form class="search-form position-relative w-100 mx-auto my-3 px-3" action="{% url 'search' %}" method="get">
+    <div class="position-relative">
         <input
             type="text"
             name="q"
             placeholder="Search books and authors..."
-            class="w-full p-2 text-lg border rounded"
+            class="form-control form-control-lg"
             hx-get="{% url 'search_autocomplete' %}"
             hx-trigger="keyup changed delay:500ms"
             hx-target="#search-results"
             hx-indicator=".htmx-indicator"
         >
         <div id="search-results"
-             class="absolute w-full bg-white border rounded-b shadow-lg mt-1 z-50">
+             class="position-absolute w-100 bg-body border rounded-bottom shadow mt-1">
         </div>
-        <div class="htmx-indicator absolute right-3 top-3">
+        <div class="htmx-indicator position-absolute top-0 end-0 mt-2 me-3">
             <div class="spinner"></div>
         </div>
     </div>

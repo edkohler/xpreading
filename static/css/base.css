@@ -80,25 +80,25 @@ body {
   animation: spin 1s linear infinite;
 }
 
-.hidden {
-  display: none;
-}
-
-
-.aspect-w-2 {
-  position: relative;
-  padding-bottom: 150%; /* 2:3 aspect ratio */
-}
-
-.aspect-h-3 {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-
 .book-card:hover {
   transform: translateY(-2px);
   transition: transform 0.2s ease-in-out;
+}
+
+/* Header search box and its autocomplete dropdown */
+.search-form {
+  max-width: 56rem;
+}
+#search-results {
+  z-index: 1050;
+}
+#search-results:empty,
+#search-results:has(> .autocomplete-results.d-none) {
+  display: none;
+}
+.autocomplete-item:hover {
+  background-color: var(--bs-tertiary-bg);
+}
+.autocomplete-item a:hover {
+  text-decoration: underline;
 }

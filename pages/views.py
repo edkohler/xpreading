@@ -289,6 +289,21 @@ def category_list_sorted_by_year(request):
     return render(request, "pages/homepage.html", context)
 
 
+def _annotate_completed(user, books):
+    """Set book.completed on each book for the user's read status."""
+    books = list(books)
+    completed_ids = set()
+    if user.is_authenticated and books:
+        completed_ids = set(
+            UserBook.objects.filter(
+                user=user, completed=True, book__in=books
+            ).values_list("book_id", flat=True)
+        )
+    for b in books:
+        b.completed = b.id in completed_ids
+    return books
+
+
 def book_detail(request, book_slug):
     book = get_object_or_404(Book, slug=book_slug)
     categories = BookCategory.objects.filter(book=book).select_related(
@@ -312,7 +327,10 @@ def book_detail(request, book_slug):
     favorite_libraries = []
     other_libraries = []
 
-    other_books_by_author = Book.objects.filter(author=book.author).exclude(id=book.id)
+    other_books_by_author = _annotate_completed(
+        request.user,
+        Book.objects.filter(author=book.author).exclude(id=book.id).order_by("title"),
+    )
 
     if request.user.is_authenticated:
         favorite_library_ids = UserFavoriteLibrary.objects.filter(
@@ -1130,6 +1148,7 @@ def author_detail(request, author_id):
     paginator = Paginator(books, 12)  # Show 12 books per page
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
+    page_obj.object_list = _annotate_completed(request.user, page_obj.object_list)
 
     if request.headers.get("HX-Request"):
         return render(
@@ -1159,6 +1178,7 @@ def illustrator_detail(request, illustrator_id):
     paginator = Paginator(books, 12)  # Show 12 books per page
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
+    page_obj.object_list = _annotate_completed(request.user, page_obj.object_list)
 
     if request.headers.get("HX-Request"):
         return render(

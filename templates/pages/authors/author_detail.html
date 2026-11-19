@@ -1,20 +1,25 @@
 {% extends '_base.html' %}
+{% load static %}
 {% block title %}Award Winning Books by {{ author.full_name }} {{ illustrator.full_name }}{% endblock %}
 
+{% block css %}
+{{ block.super }}
+{% include 'pages/partials/book_flex_styles.html' %}
+{% endblock css %}
+
 {% block content %}
-<div class="container mx-auto px-4 py-8">
+<div class="py-4">
     <!-- Author Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold mb-2">{{ author.full_name }}</h1>
-        {%if illustrator%}
-        <h1 class="text-3xl font-bold mb-2">Books illustrated by {{ illustrator.full_name }}</h1>
-        {%endif%}
-        <p class="text-gray-600">{{ total_books }} {% if total_books == 1 %}book{% else %}books{% endif %}</p>
+    <div class="mb-4">
+        <h1 class="mb-2">{{ author.full_name }}</h1>
+        {% if illustrator %}
+        <h1 class="mb-2">Books illustrated by {{ illustrator.full_name }}</h1>
+        {% endif %}
+        <p class="text-body-secondary">{{ total_books }} {% if total_books == 1 %}book{% else %}books{% endif %}</p>
     </div>
 
     <!-- Books Section -->
     <div class="books-section">
-
         <div id="books-container">
             {% include 'pages/authors/partials/book_list.html' %}
         </div>

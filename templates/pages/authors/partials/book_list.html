@@ -1,49 +1,43 @@
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+{% load static %}
+{% comment %}
+  One page of books. "Load More" replaces its own wrapper with the next page,
+  so pages stack as separate .book-flex blocks. The page size (12) divides
+  evenly into every breakpoint's row length, so rows line up across pages.
+{% endcomment %}
+<div class="book-flex mb-4">
     {% for book in books %}
-    <div class="book-card bg-white rounded-lg shadow-md overflow-hidden">
-        {% if book.image %}
-        <div class="aspect-w-2 aspect-h-3">
-            <img src="{{ book.image.url }}"
-                 alt="{{ book.title }}"
-                 class="object-cover w-full h-full"
-                 width="100">
-
-        {% else %}
-        <div class="aspect-w-2 aspect-h-3 bg-gray-200 flex items-center justify-center">
-            <span class="text-gray-400">No Cover</span>
-        </div>
-        {% endif %}
-
-
-            <h3 class="font-bold text-lg mb-2">
-                <a href="{% url 'book_detail' book.slug %}"
-                   class="text-blue-600 hover:text-blue-800">
-                    {{ book.title }}
-                </a>
-            </h3>
-
-            
-
-            {% if book.page_count %}
-            <p class="text-sm text-gray-600">{{ book.page_count }} pages</p>
+    <div class="book-flex-item">
+        <a href="{% url 'book_detail' book.slug %}" class="book-flex-cover d-block">
+            {% if book.image %}
+                <img src="{{ book.image.url }}" class="rounded-3" alt="{{ book.title }}" loading="lazy">
+            {% else %}
+                <img src="{% static 'images/no-image.svg' %}" class="rounded-3" alt="No image available for {{ book.title }}">
             {% endif %}
+        </a>
+        <div class="book-flex-body mt-2">
+            <h3 class="book-flex-title mb-1">
+                <a href="{% url 'book_detail' book.slug %}">{{ book.title }}</a>
+            </h3>
+            {% if book.page_count %}
+                <p class="small text-body-secondary mb-2">{{ book.page_count }} pages</p>
+            {% endif %}
+            <div class="book-flex-action">
+                {% include 'pages/partials/book_read_button.html' with book=book completed=book.completed %}
+            </div>
         </div>
     </div>
     {% endfor %}
 </div>
 
 {% if books.has_next %}
-<div class="text-center mt-8">
-    <button class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+<div class="load-more text-center mt-2 mb-4">
+    <button class="btn btn-primary"
             hx-get="{{ request.path }}?page={{ books.next_page_number }}"
-            hx-target="#books-container"
-            hx-swap="beforeend"
-            hx-indicator=".htmx-indicator">
+            hx-target="closest .load-more"
+            hx-swap="outerHTML"
+            hx-indicator="closest .load-more">
         Load More Books
     </button>
+    <div class="htmx-indicator"><div class="spinner"></div></div>
 </div>
 {% endif %}
-
-<div class="htmx-indicator text-center mt-4">
-    <div class="spinner inline-block"></div>
-</div>

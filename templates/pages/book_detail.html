@@ -1,6 +1,11 @@
 {% extends '_base.html' %}
 {% load static %}
 
+{% block css %}
+{{ block.super }}
+{% include 'pages/partials/book_flex_styles.html' %}
+{% endblock css %}
+
 {% block title %}{{ book.title }} - Find More Books Like This{% endblock title %}
 
 {% block content %}
@@ -47,19 +52,12 @@
   {% endfor %}
 </ul>
 </td></tr>
-</table
-
-
-
-
-</div>
-
-
+</table>
 
 <h2>Library Lookup Links</h2>
 <p>Clicking the links to libraries listed below takes you to each library's search results for this book.</p><p>Add local libraries to your favorites <a href="{%url 'library_list' %}">here</a>.</p>
 
-<table>
+<table class="table">
   <thead>
     <tr>
       <th>State</th>
@@ -70,7 +68,7 @@
     {% if favorite_libraries %}
 
     {% for library in favorite_libraries %}
-      <tr class="bg-yellow-50">
+      <tr class="table-warning">
         <td>{{ library.state }}</td>
         <td>
           <a href="{{ library.url_prefix }}{{ book.title_url_friendly|lower }}+{{ book.first_name_url_friendly|lower }}+{{ book.last_name_url_friendly|lower }}{{ library.url_suffix }}" target="_blank">
@@ -90,44 +88,31 @@
 
 {% if other_books_by_author %}
 <hr/>
-<div class="other-books-section">
-    <h3>More Award Winning Books by {{ book.author.full_name }}</h3>
-    <div class="other-books-list">
-        {% for other_book in other_books_by_author %}
-            <div class="other-book-item">
-                <a href="{% url 'book_detail' other_book.slug %}">
-                    {% if other_book.image %}
-                        <img src="{{ other_book.image.url}}" alt="{{ other_book.title }}" class="other-book-cover" style="max-width: 100px;">
-                    {% else %}
-                        <div class="no-cover">No Cover</div>
-                    {% endif %}</a>
-                    <a href="{% url 'book_detail' other_book.slug %}">{{ other_book.title }}</a>
-                </a>
-            </div>
-        {% endfor %}
+<section class="other-books-section mb-5">
+  <h3 class="mb-3">More Award Winning Books by {{ book.author.full_name }}</h3>
+  <div class="book-flex" style="--book-count: {{ other_books_by_author|length }};">
+    {% for other_book in other_books_by_author %}
+    <div class="book-flex-item">
+      <a href="{% url 'book_detail' other_book.slug %}" class="book-flex-cover d-block">
+        {% if other_book.image %}
+          <img src="{{ other_book.image.url }}" class="rounded-3" alt="{{ other_book.title }}" loading="lazy">
+        {% else %}
+          <img src="{% static 'images/no-image.svg' %}" class="rounded-3" alt="No image available for {{ other_book.title }}">
+        {% endif %}
+      </a>
+      <div class="book-flex-body mt-2">
+        <h4 class="book-flex-title mb-2">
+          <a href="{% url 'book_detail' other_book.slug %}">{{ other_book.title }}</a>
+        </h4>
+        <div class="book-flex-action">
+          {% include 'pages/partials/book_read_button.html' with book=other_book completed=other_book.completed %}
+        </div>
+      </div>
     </div>
-</div>
+    {% endfor %}
+  </div>
+</section>
 {% endif %}
-
-
-
-<script>
-document.getElementById('mark-as-read').addEventListener('change', function() {
-    const bookCategoryId = this.dataset.bookCategoryId;
-    const completed = this.checked;
-    fetch(`/toggle-read-status/${bookCategoryId}/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ completed }),
-    }).then(response => response.json()).then(data => {
-        console.log('Read status updated:', data.completed);
-    });
-});
-</script>
-
 
 {% if book.summary %}
 <hr/>

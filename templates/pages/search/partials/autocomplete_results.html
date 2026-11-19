@@ -1,44 +1,36 @@
-<div class="autocomplete-results {% if not authors and not books and not illustrators %}hidden{% endif %}">
+<div class="autocomplete-results {% if not authors and not books and not illustrators %}d-none{% endif %}">
     {% if authors %}
-        <div class="authors-section border-b">
-            <div class="text-sm font-semibold text-gray-500 px-3 py-1 bg-gray-50">Authors</div>
+        <div class="authors-section border-bottom">
+            <div class="small fw-semibold text-body-secondary px-3 py-1 bg-body-tertiary">Authors</div>
             {% for author in authors %}
-                <a href="{% url 'author_detail' author.id %}"
-                   class="block px-4 py-2 hover:bg-gray-100 transition-colors">
-                    <div class="text-sm">{{ author }}</div>
-                </a>
+                <a href="{% url 'author_detail' author.id %}" class="autocomplete-item d-block px-3 py-2 small">{{ author }}</a>
             {% endfor %}
         </div>
     {% endif %}
 
     {% if illustrators %}
-        <div class="authors-section border-b">
-            <div class="text-sm font-semibold text-gray-500 px-3 py-1 bg-gray-50">Illustrators</div>
+        <div class="authors-section border-bottom">
+            <div class="small fw-semibold text-body-secondary px-3 py-1 bg-body-tertiary">Illustrators</div>
             {% for illustrator in illustrators %}
-            <a href="{% url 'illustrator_detail' illustrator.id %}"
-            class="block px-4 py-2 hover:bg-gray-100 transition-colors">
-                    <div class="text-sm">{{ illustrator }}</div>
-        </a>
+                <a href="{% url 'illustrator_detail' illustrator.id %}" class="autocomplete-item d-block px-3 py-2 small">{{ illustrator }}</a>
             {% endfor %}
         </div>
     {% endif %}
 
     {% if books %}
         <div class="books-section">
-            <div class="text-sm font-semibold text-gray-500 px-3 py-1 bg-gray-50">Books</div>
+            <div class="small fw-semibold text-body-secondary px-3 py-1 bg-body-tertiary">Books</div>
             {% for book in books %}
-                <a href="{% url 'book_detail' book.slug %}"
-                   class="block px-2 py-1 hover:bg-gray-100 transition-colors">
-                    <div class="text-sm">{{ book.title }}</a> by <a href="{% url 'author_detail' book.author.id %}">{{ book.author }}</a></div>
-
+                <div class="autocomplete-item px-3 py-2 small">
+                    <a href="{% url 'book_detail' book.slug %}">{{ book.title }}</a>{% if book.author %} by <a href="{% url 'author_detail' book.author.id %}">{{ book.author }}</a>{% endif %}
+                </div>
             {% endfor %}
         </div>
     {% endif %}
 
     {% if authors or books or illustrators %}
-        <div class="view-all text-center border-t">
-            <a href="{% url 'search' %}?q={{ query }}"
-               class="block px-4 py-2 text-sm text-blue-600 hover:bg-gray-100">
+        <div class="view-all text-center border-top">
+            <a href="{% url 'search' %}?q={{ query|urlencode }}" class="autocomplete-item d-block px-3 py-2 small link-primary">
                 View all results
             </a>
         </div>
