@@ -355,6 +355,9 @@ class WikiPageState(models.Model):
     last_seen_revid = models.BigIntegerField(null=True, blank=True)
     last_processed_revid = models.BigIntegerField(null=True, blank=True)
     last_processed_at = models.DateTimeField(null=True, blank=True)
+    # Categories already read at last_processed_revid; categories added to the
+    # page later are read on the next run even if the page itself is unchanged.
+    processed_category_ids = models.JSONField(default=list, blank=True)
     last_error = models.TextField(blank=True)
 
     class Meta:

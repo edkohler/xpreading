@@ -19,7 +19,8 @@ DEFAULT_MODEL = os.getenv("WIKI_SYNC_MODEL", "gpt-5-mini")
 SYSTEM_PROMPT = """You extract children's/YA book award data from Wikipedia wikitext for a reading-list website.
 
 Rules:
-- Only return entries with year >= the given since_year.
+- Each category has an "Extract" line. "years >= N" means return only that category's entries from year N onward. "ALL years" means the category is new to our database: return its complete history, every year the page lists.
+- Only return entries for the categories listed under "Categories to extract". Entries belonging to the "Other categories on this page" are handled separately: skip them.
 - Return every book listed for those years: winners AND non-winners (honor books, nominees, finalists, shortlists, runners-up, ranked places, selections). We track them all.
 - Assign each entry to exactly one of the given categories (by category_id). Several categories can share one page (age groups, divisions, author vs illustrator awards, fiction vs nonfiction). Use the category names, notes, and existing examples to decide. If an entry fits none of the categories, skip it.
 - Use the SAME year convention as the existing examples for that category (usually the award year shown on the page).
@@ -88,16 +89,19 @@ def _schema(category_ids, level_names):
     }
 
 
-def build_user_prompt(page_title, since_year, category_contexts, level_names, wikitext):
+def build_user_prompt(
+    page_title, category_contexts, level_names, wikitext, other_categories=()
+):
     lines = [
         f"Wikipedia page: {page_title.replace('_', ' ')}",
-        f"since_year: {since_year}",
         f"Allowed award_level names: {', '.join(level_names)}",
         "",
-        "Categories on this page:",
+        "Categories to extract:",
     ]
     for c in category_contexts:
         lines.append(f"\n- category_id {c['id']}: {c['name']}")
+        since = c.get("since")
+        lines.append(f"  Extract: {'years >= ' + str(since) if since else 'ALL years'}")
         if c.get("section"):
             lines.append(f"  Linked section: {c['section']}")
         if c.get("notes"):
@@ -110,6 +114,9 @@ def build_user_prompt(page_title, since_year, category_contexts, level_names, wi
             lines.append("  Most recent entries we already have:")
             for e in c["examples"]:
                 lines.append(f"    {e}")
+    if other_categories:
+        lines += ["", "Other categories on this page (skip their entries):"]
+        lines += [f"- {name}" for name in other_categories]
     lines += ["", "=== WIKITEXT ===", wikitext]
     return "\n".join(lines)
 
@@ -120,10 +127,10 @@ class ExtractionError(Exception):
 
 def extract_entries(
     page_title,
-    since_year,
     category_contexts,
     level_names,
     wikitext,
+    other_categories=(),
     api_key=None,
     model=None,
 ):
@@ -139,7 +146,11 @@ def extract_entries(
             {
                 "role": "user",
                 "content": build_user_prompt(
-                    page_title, since_year, category_contexts, level_names, wikitext
+                    page_title,
+                    category_contexts,
+                    level_names,
+                    wikitext,
+                    other_categories,
                 ),
             },
         ],

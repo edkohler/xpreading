@@ -109,43 +109,81 @@ def category_context(category):
     }
 
 
-def default_since_year(contexts):
-    """Re-read the most recent year we already have (late honors get added),
-    plus everything newer. Categories with no data -> last 3 years."""
-    maxes = [c["max_year"] for c in contexts if c["max_year"]]
-    if not maxes:
-        return timezone.now().year - 2
-    return max(maxes) - 1
+BACKFILL_BATCH = 3  # new categories per OpenAI call when reading full history
+
+
+def category_since(context, override=None):
+    """First year to extract for a category.
+
+    Categories with data: re-read the newest year we have (late honors get
+    added) and everything after. New categories (no data yet): None = all years.
+    """
+    if override:
+        return override
+    if context["max_year"]:
+        return context["max_year"] - 1
+    return None
+
+
+def extraction_batches(contexts):
+    """Incremental categories share one call; new categories need their whole
+    history, which is much more output, so they go a few at a time."""
+    incremental = [c for c in contexts if c["since"]]
+    backfill = [c for c in contexts if not c["since"]]
+    batches = [incremental] if incremental else []
+    for i in range(0, len(backfill), BACKFILL_BATCH):
+        batches.append(backfill[i : i + BACKFILL_BATCH])
+    return batches
 
 
 def sync_page(
     title,
     categories,
     *,
-    revid_hint=None,
+    all_categories=None,
     since_year=None,
     dry_run=False,
     model=None,
     index=None,
     stdout=None,
 ):
+    """Read one Wikipedia page for the given categories.
+
+    all_categories: every category linked to the page (defaults to
+    `categories`); the extra ones are named in the prompt so their entries
+    are not mis-assigned.
+    """
+    all_categories = all_categories or categories
     state, _ = WikiPageState.objects.get_or_create(title=title)
     result = PageResult(title=title, status="processed")
     try:
         revid, raw = wikipedia.fetch_wikitext(title)
         text = wikipedia.clean_wikitext(raw)
         contexts = [category_context(c) for c in categories]
-        since = since_year or default_since_year(contexts)
+        for c in contexts:
+            c["since"] = category_since(c, since_year)
         levels = list(
             AwardLevel.objects.order_by("order").values_list("name", flat=True)
         )
-        entries, notes, usage = extractor.extract_entries(
-            title, since, contexts, levels, text, model=model
-        )
-        entries, notes = _sanitize(entries), _sanitize(notes or "")
-        result.revid, result.usage = revid, usage
+        entries, notes, total_tokens = [], [], 0
+        batches = extraction_batches(contexts)
+        for n, batch in enumerate(batches, 1):
+            ids = {c["id"] for c in batch}
+            others = [c.name for c in all_categories if c.id not in ids]
+            if stdout and len(batches) > 1:
+                names = ", ".join(c["name"] for c in batch)
+                stdout.write(f"    batch {n}/{len(batches)}: {names}")
+            batch_entries, batch_notes, usage = extractor.extract_entries(
+                title, batch, levels, text, other_categories=others, model=model
+            )
+            entries += batch_entries
+            if batch_notes:
+                notes.append(batch_notes)
+            total_tokens += (usage or {}).get("total_tokens", 0)
+        entries = _sanitize(entries)
+        result.revid, result.usage = revid, {"total_tokens": total_tokens}
         if notes:
-            result.message = notes[:300]
+            result.message = _sanitize(" | ".join(notes))[:300]
     except Exception as e:  # network, API, parsing
         log.exception("wiki sync failed for %s", title)
         state.last_error = f"{timezone.now():%Y-%m-%d %H:%M} {e}"[:2000]
@@ -155,6 +193,7 @@ def sync_page(
         result.status, result.message = "error", str(e)[:300]
         return result
 
+    since_by_cat = {c["id"]: c["since"] for c in contexts}
     index = index or MatchIndex.from_db()
     cats = {c.id: c for c in categories}
     level_by_name = {l.name: l for l in AwardLevel.objects.all()}
@@ -172,7 +211,7 @@ def sync_page(
             not cat
             or not title_txt
             or not year
-            or year < since
+            or (since_by_cat.get(cat.id) and year < since_by_cat[cat.id])
             or not (authors or illustrators)
         ):
             result.dropped += 1
@@ -257,6 +296,9 @@ def sync_page(
         now = timezone.now()
         state.last_seen_revid = revid
         state.last_processed_revid = revid
+        state.processed_category_ids = sorted(
+            set(state.processed_category_ids or []) | {c.id for c in categories}
+        )
         state.last_processed_at = now
         state.last_checked_at = now
         state.last_error = ""
@@ -292,22 +334,30 @@ def run_sync(
                 state.save()
             results.append(r)
             continue
+        to_read = cats
         if not force and state and state.last_processed_revid == info.get("revid"):
-            if not dry_run:
-                state.last_checked_at = timezone.now()
-                state.last_seen_revid = info.get("revid")
-                state.save(update_fields=["last_checked_at", "last_seen_revid"])
-            results.append(PageResult(title, "unchanged", revid=info.get("revid")))
-            continue
+            # Page unchanged: only read categories added since the last read.
+            done = set(state.processed_category_ids or [])
+            to_read = [c for c in cats if c.id not in done]
+            if not to_read:
+                if not dry_run:
+                    state.last_checked_at = timezone.now()
+                    state.last_seen_revid = info.get("revid")
+                    state.save(update_fields=["last_checked_at", "last_seen_revid"])
+                results.append(PageResult(title, "unchanged", revid=info.get("revid")))
+                continue
         if stdout:
+            n = len(to_read)
+            extra = f" of {len(cats)}" if n != len(cats) else ""
             stdout.write(
-                f"  {title} ({len(cats)} categor{'y' if len(cats) == 1 else 'ies'}) ..."
+                f"  {title} ({n}{extra} categor{'y' if n == 1 else 'ies'}) ..."
             )
         try:
             results.append(
                 sync_page(
                     title,
-                    cats,
+                    to_read,
+                    all_categories=cats,
                     since_year=since_year,
                     dry_run=dry_run,
                     model=model,

@@ -140,16 +140,27 @@ class SyncTest(TestCase):
         def fetch(title):
             return self.revid, "{| class=wikitable\n|}"
 
-        def extract(title, since, ctxs, levels, text, model=None, api_key=None):
+        def extract(
+            title, ctxs, levels, text, other_categories=(), model=None, api_key=None
+        ):
             self.seen_titles.append(title)
-            self.since = since
+            self.calls.append(
+                {
+                    "title": title,
+                    "since": {c["id"]: c["since"] for c in ctxs},
+                    "others": list(other_categories),
+                }
+            )
+            ids = {c["id"] for c in ctxs}
+            entries = [e for e in self.entries if e["category_id"] in ids]
             return (
-                (self.entries if title == "Newbery_Medal" else []),
+                (entries if title == "Newbery_Medal" else []),
                 "",
                 {"total_tokens": 10},
             )
 
         self.seen_titles = []
+        self.calls = []
         out = StringIO()
         with mock.patch.object(
             wikipedia, "latest_revisions", latest
@@ -164,7 +175,9 @@ class SyncTest(TestCase):
         self.assertCountEqual(
             self.seen_titles, ["Newbery_Medal", "Other_Award"]
         )  # disabled skipped
-        self.assertEqual(self.since, 2024)  # newest year we have (2025) minus one
+        newbery_call = [c for c in self.calls if c["title"] == "Newbery_Medal"][0]
+        # newest year we have (2025) minus one
+        self.assertEqual(newbery_call["since"], {self.cat.id: 2024})
         pend = {(p.title, p.year): p for p in PendingAward.objects.all()}
         self.assertNotIn(("Across So Many Seas", 2025), pend)  # already listed
         fs = pend[("The First State of Being", 2025)]
@@ -223,6 +236,37 @@ class SyncTest(TestCase):
         self.assertEqual(
             PendingAward.objects.filter(status=PendingAward.STATUS_PENDING).count(), 0
         )
+
+    def test_new_categories_get_full_history_in_batches(self):
+        page = "https://en.wikipedia.org/wiki/Cybils_Award"
+        new = [Category.objects.create(name=f"Cybils {i}", wiki=page) for i in range(7)]
+        old_entry = entry(new[0], 2008, "Old Book", [("Ann", "Writer")], "Winner")
+        self.entries = [old_entry]
+        self._run("--page", "Cybils_Award")
+        calls = [c for c in self.calls if c["title"] == "Cybils_Award"]
+        self.assertEqual(len(calls), 3)  # 7 new categories, 3 per call
+        for c in calls:
+            self.assertTrue(all(v is None for v in c["since"].values()))  # all years
+            self.assertEqual(len(c["others"]), 7 - len(c["since"]))
+        state = WikiPageState.objects.get(title="Cybils_Award")
+        self.assertEqual(sorted(state.processed_category_ids), [c.id for c in new])
+
+    def test_category_added_to_unchanged_page_is_read(self):
+        self._run()
+        self.assertIn("Newbery_Medal", self.seen_titles)
+        self._run()
+        self.assertNotIn("Newbery_Medal", self.seen_titles)  # unchanged
+        added = Category.objects.create(
+            name="Newbery (new sub-list)",
+            wiki="https://en.wikipedia.org/wiki/Newbery_Medal",
+        )
+        self._run()
+        calls = [c for c in self.calls if c["title"] == "Newbery_Medal"]
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0]["since"], {added.id: None})  # only the new one
+        self.assertEqual(calls[0]["others"], ["Newbery Medal"])
+        self._run()
+        self.assertNotIn("Newbery_Medal", self.seen_titles)
 
     def test_control_characters_are_stripped(self):
         self.entries = [
@@ -287,10 +331,10 @@ class PromptTest(TestCase):
     def test_prompt_contains_context(self):
         txt = extractor.build_user_prompt(
             "Newbery_Medal",
-            2025,
             [
                 {
                     "id": 1,
+                    "since": 2025,
                     "name": "Newbery",
                     "section": "",
                     "notes": "award year",
@@ -301,15 +345,22 @@ class PromptTest(TestCase):
             ],
             ["Winner", "Honor"],
             "WIKITEXT",
+            other_categories=["Newbery Honor sub-list"],
         )
         for s in (
-            "since_year: 2025",
+            "Extract: years >= 2025",
+            "Other categories on this page (skip their entries):",
+            "- Newbery Honor sub-list",
             "category_id 1",
             "Notes: award year",
             "2026 | Winner | X | Y",
             "WIKITEXT",
         ):
             self.assertIn(s, txt)
+        new = extractor.build_user_prompt(
+            "Cybils_Award", [{"id": 2, "name": "Cybils", "since": None}], [], "W"
+        )
+        self.assertIn("Extract: ALL years", new)
         schema = extractor._schema([1, 2], ["Winner", "Honor"])
         self.assertEqual(
             schema["schema"]["properties"]["entries"]["items"]["properties"][
