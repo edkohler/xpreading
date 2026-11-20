@@ -200,3 +200,55 @@ def clean_wikitext(text):
     text = re.sub(r"[ \t]+", " ", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
+
+
+_HEADING = re.compile(r"^(={2,6})\s*(.+?)\s*\1\s*$", re.M)
+
+
+def _norm_anchor(text):
+    text = unquote(text or "")
+    text = re.sub(r"\[\[(?:[^\]|]*\|)?([^\]]*)\]\]", r"\1", text)  # [[a|b]] -> b
+    text = re.sub(r"'{2,}", "", text)
+    return re.sub(r"[\s_]+", " ", text).strip().lower()
+
+
+def split_sections(text):
+    """[(level, anchor, start, end)] for each == heading ==; anchors follow
+    Wikipedia's rule of suffixing repeated headings with _2, _3, ..."""
+    heads = [(len(m.group(1)), m.group(2), m.start()) for m in _HEADING.finditer(text)]
+    out, counts = [], {}
+    for i, (level, title, start) in enumerate(heads):
+        end = len(text)
+        for level2, _, start2 in heads[i + 1 :]:
+            if level2 <= level:
+                end = start2
+                break
+        base = _norm_anchor(title)
+        counts[base] = counts.get(base, 0) + 1
+        anchor = base if counts[base] == 1 else f"{base} {counts[base]}"
+        out.append((level, anchor, start, end))
+    return out
+
+
+def slice_sections(text, anchors):
+    """Return only the linked sections (plus their parent headings for
+    context), or the full text if any anchor is missing or not found."""
+    anchors = [_norm_anchor(a) for a in anchors]
+    if not anchors or not all(anchors):
+        return text
+    sections = split_sections(text)
+    by_anchor = {a: (lvl, s, e) for lvl, a, s, e in sections}
+    if not all(a in by_anchor for a in anchors):
+        return text
+    parts = []
+    first = sections[0][2] if sections else len(text)
+    parts.append(text[: min(first, 1500)])  # page intro, for context
+    for a in anchors:
+        level, start, end = by_anchor[a]
+        parents = [
+            text[s : text.index("\n", s) if "\n" in text[s:] else len(text)]
+            for lvl, _, s, e in sections
+            if lvl < level and s < start < e
+        ]
+        parts.append("\n".join(parents + [text[start:end].rstrip()]))
+    return "\n\n".join(parts)

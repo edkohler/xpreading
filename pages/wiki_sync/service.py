@@ -109,7 +109,7 @@ def category_context(category):
     }
 
 
-BACKFILL_BATCH = 3  # new categories per OpenAI call when reading full history
+BACKFILL_BATCH = 1  # new categories per OpenAI call when reading full history
 
 
 def category_since(context, override=None):
@@ -136,69 +136,35 @@ def extraction_batches(contexts):
     return batches
 
 
-def sync_page(
-    title,
-    categories,
-    *,
-    all_categories=None,
-    since_year=None,
-    dry_run=False,
-    model=None,
-    index=None,
-    stdout=None,
-):
-    """Read one Wikipedia page for the given categories.
+def processed_revisions(state):
+    """{category_id: revid it was last read at}.
 
-    all_categories: every category linked to the page (defaults to
-    `categories`); the extra ones are named in the prompt so their entries
-    are not mis-assigned.
+    Older rows stored a plain list of category ids read at
+    last_processed_revid; treat those the same way.
     """
-    all_categories = all_categories or categories
-    state, _ = WikiPageState.objects.get_or_create(title=title)
-    result = PageResult(title=title, status="processed")
-    try:
-        revid, raw = wikipedia.fetch_wikitext(title)
-        text = wikipedia.clean_wikitext(raw)
-        contexts = [category_context(c) for c in categories]
-        for c in contexts:
-            c["since"] = category_since(c, since_year)
-        levels = list(
-            AwardLevel.objects.order_by("order").values_list("name", flat=True)
-        )
-        entries, notes, total_tokens = [], [], 0
-        batches = extraction_batches(contexts)
-        for n, batch in enumerate(batches, 1):
-            ids = {c["id"] for c in batch}
-            others = [c.name for c in all_categories if c.id not in ids]
-            if stdout and len(batches) > 1:
-                names = ", ".join(c["name"] for c in batch)
-                stdout.write(f"    batch {n}/{len(batches)}: {names}")
-            batch_entries, batch_notes, usage = extractor.extract_entries(
-                title, batch, levels, text, other_categories=others, model=model
-            )
-            entries += batch_entries
-            if batch_notes:
-                notes.append(batch_notes)
-            total_tokens += (usage or {}).get("total_tokens", 0)
-        entries = _sanitize(entries)
-        result.revid, result.usage = revid, {"total_tokens": total_tokens}
-        if notes:
-            result.message = _sanitize(" | ".join(notes))[:300]
-    except Exception as e:  # network, API, parsing
-        log.exception("wiki sync failed for %s", title)
-        state.last_error = f"{timezone.now():%Y-%m-%d %H:%M} {e}"[:2000]
-        state.last_checked_at = timezone.now()
-        if not dry_run:
-            state.save()
-        result.status, result.message = "error", str(e)[:300]
-        return result
+    raw = state.processed_category_ids if state else None
+    if isinstance(raw, dict):
+        return {int(k): v for k, v in raw.items()}
+    if isinstance(raw, list) and state.last_processed_revid:
+        return {int(i): state.last_processed_revid for i in raw}
+    return {}
 
-    since_by_cat = {c["id"]: c["since"] for c in contexts}
-    index = index or MatchIndex.from_db()
-    cats = {c.id: c for c in categories}
-    level_by_name = {l.name: l for l in AwardLevel.objects.all()}
-    seen = set()
 
+def _save_entries(
+    entries,
+    *,
+    cats,
+    since_by_cat,
+    index,
+    state,
+    revid,
+    title,
+    result,
+    dry_run,
+    stdout,
+    level_by_name,
+    seen,
+):
     for e in entries:
         cat = cats.get(e["category_id"])
         title_txt = (e.get("title") or "").strip().strip("'\"*")
@@ -292,16 +258,112 @@ def sync_page(
             )
             result.dropped += 1
 
-    if not dry_run:
-        now = timezone.now()
-        state.last_seen_revid = revid
-        state.last_processed_revid = revid
-        state.processed_category_ids = sorted(
-            set(state.processed_category_ids or []) | {c.id for c in categories}
+
+def sync_page(
+    title,
+    categories,
+    *,
+    all_categories=None,
+    since_year=None,
+    dry_run=False,
+    model=None,
+    index=None,
+    stdout=None,
+):
+    """Read one Wikipedia page for the given categories.
+
+    Each extraction batch is saved as soon as it finishes, so a failure in one
+    batch keeps the others' results; failed categories are retried next run.
+    all_categories: every category linked to the page (defaults to
+    `categories`); the extra ones are named in the prompt so their entries
+    are not mis-assigned.
+    """
+    all_categories = all_categories or categories
+    state, _ = WikiPageState.objects.get_or_create(title=title)
+    result = PageResult(title=title, status="processed")
+    try:
+        revid, raw = wikipedia.fetch_wikitext(title)
+        text = wikipedia.clean_wikitext(raw)
+        contexts = [category_context(c) for c in categories]
+        for c in contexts:
+            c["since"] = category_since(c, since_year)
+        levels = list(
+            AwardLevel.objects.order_by("order").values_list("name", flat=True)
         )
-        state.last_processed_at = now
-        state.last_checked_at = now
+    except Exception as e:  # network, parsing
+        log.exception("wiki sync failed for %s", title)
+        state.last_error = f"{timezone.now():%Y-%m-%d %H:%M} {e}"[:2000]
+        state.last_checked_at = timezone.now()
+        if not dry_run:
+            state.save()
+        result.status, result.message = "error", str(e)[:300]
+        return result
+
+    result.revid = revid
+    index = index or MatchIndex.from_db()
+    cats = {c.id: c for c in categories}
+    since_by_cat = {c["id"]: c["since"] for c in contexts}
+    level_by_name = {l.name: l for l in AwardLevel.objects.all()}
+    seen, notes, errors, total_tokens = set(), [], [], 0
+    done = processed_revisions(state)
+
+    batches = extraction_batches(contexts)
+    for n, batch in enumerate(batches, 1):
+        ids = {c["id"] for c in batch}
+        others = [c.name for c in all_categories if c.id not in ids]
+        page_text = wikipedia.slice_sections(text, [c["section"] for c in batch])
+        if stdout and len(batches) > 1:
+            names = ", ".join(c["name"] for c in batch)
+            stdout.write(f"    batch {n}/{len(batches)}: {names}")
+        try:
+            entries, batch_notes, usage = extractor.extract_entries(
+                title, batch, levels, page_text, other_categories=others, model=model
+            )
+        except Exception as e:  # API timeout etc.: keep going with other batches
+            log.exception("wiki sync failed for %s (batch %s)", title, n)
+            errors.append(str(e)[:200])
+            if stdout:
+                stdout.write(f"      failed: {str(e)[:150]}")
+            continue
+        total_tokens += (usage or {}).get("total_tokens", 0)
+        if batch_notes:
+            notes.append(_sanitize(batch_notes))
+        _save_entries(
+            _sanitize(entries),
+            cats=cats,
+            since_by_cat=since_by_cat,
+            index=index,
+            state=state,
+            revid=revid,
+            title=title,
+            result=result,
+            dry_run=dry_run,
+            stdout=stdout,
+            level_by_name=level_by_name,
+            seen=seen,
+        )
+        if not dry_run:
+            for i in ids:
+                done[i] = revid
+            state.processed_category_ids = {str(k): v for k, v in done.items()}
+            state.save(update_fields=["processed_category_ids"])
+
+    result.usage = {"total_tokens": total_tokens}
+    if notes:
+        result.message = " | ".join(notes)[:300]
+    now = timezone.now()
+    if errors:
+        result.status = "error"
+        result.message = f"{len(errors)} of {len(batches)} batches failed: {errors[0]}"
+        state.last_error = f"{now:%Y-%m-%d %H:%M} {result.message}"[:2000]
+    else:
         state.last_error = ""
+    if not dry_run:
+        state.last_seen_revid = revid
+        state.last_checked_at = now
+        if all(done.get(c.id) == revid for c in all_categories):
+            state.last_processed_revid = revid
+            state.last_processed_at = now
         state.save()
     return result
 
@@ -335,10 +397,11 @@ def run_sync(
             results.append(r)
             continue
         to_read = cats
-        if not force and state and state.last_processed_revid == info.get("revid"):
-            # Page unchanged: only read categories added since the last read.
-            done = set(state.processed_category_ids or [])
-            to_read = [c for c in cats if c.id not in done]
+        if not force:
+            # Only read categories not yet read at the page's current revision
+            # (new categories, or ones whose batch failed last time).
+            done = processed_revisions(state)
+            to_read = [c for c in cats if done.get(c.id) != info.get("revid")]
             if not to_read:
                 if not dry_run:
                     state.last_checked_at = timezone.now()

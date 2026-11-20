@@ -10,11 +10,15 @@ deterministic Python.
 
 import json
 import os
+import time
 
 import requests
 
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 DEFAULT_MODEL = os.getenv("WIKI_SYNC_MODEL", "gpt-5-mini")
+# Reading rows out of a table needs little reasoning; low effort is much faster.
+REASONING_EFFORT = os.getenv("WIKI_SYNC_REASONING_EFFORT", "low")
+TIMEOUT = int(os.getenv("WIKI_SYNC_TIMEOUT", "900"))
 
 SYSTEM_PROMPT = """You extract children's/YA book award data from Wikipedia wikitext for a reading-list website.
 
@@ -139,8 +143,9 @@ def extract_entries(
     if not api_key:
         raise ExtractionError("OPENAI_API_KEY is not set")
     category_ids = [c["id"] for c in category_contexts]
+    model = model or DEFAULT_MODEL
     body = {
-        "model": model or DEFAULT_MODEL,
+        "model": model,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {
@@ -159,15 +164,25 @@ def extract_entries(
             "json_schema": _schema(category_ids, level_names),
         },
     }
-    try:
-        r = requests.post(
-            OPENAI_URL,
-            headers={"Authorization": f"Bearer {api_key}"},
-            json=body,
-            timeout=300,
-        )
-    except requests.RequestException as e:
-        raise ExtractionError(f"OpenAI request failed: {e}") from e
+    if REASONING_EFFORT and model.startswith(("gpt-5", "o")):
+        body["reasoning_effort"] = REASONING_EFFORT
+    for attempt in (1, 2):  # one retry for timeouts / overload
+        try:
+            r = requests.post(
+                OPENAI_URL,
+                headers={"Authorization": f"Bearer {api_key}"},
+                json=body,
+                timeout=TIMEOUT,
+            )
+        except requests.RequestException as e:
+            if attempt == 1:
+                time.sleep(10)
+                continue
+            raise ExtractionError(f"OpenAI request failed: {e}") from e
+        if r.status_code in (429, 500, 502, 503, 504) and attempt == 1:
+            time.sleep(20)
+            continue
+        break
     if r.status_code != 200:
         raise ExtractionError(f"OpenAI HTTP {r.status_code}: {r.text[:500]}")
     data = r.json()

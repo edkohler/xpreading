@@ -65,6 +65,27 @@ class HelpersTest(TestCase):
         self.assertNotIn("reflist", out)
         self.assertNotIn("Category:", out)
 
+    def test_slice_sections(self):
+        text = (
+            "Intro text.\n== Recipients ==\n=== Fiction ===\n"
+            "==== Young adult (2006–) ====\nFICTION-YA\n"
+            "=== Graphic novel ===\n==== Young adult (2006–) ====\nGRAPHIC-YA\n"
+            "=== Poetry (2006–) ===\nPOETRY\n== References ==\nrefs"
+        )
+        out = wikipedia.slice_sections(text, ["Young adult (2006–) 2"])
+        self.assertIn("GRAPHIC-YA", out)
+        self.assertIn("=== Graphic novel ===", out)  # parent heading kept
+        self.assertNotIn("FICTION-YA", out)
+        self.assertNotIn("POETRY", out)
+        self.assertIn("Intro text.", out)
+        url = "https://en.wikipedia.org/wiki/Cybils_Award#Poetry_(2006%E2%80%93)"
+        out = wikipedia.slice_sections(text, [wikipedia.section_from_url(url)])
+        self.assertIn("POETRY", out)
+        self.assertNotIn("GRAPHIC-YA", out)
+        # unknown or missing anchor -> whole page
+        self.assertEqual(wikipedia.slice_sections(text, ["Nope"]), text)
+        self.assertEqual(wikipedia.slice_sections(text, ["Poetry (2006–)", ""]), text)
+
     def test_title_keys(self):
         self.assertIn("mexikid", title_keys("Mexikid: A Graphic Memoir"))
         self.assertEqual(title_keys("The Wrong Way Home"), title_keys("Wrong Way Home"))
@@ -244,12 +265,70 @@ class SyncTest(TestCase):
         self.entries = [old_entry]
         self._run("--page", "Cybils_Award")
         calls = [c for c in self.calls if c["title"] == "Cybils_Award"]
-        self.assertEqual(len(calls), 3)  # 7 new categories, 3 per call
+        self.assertEqual(len(calls), 7)  # one new category per call
         for c in calls:
             self.assertTrue(all(v is None for v in c["since"].values()))  # all years
             self.assertEqual(len(c["others"]), 7 - len(c["since"]))
         state = WikiPageState.objects.get(title="Cybils_Award")
-        self.assertEqual(sorted(state.processed_category_ids), [c.id for c in new])
+        self.assertEqual(
+            sorted(int(k) for k in state.processed_category_ids), [c.id for c in new]
+        )
+        self.assertEqual(state.last_processed_revid, self.revid)
+
+    def test_failed_batch_keeps_other_batches_and_is_retried(self):
+        page = "https://en.wikipedia.org/wiki/Cybils_Award"
+        a = Category.objects.create(name="Cybils A", wiki=page)
+        b = Category.objects.create(name="Cybils B", wiki=page)
+        self.entries = [
+            entry(a, 2010, "Book A", [("Ann", "Writer")], "Winner"),
+            entry(b, 2010, "Book B", [("Bob", "Writer")], "Winner"),
+        ]
+        attempts = []
+
+        def latest(titles):
+            return {t: {"revid": self.revid, "missing": False} for t in titles}
+
+        def extract(title, ctxs, levels, text, other_categories=(), **kw):
+            ids = {c["id"] for c in ctxs}
+            attempts.append(ids)
+            if b.id in ids and len(attempts) <= 2:
+                raise extractor.ExtractionError("OpenAI request failed: timed out")
+            return [e for e in self.entries if e["category_id"] in ids], "", {}
+
+        def run():
+            with mock.patch.object(
+                wikipedia, "latest_revisions", latest
+            ), mock.patch.object(
+                wikipedia, "fetch_wikitext", lambda t: (self.revid, "")
+            ), mock.patch.object(
+                extractor, "extract_entries", extract
+            ), mock.patch.object(
+                service, "log"
+            ):
+                out = StringIO()
+                call_command(
+                    "sync_wikipedia_awards",
+                    "--no-email",
+                    "--page",
+                    "Cybils_Award",
+                    stdout=out,
+                )
+                return out.getvalue()
+
+        out = run()
+        self.assertIn("1 of 2 batches failed", out)
+        self.assertTrue(PendingAward.objects.filter(title="Book A").exists())  # kept
+        state = WikiPageState.objects.get(title="Cybils_Award")
+        self.assertIsNone(state.last_processed_revid)  # page not complete
+        self.assertIn("timed out", state.last_error)
+        # second run: b's call is attempt #3, which succeeds
+        self.assertEqual(len(attempts), 2)
+        run()
+        self.assertEqual(attempts[2:], [{b.id}])  # only the failed category re-read
+        self.assertTrue(PendingAward.objects.filter(title="Book B").exists())
+        state.refresh_from_db()
+        self.assertEqual(state.last_processed_revid, self.revid)
+        self.assertEqual(state.last_error, "")
 
     def test_category_added_to_unchanged_page_is_read(self):
         self._run()
@@ -325,6 +404,43 @@ class SyncTest(TestCase):
         self.assertEqual(r.status_code, 302)
         p.refresh_from_db()
         self.assertEqual(p.status, PendingAward.STATUS_APPROVED)
+
+
+class ExtractorRequestTest(TestCase):
+    def test_reasoning_effort_and_retry(self):
+        ok = mock.Mock(status_code=200)
+        ok.json.return_value = {
+            "choices": [
+                {
+                    "finish_reason": "stop",
+                    "message": {"content": '{"entries": [], "notes": ""}'},
+                }
+            ]
+        }
+        calls = []
+
+        def post(url, headers, json, timeout):
+            calls.append(json)
+            if len(calls) == 1:
+                import requests
+
+                raise requests.ReadTimeout("timed out")
+            return ok
+
+        with mock.patch("pages.wiki_sync.extractor.requests.post", post), mock.patch(
+            "pages.wiki_sync.extractor.time.sleep"
+        ):
+            entries, _, _ = extractor.extract_entries(
+                "P",
+                [{"id": 1, "name": "C", "since": None}],
+                ["Winner"],
+                "W",
+                api_key="k",
+                model="gpt-5-mini",
+            )
+        self.assertEqual(entries, [])
+        self.assertEqual(len(calls), 2)  # retried once after the timeout
+        self.assertEqual(calls[0]["reasoning_effort"], "low")
 
 
 class PromptTest(TestCase):
