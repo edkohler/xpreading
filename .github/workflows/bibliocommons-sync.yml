@@ -1,0 +1,29 @@
+# Daily search of the HCLib catalog for books missing a BiblioCommons ID.
+# Runs the management command on a temporary Fly machine built from the
+# latest deployed image (same secrets as the app), which is destroyed after.
+# Exact matches are saved to the book; the rest land in Django admin >
+# Pages > "Review matches" and "Not found in HCLib".
+# --limit keeps each run short; a large backlog clears over several days.
+name: BiblioCommons ID sync
+
+on:
+  schedule:
+    - cron: "43 9 * * *" # daily, ~3-4am Central
+  workflow_dispatch:
+    inputs:
+      args:
+        description: "Extra args, e.g. --dry-run --limit 5, or --book 123"
+        required: false
+        default: ""
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    concurrency: bibliocommons-sync
+    timeout-minutes: 90
+    steps:
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl console -a katyreads -C "python /code/manage.py fetch_bibliocommons_ids --limit 400 $SYNC_ARGS"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          SYNC_ARGS: ${{ github.event.inputs.args }}

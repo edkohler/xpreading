@@ -444,3 +444,81 @@ class PendingAward(models.Model):
     @property
     def author_display(self):
         return f"{self.author_first_name} {self.author_last_name}".strip()
+
+
+# ------------------------------------------------------- BiblioCommons lookups
+
+
+class BiblioCommonsLookup(models.Model):
+    """Result of searching the library catalog for a book's BiblioCommons ID.
+
+    Written by `manage.py fetch_bibliocommons_ids`. Exact matches are copied to
+    Book.bibliocommons_id right away; everything else is listed in the admin
+    reports "Review matches" and "Not found in HCLib".
+    """
+
+    MATCH_EXACT = "exact"
+    MATCH_CLOSE = "close"
+    MATCH_TITLE_ONLY = "title_only"
+    MATCH_NOT_FOUND = "not_found"
+    MATCH_ERROR = "error"
+    MATCH_CHOICES = [
+        (MATCH_EXACT, "Exact title and author"),
+        (MATCH_CLOSE, "Close title (subtitle differs)"),
+        (MATCH_TITLE_ONLY, "Title only (author differs)"),
+        (MATCH_NOT_FOUND, "Not found"),
+        (MATCH_ERROR, "Search failed"),
+    ]
+
+    STATUS_AUTO = "auto"
+    STATUS_PENDING = "pending"
+    STATUS_APPROVED = "approved"
+    STATUS_REJECTED = "rejected"
+    STATUS_CHOICES = [
+        (STATUS_AUTO, "Filled automatically"),
+        (STATUS_PENDING, "Pending review"),
+        (STATUS_APPROVED, "Approved"),
+        (STATUS_REJECTED, "Rejected"),
+    ]
+
+    book = models.OneToOneField(
+        Book, on_delete=models.CASCADE, related_name="bibliocommons_lookup"
+    )
+    library = models.CharField(max_length=50, default="hclib")
+    match_type = models.CharField(max_length=20, choices=MATCH_CHOICES)
+    review_status = models.CharField(
+        max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING
+    )
+    candidate_id = models.CharField(max_length=20, blank=True)
+    catalog_title = models.CharField(max_length=500, blank=True)
+    catalog_author = models.CharField(max_length=300, blank=True)
+    catalog_format = models.CharField(max_length=50, blank=True)
+    query = models.CharField(max_length=500, blank=True)
+    error = models.TextField(blank=True)
+    checked_at = models.DateTimeField()
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["book__title"]
+        indexes = [models.Index(fields=["match_type", "review_status"])]
+
+    def __str__(self):
+        return f"{self.book} ({self.get_match_type_display()})"
+
+
+class BiblioCommonsReviewMatch(BiblioCommonsLookup):
+    """Admin report: likely matches that need a person to confirm them."""
+
+    class Meta:
+        proxy = True
+        verbose_name = "review match"
+        verbose_name_plural = "Review matches"
+
+
+class BiblioCommonsNotFound(BiblioCommonsLookup):
+    """Admin report: books the catalog search found nothing for."""
+
+    class Meta:
+        proxy = True
+        verbose_name = "book not found in HCLib"
+        verbose_name_plural = "Not found in HCLib"
