@@ -20,7 +20,7 @@ def books_to_check(recheck_days=30, include_rejected=False, book_ids=None):
     """
     qs = Book.objects.filter(Q(bibliocommons_id__isnull=True) | Q(bibliocommons_id=""))
     if book_ids:
-        return qs.filter(id__in=book_ids).select_related("author")
+        return qs.filter(id__in=book_ids).select_related("author").order_by("-id")
     due = Q(bibliocommons_lookup__isnull=True) | Q(
         bibliocommons_lookup__match_type=Lookup.MATCH_ERROR
     )
