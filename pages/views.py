@@ -4,6 +4,7 @@ import os
 import re
 import uuid
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 
 import logging
 import traceback
@@ -717,97 +718,134 @@ def my_to_read_list(request):
     return render(request, "pages/my_to_read_list.html", context)
 
 
+BIBLIOCOMMONS_AVAILABILITY_URL = (
+    "https://gateway.bibliocommons.com/v2/libraries/{library_id}/bibs/{book_id}"
+    "/availability?locale=en-US"
+)
+AVAILABILITY_CACHE_SECONDS = 60 * 15
+AVAILABILITY_MAX_WORKERS = 10
+AVAILABILITY_REQUEST_TIMEOUT = 8  # seconds
+
+
+def _availability_cache_key(library_id, book_id):
+    return f"bibliocommons_avail:{library_id}:{book_id}"
+
+
+def _fetch_book_availability(session, library_id, book_id):
+    """
+    Fetch one book's availability from BiblioCommons and reduce it to the
+    copies that are on the shelf: a list of
+    {"branchName", "collection", "callNumber"} dicts.
+    Returns None on failure so failures are not cached.
+    """
+    url = BIBLIOCOMMONS_AVAILABILITY_URL.format(library_id=library_id, book_id=book_id)
+    try:
+        response = session.get(url, timeout=AVAILABILITY_REQUEST_TIMEOUT)
+        response.raise_for_status()
+        data = response.json()
+    except (requests.RequestException, ValueError) as e:
+        logger.warning("Error fetching data from %s: %s", url, e)
+        return None
+
+    available = []
+    for item_data in data.get("entities", {}).get("bibItems", {}).values():
+        if item_data.get("availability", {}).get("statusType") == "AVAILABLE":
+            available.append(
+                {
+                    "branchName": item_data.get("branchName", "Unknown"),
+                    "collection": item_data.get("collection", "Unknown Collection"),
+                    "callNumber": item_data.get("callNumber", "Unknown Call Number"),
+                }
+            )
+    return available
+
+
+AVAILABILITY_BATCH_SIZE = 10
+
+
+def _parse_book_ids(raw):
+    """Split a comma-separated ID string, dropping blanks and duplicates
+    (a book can appear on several liked award lists) while keeping order."""
+    return list(dict.fromkeys(b.strip() for b in raw.split(",") if b.strip()))
+
+
+def _get_availability(library_id, book_ids):
+    """
+    Return {book_id: [on-shelf copies]} for the given books, using cached
+    results where available and fetching the rest in parallel. Books whose
+    lookup failed are left out of the result.
+    """
+    cache_keys = {_availability_cache_key(library_id, b): b for b in book_ids}
+    cached = cache.get_many(list(cache_keys))
+    availability = {cache_keys[k]: v for k, v in cached.items()}
+    to_fetch = [b for b in book_ids if b not in availability]
+
+    if to_fetch:
+        with requests.Session() as session, ThreadPoolExecutor(
+            max_workers=AVAILABILITY_MAX_WORKERS
+        ) as pool:
+            fetched = dict(
+                zip(
+                    to_fetch,
+                    pool.map(
+                        lambda b: _fetch_book_availability(session, library_id, b),
+                        to_fetch,
+                    ),
+                )
+            )
+        fresh = {b: v for b, v in fetched.items() if v is not None}
+        availability.update(fresh)
+        cache.set_many(
+            {_availability_cache_key(library_id, b): v for b, v in fresh.items()},
+            AVAILABILITY_CACHE_SECONDS,
+        )
+    return availability
+
+
 def get_unique_books_per_branch(request, library_id):
-    # Get the list of book bibliocommons IDs from the query string
-    book_ids = request.GET.get("books", "").split(",")
-    base_url = f"https://gateway.bibliocommons.com/v2/libraries/{library_id}/bibs/"
-    url_suffix = "/availability?locale=en-US"
-    # examle url: https://gateway.bibliocommons.com/v2/libraries/hclib/bibs/S109C5966261/availability?locale=en-US
+    """
+    Render the Power Search page right away. The page's JavaScript then calls
+    library_availability_batch a batch at a time, showing progress and
+    re-ranking branches as results come in.
+    """
+    book_ids = _parse_book_ids(request.GET.get("books", ""))
 
-    # Initialize branch data
-    branch_unique_books = defaultdict(set)
-    book_additional_data = {}
-
-    # Process each query
-    for book_id in book_ids:
-        url = f"{base_url}{book_id}{url_suffix}"
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
-            data = response.json()
-
-            # Iterate over bibItems to filter and collect data
-            for item_id, item_data in (
-                data.get("entities", {}).get("bibItems", {}).items()
-            ):
-                availability = item_data.get("availability", {})
-                if availability.get("statusType") == "AVAILABLE":
-                    branch_name = item_data.get("branchName", "Unknown")
-                    branch_unique_books[branch_name].add(book_id)
-
-                    # Store additional data for the book
-                    book_additional_data[book_id] = {
-                        "collection": item_data.get("collection", "Unknown Collection"),
-                        "callNumber": item_data.get(
-                            "callNumber", "Unknown Call Number"
-                        ),
-                    }
-
-        except Exception as e:
-            print(f"Error fetching data from {url}: {e}")
-
-    # Fetch book details from the database
-    books = {
-        book.bibliocommons_id: {
+    book_details = {}
+    for book in Book.objects.filter(bibliocommons_id__in=book_ids).select_related(
+        "author"
+    ):
+        book_details[book.bibliocommons_id] = {
             "title": book.title,
-            "author_first_name": book.author.first_name,
-            "author_last_name": book.author.last_name,
-            "slug": book.slug,
-            "image": book.image if book.image else None,
+            "author_first_name": book.author.first_name if book.author else "",
+            "author_last_name": book.author.last_name if book.author else "",
+            "url": reverse("book_detail", args=[book.slug]) if book.slug else "",
+            "image": book.image.url if book.image else "",
         }
-        for book in Book.objects.filter(bibliocommons_id__in=book_ids)
+
+    context = {
+        "power_search": {
+            "bookIds": book_ids,
+            "books": book_details,
+            "batchUrl": reverse("library_availability_batch", args=[library_id]),
+            "batchSize": AVAILABILITY_BATCH_SIZE,
+        }
     }
+    return render(request, "pages/library_locations.html", context)
 
-    # Convert branch data to a sorted list
-    results = sorted(
-        [
-            {
-                "branchName": branch,
-                "uniqueBooksCount": len(book_set),
-                "bookDetails": sorted(
-                    [
-                        {
-                            "bibliocommons_id": bibliocommons_id,
-                            "title": books.get(bibliocommons_id, {}).get(
-                                "title", "Unknown Title"
-                            ),
-                            "author_first_name": books.get(bibliocommons_id, {}).get(
-                                "author_first_name", ""
-                            ),
-                            "author_last_name": books.get(bibliocommons_id, {}).get(
-                                "author_last_name", ""
-                            ),
-                            "slug": books.get(bibliocommons_id, {}).get("slug", "#"),
-                            "image": books.get(bibliocommons_id, {}).get("image", ""),
-                            "collection": book_additional_data.get(
-                                bibliocommons_id, {}
-                            ).get("collection", ""),
-                            "callNumber": book_additional_data.get(
-                                bibliocommons_id, {}
-                            ).get("callNumber", ""),
-                        }
-                        for bibliocommons_id in book_set
-                    ],
-                    key=lambda x: x["author_last_name"],  # Sort by author's last name
-                ),
-            }
-            for branch, book_set in branch_unique_books.items()
-        ],
-        key=lambda x: x["uniqueBooksCount"],
-        reverse=True,
-    )
 
-    return render(request, "pages/library_locations.html", {"library_data": results})
+@require_http_methods(["GET"])
+def library_availability_batch(request, library_id):
+    """
+    JSON availability for one batch of books:
+    {"availability": {book_id: [{branchName, collection, callNumber}, ...]},
+     "failed": [book_id, ...]}
+    """
+    book_ids = _parse_book_ids(request.GET.get("books", ""))[
+        : AVAILABILITY_BATCH_SIZE * 2
+    ]
+    availability = _get_availability(library_id, book_ids)
+    failed = [b for b in book_ids if b not in availability]
+    return JsonResponse({"availability": availability, "failed": failed})
 
 
 @staff_member_required

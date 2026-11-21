@@ -5,56 +5,208 @@
 {% block content %}
 <h1>Available Books by Branch</h1>
 
+<div id="power-search-progress" class="my-3">
+    <div class="d-flex justify-content-between small mb-1">
+        <span id="power-search-status">Checking your libraries&hellip;</span>
+        <span id="power-search-count"></span>
+    </div>
+    <div class="progress" role="progressbar" aria-label="Library search progress"
+         aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div id="power-search-bar" class="progress-bar progress-bar-striped progress-bar-animated"
+             style="width: 0%"></div>
+    </div>
+</div>
+
+<noscript>
+    <div class="alert alert-warning">Power Search needs JavaScript turned on.</div>
+</noscript>
+
 <table class="table">
     <thead>
         <tr>
             <th>Branch Name</th>
-
-            <th>Titles & Authors</th>
+            <th>Titles &amp; Authors</th>
         </tr>
     </thead>
-    <tbody>
-        {% if library_data %}
-            {% for branch in library_data %}
-                <tr>
-                    <td width="20%"><strong>{{ branch.branchName }}</strong></br>
-                        Available books: {{ branch.uniqueBooksCount }}</td>
-
-                    <td>
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>Title</th>
-                                    <th>Location in Library</th>
-                                    <th>Author</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-
-                            {% for book in branch.bookDetails %}
-                                <tr><td>{%if book.image%}<a href="{% url 'book_detail' book.slug %}"><img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-width: 24px;"/></a>{%endif%}</td>
-
-                                    <td><a href="{% url 'book_detail' book.slug %}">{{ book.title }}</a></td>
-                                    <td><small>{{book.collection}}<br/>Call Number: {{book.callNumber}}</small></td>
-                                    <td><strong>{{ book.author_first_name }} {{ book.author_last_name }}</strong></td>
-
-                                </tr>
-
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    </td>
-                </tr>
-            {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan="3">No available books found.</td>
-            </tr>
-        {% endif %}
+    <tbody id="power-search-results">
+        <tr id="power-search-empty">
+            <td colspan="2" class="text-muted">Waiting for results&hellip;</td>
+        </tr>
     </tbody>
 </table>
 
+{{ power_search|json_script:"power-search-data" }}
 
+<style>
+    #power-search-results > tr.ps-branch { transition: background-color 1s ease; }
+    #power-search-results > tr.ps-updated { background-color: rgba(255, 193, 7, 0.18); }
+</style>
 
+<script>
+(function () {
+    const config = JSON.parse(document.getElementById("power-search-data").textContent);
+    const bookIds = config.bookIds;
+    const books = config.books;
+    const total = bookIds.length;
+
+    const resultsBody = document.getElementById("power-search-results");
+    const emptyRow = document.getElementById("power-search-empty");
+    const statusEl = document.getElementById("power-search-status");
+    const countEl = document.getElementById("power-search-count");
+    const bar = document.getElementById("power-search-bar");
+    const progress = bar.parentElement;
+
+    // branchName -> Map(bookId -> {collection, callNumber})
+    const branches = new Map();
+    // branchName -> <tr>, reused between renders so rows can animate
+    const rows = new Map();
+    let checked = 0;
+    let failed = 0;
+
+    function el(tag, attrs, ...children) {
+        const node = document.createElement(tag);
+        Object.entries(attrs || {}).forEach(([k, v]) => node.setAttribute(k, v));
+        children.forEach((c) => {
+            if (c === null || c === undefined) return;
+            node.append(c instanceof Node ? c : document.createTextNode(c));
+        });
+        return node;
+    }
+
+    function bookInfo(bookId) {
+        return books[bookId] || {
+            title: "Unknown Title", author_first_name: "", author_last_name: "", url: "", image: "",
+        };
+    }
+
+    function linkTo(url, child) {
+        return url ? el("a", { href: url }, child) : child;
+    }
+
+    function branchRowContent(name, bookMap) {
+        const bookRows = [...bookMap.entries()]
+            .map(([id, copy]) => ({ id, copy, info: bookInfo(id) }))
+            .sort((a, b) => a.info.author_last_name.localeCompare(b.info.author_last_name));
+
+        const tbody = el("tbody");
+        bookRows.forEach(({ copy, info }) => {
+            const img = info.image
+                ? linkTo(info.url, el("img", { src: info.image, alt: info.title, style: "max-width: 24px;" }))
+                : null;
+            tbody.append(el("tr", {},
+                el("td", {}, img),
+                el("td", {}, linkTo(info.url, info.title)),
+                el("td", {}, el("small", {}, copy.collection, el("br"), "Call Number: " + copy.callNumber)),
+                el("td", {}, el("strong", {}, (info.author_first_name + " " + info.author_last_name).trim())),
+            ));
+        });
+
+        return [
+            el("td", { width: "20%" }, el("strong", {}, name), el("br"), "Available books: " + bookMap.size),
+            el("td", {}, el("table", { class: "table" },
+                el("thead", {}, el("tr", {},
+                    el("th"), el("th", {}, "Title"), el("th", {}, "Location in Library"), el("th", {}, "Author"))),
+                tbody)),
+        ];
+    }
+
+    function render(changedBranches) {
+        // First: remember where each row is before re-ordering.
+        const before = new Map();
+        rows.forEach((row, name) => before.set(name, row.getBoundingClientRect().top));
+
+        const ordered = [...branches.entries()].sort(
+            (a, b) => b[1].size - a[1].size || a[0].localeCompare(b[0])
+        );
+
+        ordered.forEach(([name, bookMap]) => {
+            let row = rows.get(name);
+            if (!row) {
+                row = el("tr", { class: "ps-branch" });
+                rows.set(name, row);
+            }
+            if (!row.firstChild || changedBranches.has(name)) {
+                row.replaceChildren(...branchRowContent(name, bookMap));
+                row.classList.add("ps-updated");
+                setTimeout(() => row.classList.remove("ps-updated"), 1200);
+            }
+            resultsBody.append(row); // append moves the row into sorted order
+        });
+
+        if (ordered.length) emptyRow.remove();
+
+        // Last / Invert / Play: slide rows from their old spot to the new one.
+        rows.forEach((row, name) => {
+            if (!before.has(name)) return;
+            const delta = before.get(name) - row.getBoundingClientRect().top;
+            if (!delta) return;
+            row.animate(
+                [{ transform: `translateY(${delta}px)` }, { transform: "translateY(0)" }],
+                { duration: 450, easing: "ease-out" }
+            );
+        });
+    }
+
+    function updateProgress() {
+        const pct = total ? Math.round((checked / total) * 100) : 100;
+        bar.style.width = pct + "%";
+        progress.setAttribute("aria-valuenow", pct);
+        countEl.textContent = `Checked ${checked} of ${total} books`;
+    }
+
+    function finish() {
+        bar.classList.remove("progress-bar-animated", "progress-bar-striped");
+        let msg = `Done. Found books on the shelf at ${branches.size} branch${branches.size === 1 ? "" : "es"}.`;
+        if (failed) msg += ` ${failed} book${failed === 1 ? "" : "s"} couldn't be checked; try again in a minute.`;
+        statusEl.textContent = msg;
+        if (!branches.size) {
+            emptyRow.querySelector("td").textContent = "No available books found.";
+            resultsBody.append(emptyRow);
+        }
+    }
+
+    function applyBatch(data) {
+        const changed = new Set();
+        Object.entries(data.availability || {}).forEach(([bookId, copies]) => {
+            copies.forEach((copy) => {
+                if (!branches.has(copy.branchName)) branches.set(copy.branchName, new Map());
+                const bookMap = branches.get(copy.branchName);
+                // Keep the first on-shelf copy we see for each book at each branch.
+                if (!bookMap.has(bookId)) {
+                    bookMap.set(bookId, { collection: copy.collection, callNumber: copy.callNumber });
+                    changed.add(copy.branchName);
+                }
+            });
+        });
+        if (changed.size) render(changed);
+    }
+
+    async function run() {
+        updateProgress();
+        if (!total) {
+            finish();
+            return;
+        }
+        // One batch at a time, so a search never ties up every server worker.
+        for (let i = 0; i < total; i += config.batchSize) {
+            const batch = bookIds.slice(i, i + config.batchSize);
+            try {
+                const resp = await fetch(config.batchUrl + "?books=" + encodeURIComponent(batch.join(",")));
+                if (!resp.ok) throw new Error("HTTP " + resp.status);
+                const data = await resp.json();
+                applyBatch(data);
+                failed += (data.failed || []).length;
+            } catch (err) {
+                console.error("Power Search batch failed", err);
+                failed += batch.length;
+            }
+            checked += batch.length;
+            updateProgress();
+        }
+        finish();
+    }
+
+    run();
+})();
+</script>
 {% endblock content %}

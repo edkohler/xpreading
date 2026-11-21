@@ -70,6 +70,11 @@ urlpatterns = [
         name="get_unique_books_per_branch",
     ),
     path(
+        "library-availability/<str:library_id>/",
+        views.library_availability_batch,
+        name="library_availability_batch",
+    ),
+    path(
         "data/incomplete-books/", views.incomplete_books_view, name="incomplete_books"
     ),
     path(
