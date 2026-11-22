@@ -1,14 +1,14 @@
-# Daily search of the HCLib catalog for books missing a BiblioCommons ID.
+# Biweekly (every 14 days) search of the HCLib catalog for books missing a BiblioCommons ID.
 # Runs the management command on a temporary Fly machine built from the
 # latest deployed image (same secrets as the app), which is destroyed after.
 # Exact matches are saved to the book; the rest land in Django admin >
 # Pages > "Review matches" and "Not found in HCLib".
-# --limit keeps each run short; a large backlog clears over several days.
+# --limit keeps each run short; a large backlog clears over several runs.
 name: BiblioCommons ID sync
 
 on:
   schedule:
-    - cron: "43 9 * * *" # daily, ~3-4am Central
+    - cron: "43 9 * * 1" # Mondays ~3-4am Central; gate below makes it every 14 days
   workflow_dispatch:
     inputs:
       args:
@@ -22,8 +22,19 @@ jobs:
     concurrency: bibliocommons-sync
     timeout-minutes: 90
     steps:
+      - name: Skip alternate weeks (runs every 14 days)
+        id: gate
+        if: github.event_name == 'schedule'
+        run: |
+          # Weeks since the Unix epoch; run only on even weeks.
+          if [ $(( $(date -u +%s) / 604800 % 2 )) -ne 0 ]; then
+            echo "Off week - skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl console -a katyreads -C "python /code/manage.py fetch_bibliocommons_ids --limit 400 $SYNC_ARGS"
+        if: steps.gate.outputs.skip != 'true'
+      - if: steps.gate.outputs.skip != 'true'
+        run: flyctl console -a katyreads -C "python /code/manage.py fetch_bibliocommons_ids --limit 400 $SYNC_ARGS"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           SYNC_ARGS: ${{ github.event.inputs.args }}
