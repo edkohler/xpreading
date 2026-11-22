@@ -1,0 +1,15 @@
+{% extends "_base.html" %}
+{% comment %}
+  Puts every django-allauth page inside the site's normal layout (navbar, search,
+  footer, Bootstrap). allauth pages use head_title / content / extra_head / extra_body.
+{% endcomment %}
+{% block title %}{% block head_title %}{% endblock head_title %} · XP Reading{% endblock title %}
+{% block css %}{{ block.super }}{% block extra_head %}{% endblock extra_head %}{% endblock css %}
+{% block content_wrapper %}
+<div class="row justify-content-center">
+  <div class="col-lg-9 my-4">
+    {% block content %}{% endblock content %}
+  </div>
+</div>
+{% endblock content_wrapper %}
+{% block javascript %}{{ block.super }}{% block extra_body %}{% endblock extra_body %}{% endblock javascript %}

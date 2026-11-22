@@ -1,0 +1,19 @@
+{% extends "allauth/layouts/base.html" %}
+{% comment %}Account-settings pages: a side menu plus the page content.{% endcomment %}
+{% block content_wrapper %}
+{% with url_name=request.resolver_match.url_name %}
+<div class="row g-4 my-2 my-md-4">
+  <div class="col-md-4 col-lg-3">
+    <div class="list-group">
+      <a href="{% url 'account_profile' %}" class="list-group-item list-group-item-action{% if url_name == 'account_profile' %} active{% endif %}">My profile</a>
+      <a href="{% url 'account_email' %}" class="list-group-item list-group-item-action{% if url_name == 'account_email' %} active{% endif %}">Email addresses</a>
+      <a href="{% url 'socialaccount_connections' %}" class="list-group-item list-group-item-action{% if url_name == 'socialaccount_connections' %} active{% endif %}">Connected accounts</a>
+      <a href="{% url 'account_change_password' %}" class="list-group-item list-group-item-action{% if url_name == 'account_change_password' or url_name == 'account_set_password' %} active{% endif %}">Password</a>
+    </div>
+  </div>
+  <div class="col-md-8 col-lg-9">
+    {% block content %}{% endblock content %}
+  </div>
+</div>
+{% endwith %}
+{% endblock content_wrapper %}

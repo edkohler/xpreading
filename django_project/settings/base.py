@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sitemaps",
     "allauth",
     "allauth.account",
+    "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "crispy_forms",
     "crispy_bootstrap5",
@@ -89,6 +90,59 @@ TEMPLATES = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.CustomUser"
 SITE_ID = 1
+
+# ---------------------------------------------------------------------------
+# Authentication (django-allauth): username/email accounts + Google sign-in
+# ---------------------------------------------------------------------------
+AUTHENTICATION_BACKENDS = [
+    # Needed to log in by username in Django admin, regardless of allauth
+    "django.contrib.auth.backends.ModelBackend",
+    # allauth-specific authentication methods, such as login by email
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+LOGIN_URL = "account_login"
+LOGIN_REDIRECT_URL = "my_books"  # used when there is no ?next= to return to
+ACCOUNT_LOGOUT_REDIRECT_URL = "home"
+
+# Kids can sign in with either their username or their email address
+ACCOUNT_LOGIN_METHODS = {"username", "email"}
+ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_EMAIL_VERIFICATION = "optional"  # a confirmation email is sent, not required
+ACCOUNT_SESSION_REMEMBER = None  # show a "Remember me" checkbox
+ACCOUNT_FORMS = {"login": "accounts.allauth_forms.XPLoginForm"}
+ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = False
+ACCOUNT_EMAIL_SUBJECT_PREFIX = "[XP Reading] "
+
+# Google sign-in. Credentials come from the GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET
+# environment variables (.env locally, `fly secrets` in production). If they are
+# not set, the Google button is simply hidden.
+GOOGLE_CLIENT_ID = env("GOOGLE_CLIENT_ID", default="")
+GOOGLE_CLIENT_SECRET = env("GOOGLE_CLIENT_SECRET", default="")
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "SCOPE": ["profile", "email"],
+        "AUTH_PARAMS": {"access_type": "online", "prompt": "select_account"},
+        "EMAIL_AUTHENTICATION": True,
+        "APPS": (
+            [{"client_id": GOOGLE_CLIENT_ID, "secret": GOOGLE_CLIENT_SECRET, "key": ""}]
+            if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET
+            else []
+        ),
+    }
+}
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"  # Google has already verified the address
+# If someone who signed up with email+password later clicks "Continue with Google"
+# using the same (Google-verified) address, log them into that existing account
+# and link Google to it instead of failing or creating a duplicate.
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
 # Domain used for absolute URLs in /sitemap.xml and robots.txt
 SITEMAP_DOMAIN = env("SITEMAP_DOMAIN", default="xpreading.com")

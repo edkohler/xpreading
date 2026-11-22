@@ -1,18 +1,18 @@
-{% extends '_base.html' %}
-{% load crispy_forms_tags %}
+{% extends "account/base_entrance.html" %}
 
-{% block title %}Log out{% endblock %}
-
+{% block head_title %}Sign out{% endblock head_title %}
 
 {% block content %}
-<h1>Sign Out</h1>
-
-<p>Are you sure you want to sign out?</p>
-
-<form method="post" action="{% url 'account_logout' %}">
-  {% csrf_token %}
-  {{ form|crispy }}
-  <button class="btn btn-danger" type="submit">Sign Out</button>
-</form>
-
+<div class="text-center">
+  <h1 class="h3 mb-2">Ready to head out?</h1>
+  <p class="text-body-secondary mb-4">Your reading progress is saved. See you next time!</p>
+  <form method="post" action="{% url 'account_logout' %}">
+    {% csrf_token %}
+    {{ redirect_field }}
+    <div class="d-grid gap-2">
+      <button class="btn btn-primary btn-lg" type="submit">Sign out</button>
+      <a class="btn btn-outline-secondary" href="{% url 'my_books' %}">Stay logged in</a>
+    </div>
+  </form>
+</div>
 {% endblock content %}

@@ -1,0 +1,340 @@
+id,name,state,description,url_prefix,url_suffix,web_platform,bibliocommons_id,bibliocommons_number,status
+4,Contra Costa County Library,Alabama,,https://ccclib.bibliocommons.com/v2/search?query=,&searchType=smart,1,ccclib,,Online
+673,Arrowwood Municipal Library,Alberta,,https://arrowwood.bibliocommons.com/v2/search?query=,&searchType=smart,1,arrowwood,,Online
+674,Barnwell Public Library,Alberta,,https://barnwell.bibliocommons.com/v2/search?query=,&searchType=smart,1,barnwell,,Online
+5,Calgary Public Library,Alberta,,https://calgary.bibliocommons.com/v2/search?query=,&searchType=smart,1,calgary,,Online
+675,Carmangay Municipal Library,Alberta,,https://carmangay.bibliocommons.com/v2/search?query=,&searchType=smart,1,carmangay,,Online
+676,Champion Municipal Library,Alberta,,https://champion.bibliocommons.com/v2/search?query=,&searchType=smart,1,champion,,Online
+6,Chinook Arch Regional Library System,Alberta,,https://chinookarch.bibliocommons.com/v2/search?query=,&searchType=smart,1,chinookarch,,Online
+677,Claresholm Public Library,Alberta,,https://claresholm.bibliocommons.com/v2/search?query=,&searchType=smart,1,claresholm,,Online
+678,Coaldale Public Library,Alberta,,https://coaldale.bibliocommons.com/v2/search?query=,&searchType=smart,1,coaldale,,Online
+679,Coutts Municipal Library,Alberta,,https://coutts.bibliocommons.com/v2/search?query=,&searchType=smart,1,coutts,,Online
+680,Crowsnest Community Library,Alberta,,https://crowsnestpass.bibliocommons.com/v2/search?query=,&searchType=smart,1,crowsnestpass,,Online
+7,Edmonton Public Library,Alberta,,https://epl.bibliocommons.com/v2/search?query=,&searchType=smart,1,epl,,Online
+681,Fort Saskatchewan Public Library,Alberta,,https://fspl.bibliocommons.com/v2/search?query=,&searchType=smart,1,fspl,,Online
+682,Glenwood Municipal Library,Alberta,,https://glenwood.bibliocommons.com/v2/search?query=,&searchType=smart,1,glenwood,,Online
+683,Granum Public Library,Alberta,,https://granum.bibliocommons.com/v2/search?query=,&searchType=smart,1,granum,,Online
+684,Grassy Lake Community Library,Alberta,,https://grassylake.bibliocommons.com/v2/search?query=,&searchType=smart,1,grassylake,,Online
+685,Hays Public Library,Alberta,,https://hays.bibliocommons.com/v2/search?query=,&searchType=smart,1,hays,,Online
+686,Jim and Mary Kearl Library of Cardston,Alberta,,https://cardston.bibliocommons.com/v2/search?query=,&searchType=smart,1,cardston,,Online
+687,Lethbridge Public Library,Alberta,,https://lethlib.bibliocommons.com/v2/search?query=,&searchType=smart,1,lethlib,,Online
+688,Lomond Library,Alberta,,https://lomond.bibliocommons.com/v2/search?query=,&searchType=smart,1,lomond,,Online
+689,Magrath Public Library,Alberta,,https://magrath.bibliocommons.com/v2/search?query=,&searchType=smart,1,magrath,,Online
+690,Médiathèque Francophone Emma Morrier,Alberta,,https://mfem.bibliocommons.com/v2/search?query=,&searchType=smart,1,mfem,,Online
+691,Milk River Municipal Library,Alberta,,https://milkriver.bibliocommons.com/v2/search?query=,&searchType=smart,1,milkriver,,Online
+692,Milo Library,Alberta,,https://milo.bibliocommons.com/v2/search?query=,&searchType=smart,1,milo,,Online
+693,Picture Butte Municipal Library,Alberta,,https://picturebutte.bibliocommons.com/v2/search?query=,&searchType=smart,1,picturebutte,,Online
+694,Pincher Creek Municipal Library,Alberta,,https://pinchercreek.bibliocommons.com/v2/search?query=,&searchType=smart,1,pinchercreek,,Online
+695,Raymond Public Library,Alberta,,https://raymond.bibliocommons.com/v2/search?query=,&searchType=smart,1,raymond,,Online
+8,Red Deer Public Library,Alberta,,https://rdpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,rdpl,,Online
+696,Shortgrass Library System,Alberta,,https://shortgrass.bibliocommons.com/v2/search?query=,&searchType=smart,1,shortgrass,,Online
+9,St. Albert Public Library,Alberta,,https://stalbert.bibliocommons.com/v2/search?query=,&searchType=smart,1,stalbert,,Online
+697,Stavely Municipal Library,Alberta,,https://stavely.bibliocommons.com/v2/search?query=,&searchType=smart,1,stavely,,Online
+10,Strathcona County Library Board,Alberta,,https://scl.bibliocommons.com/v2/search?query=,&searchType=smart,1,scl,,Online
+698,Taber Public Library,Alberta,,https://taber.bibliocommons.com/v2/search?query=,&searchType=smart,1,taber,,Online
+699,Thelma Fanning Memorial Library of Nanton,Alberta,,https://nanton.bibliocommons.com/v2/search?query=,&searchType=smart,1,nanton,,Online
+700,Theodore Brandley Municipal Library,Alberta,,https://stirling.bibliocommons.com/v2/search?query=,&searchType=smart,1,stirling,,Online
+701,Town of Fort Macleod Public Library,Alberta,,https://fortmacleod.bibliocommons.com/v2/search?query=,&searchType=smart,1,fortmacleod,,Online
+702,Vauxhall Public Library,Alberta,,https://vauxhall.bibliocommons.com/v2/search?query=,&searchType=smart,1,vauxhall,,Online
+703,Vulcan Library,Alberta,,https://vulcan.bibliocommons.com/v2/search?query=,&searchType=smart,1,vulcan,,Online
+704,Warner Memorial Library,Alberta,,https://warner.bibliocommons.com/v2/search?query=,&searchType=smart,1,warner,,Online
+11,Wood Buffalo Regional Library,Alberta,,https://wbrl.bibliocommons.com/v2/search?query=,&searchType=smart,1,wbrl,,Online
+705,Wrentham Public Library,Alberta,,https://wrentham.bibliocommons.com/v2/search?query=,&searchType=smart,1,wrentham,,Online
+13,Chandler Public Library,Arizona,,https://chandler.bibliocommons.com/v2/search?query=,&searchType=smart,1,chandler,,Online
+16,Pima County Public Library,Arizona,,https://pima.bibliocommons.com/v2/search?query=,&searchType=smart,1,pima,,Online
+17,Yuma County Library District,Arizona,,https://yumalibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,yumalibrary,,Online
+12,Central Arkansas Library System,Arkansas,,https://cals.bibliocommons.com/v2/search?query=,&searchType=smart,1,cals,,Online
+706,Cleveland County Library,Arkansas,,https://clevelandcountylibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,clevelandcountylibrary,,Online
+707,Dallas County Library,Arkansas,,https://dallascountylibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,dallascountylibrary,,Online
+14,Grant County Library,Arkansas,,https://grantcountylibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,grantcountylibrary,,Online
+708,Malvern-Hot Spring County Library,Arkansas,,https://malvernhsclibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,malvernhsclibrary,,Online
+709,Mid-Ark Regional Library System,Arkansas,,https://midark.bibliocommons.com/v2/search?query=,&searchType=smart,1,midark,,Online
+15,Saline County Library,Arkansas,,https://salinecountylibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,salinecountylibrary,,Online
+710,Bowen Island Public Library,British Columbia,,https://bowenlibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,bowenlibrary,,Online
+18,Burnaby Public Library,British Columbia,,https://burnaby.bibliocommons.com/v2/search?query=,&searchType=smart,1,burnaby,,Online
+711,Coquitlam Public Library,British Columbia,,https://coqlibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,coqlibrary,,Online
+712,Fort St John Public Library,British Columbia,,https://fsjpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,fsjpl,,Error - Temporarily unavailable (HTTP 500 on two tries)
+19,Fraser Valley Regional Library,British Columbia,,https://fvrl.bibliocommons.com/v2/search?query=,&searchType=smart,1,fvrl,,Online
+713,Nelson Public Library,British Columbia,,https://nelson.bibliocommons.com/v2/search?query=,&searchType=smart,1,nelson,,Online
+20,New Westminster Public Library,British Columbia,,https://newwestminster.bibliocommons.com/v2/search?query=,&searchType=smart,1,newwestminster,,Online
+21,North Vancouver City Library,British Columbia,,https://nvcl.bibliocommons.com/v2/search?query=,&searchType=smart,1,nvcl,,Online
+22,Okanagan Regional Library,British Columbia,,https://orl.bibliocommons.com/v2/search?query=,&searchType=smart,1,orl,,Online
+714,Pemberton Public Library,British Columbia,,https://pemberton.bibliocommons.com/v2/search?query=,&searchType=smart,1,pemberton,,Online
+23,Port Moody Public Library,British Columbia,,https://portmoody.bibliocommons.com/v2/search?query=,&searchType=smart,1,portmoody,,Online
+24,Richmond Public Library (BC),British Columbia,,https://yourlibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,yourlibrary,,Online
+715,Squamish Public Library,British Columbia,,https://squamish.bibliocommons.com/v2/search?query=,&searchType=smart,1,squamish,,Online
+25,Surrey Public Libraries,British Columbia,,https://surrey.bibliocommons.com/v2/search?query=,&searchType=smart,1,surrey,,Online
+716,Trail &amp; District Public Library,British Columbia,,https://traillibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,traillibrary,,Online
+26,Vancouver Public Library,British Columbia,,https://vpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,vpl,,Online
+27,West Vancouver Memorial Library,British Columbia,,https://westvanlibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,westvanlibrary,,Online
+717,Whistler Public Library,British Columbia,,https://whistler.bibliocommons.com/v2/search?query=,&searchType=smart,1,whistler,,Online
+42,Alameda County Library,California,,https://aclibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,aclibrary,,Online
+718,Beverly Hills Public Library,California,,https://beverlyhills.bibliocommons.com/v2/search?query=,&searchType=smart,1,beverlyhills,,Online
+719,Burlingame Public Library,California,,https://burlingame.bibliocommons.com/v2/search?query=,&searchType=smart,1,burlingame,,Online
+43,Coronado Public Library,California,,https://coronado.bibliocommons.com/v2/search?query=,&searchType=smart,1,coronado,,Offline - Site Disabled (HTTP 410)
+720,Daly City Public Library,California,,https://dalycity.bibliocommons.com/v2/search?query=,&searchType=smart,1,dalycity,,Online
+28,"Glendale Library, Arts &amp; Culture (CA)",California,,https://glac.bibliocommons.com/v2/search?query=,&searchType=smart,1,glac,,Online
+44,Hayward Public Library,California,,https://hayward.bibliocommons.com/v2/search?query=,&searchType=smart,1,hayward,,Online
+721,Hesperia Community Library,California,,https://hesperia.bibliocommons.com/v2/search?query=,&searchType=smart,1,hesperia,,Online
+722,Lake County Library,California,,https://lakecountyca.bibliocommons.com/v2/search?query=,&searchType=smart,1,lakecountyca,,Online
+29,Livermore Public Library,California,,https://livermorelibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,livermorelibrary,,Online
+45,Marin County Free Library,California,,https://marinlibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,marinlibrary,,Online
+30,MARINet,California,,https://marinet.bibliocommons.com/v2/search?query=,&searchType=smart,1,marinet,,Online
+723,Menlo Park Library,California,,https://menlopark.bibliocommons.com/v2/search?query=,&searchType=smart,1,menlopark,,Online
+46,Oakland Public Library,California,,https://oaklandlibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,oaklandlibrary,,Online
+47,Palo Alto City Library,California,,https://paloalto.bibliocommons.com/v2/search?query=,&searchType=smart,1,paloalto,,Online
+31,Pleasanton Public Library,California,,https://pleasantonlibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,pleasantonlibrary,,Online
+724,Redwood City Public Library,California,,https://rcpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,rcpl,,Online
+725,Richmond Public Library,California,,https://richmondlibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,richmondlibrary,,Online
+726,San Bruno Public Library,California,,https://sbl.bibliocommons.com/v2/search?query=,&searchType=smart,1,sbl,,Online
+32,San Diego County Library,California,,https://sdcl.bibliocommons.com/v2/search?query=,&searchType=smart,1,sdcl,,Online
+33,San Diego Public Library,California,,https://sandiego.bibliocommons.com/v2/search?query=,&searchType=smart,1,sandiego,,Offline - Site Disabled (HTTP 410)
+34,San Francisco Public Library,California,,https://sfpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,sfpl,,Online
+35,San Jose Public Library,California,,https://sjpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,sjpl,,Online
+36,San Mateo County Libraries,California,,https://smcl.bibliocommons.com/v2/search?query=,&searchType=smart,1,smcl,,Online
+727,San Mateo Public Library,California,,https://smplibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,smplibrary,,Online
+37,Santa Clara City Library,California,,https://sclibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,sclibrary,,Online
+728,Santa Clara County Library,California,,https://sccl-adult-src.bibliocommons.com/v2/search?query=,&searchType=smart,1,sccl-adult-src,,Online
+38,Santa Clara County Library District,California,,https://sccl.bibliocommons.com/v2/search?query=,&searchType=smart,1,sccl,,Online
+39,Santa Monica Public Library,California,,https://smpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,smpl,,Online
+729,Sonoma County Library,California,,https://sonoma.bibliocommons.com/v2/search?query=,&searchType=smart,1,sonoma,,Online
+730,South San Francisco Public Library,California,,https://ssf.bibliocommons.com/v2/search?query=,&searchType=smart,1,ssf,,Online
+40,Sunnyvale Public Library (CA),California,,https://sunnyvale.bibliocommons.com/v2/search?query=,&searchType=smart,1,sunnyvale,,Online
+41,Yorba Linda Public Library,California,,https://ylpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,ylpl,,Online
+48,Arapahoe Library District,Colorado,,https://arapahoelibraries.bibliocommons.com/v2/search?query=,&searchType=smart,1,arapahoelibraries,,Online
+49,Douglas County Libraries,Colorado,,https://dcl.bibliocommons.com/v2/search?query=,&searchType=smart,1,dcl,,Online
+51,Frisco Public Library,Colorado,,https://friscolibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,friscolibrary,,Online
+50,Jefferson County Public Library,Colorado,,https://jeffcolibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,jeffcolibrary,,Online
+52,Greenwich Library,Connecticut,,https://greenwichlibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,greenwichlibrary,,Online
+53,Herrick District Library,Connecticut,,https://herrickdl.bibliocommons.com/v2/search?query=,&searchType=smart,1,herrickdl,,Online
+54,Delaware County District Library (OH),Deleware,,https://delawarelibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,delawarelibrary,,Online
+57,Boca Raton Public Library,Florida,,https://bocalibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,bocalibrary,,Online
+55,Hillsborough County Public Library Cooperative,Florida,,https://hcplc.bibliocommons.com/v2/search?query=,&searchType=smart,1,hcplc,,Online
+56,Palm Beach County Library System,Florida,,https://pbclibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,pbclibrary,,Online
+62,Chicago Public Library,Illinois,,https://chipublib.bibliocommons.com/v2/search?query=,&searchType=smart,1,chipublib,,Online
+63,East Chicago Public Library,Illinois,,https://ec.bibliocommons.com/v2/search?query=,&searchType=smart,1,ec,,Online
+58,Elk Grove Village Public Library,Illinois,,https://egvpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,egvpl,,Online
+731,Evanston Public Library,Illinois,,https://evanstonlibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,evanstonlibrary,,Online
+59,Gail Borden Public Library District,Illinois,,https://delawarelibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,delawarelibrary,,Online
+732,Glenview Public Library,Illinois,,https://glenviewpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,glenviewpl,,Online
+64,Naperville Public Library,Illinois,,https://naperlib.bibliocommons.com/v2/search?query=,&searchType=smart,1,naperlib,,Online
+61,Skokie Public Library,Illinois,,https://skokielibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,skokielibrary,,Online
+65,Carmel Clay Public Library,Indiana,,https://carmel.bibliocommons.com/v2/search?query=,&searchType=smart,1,carmel,,Online
+68,Indianapolis-Marion County Public Library,Indiana,,https://indypl.bibliocommons.com/v2/search?query=,&searchType=smart,1,indypl,,Online
+66,Kent District Library,Indiana,,https://kdl.bibliocommons.com/v2/search?query=,&searchType=smart,1,kdl,,Online
+67,St. Joseph County Public Library,Indiana,,https://sjcpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,sjcpl,,Online
+733,Johnson County Library,Kansas,,https://jocolibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,jocolibrary,,Online
+69,Lawrence Public Library (KS),Kansas,,https://lawrence.bibliocommons.com/v2/search?query=,&searchType=smart,1,lawrence,,Online
+70,Olathe Public Library,Kansas,,https://olathe.bibliocommons.com/v2/search?query=,&searchType=smart,1,olathe,,Online
+72,Topeka and Shawnee County Public Library,Kansas,,https://tscpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,tscpl,,Online
+73,Daviess County Public Library,Kentucky,,https://dcpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,dcpl,,Online
+74,Kenton County Public Library,Kentucky,,https://kentonlibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,kentonlibrary,,Online
+734,Laurel County Public Library,Kentucky,,https://laurellibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,laurellibrary,,Online
+735,Warren County Public Library,Kentucky,,https://wcpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,wcpl,,Online
+75,St. Tammany Parish Library,Louisiana,,https://stpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,stpl,,Online
+77,Boston Public Library,Massachusetts,,https://bpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,bpl,,Online
+736,Alcona County Library,Michigan,,https://alcona.bibliocommons.com/v2/search?query=,&searchType=smart,1,alcona,,Online
+737,Allendale Township Library,Michigan,,https://allendale.bibliocommons.com/v2/search?query=,&searchType=smart,1,allendale,,Online
+738,Alvah N. Belding Memorial Library,Michigan,,https://belding.bibliocommons.com/v2/search?query=,&searchType=smart,1,belding,,Online
+739,Bay City Public School,Michigan,,https://bcc.bibliocommons.com/v2/search?query=,&searchType=smart,1,bcc,,Offline - Site Disabled (HTTP 410)
+740,Bay City T.L. Handy Library,Michigan,,https://bch.bibliocommons.com/v2/search?query=,&searchType=smart,1,bch,,Offline - Site Disabled (HTTP 410)
+741,Bay City Western Media Center,Michigan,,https://bcw.bibliocommons.com/v2/search?query=,&searchType=smart,1,bcw,,Offline - Site Disabled (HTTP 410)
+742,Bay County Library System,Michigan,,https://bcls.bibliocommons.com/v2/search?query=,&searchType=smart,1,bcls,,Offline - Site Disabled (HTTP 410)
+743,Boyne District Library,Michigan,,https://bdl.bibliocommons.com/v2/search?query=,&searchType=smart,1,bdl,,Online
+78,Canton Public Library (MI),Michigan,,https://cantonpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,cantonpl,,Online
+744,Caro Area District Library,Michigan,,https://carolibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,carolibrary,,Offline - Site Disabled (HTTP 410)
+745,Cedar Springs Public Library,Michigan,,https://cedarsprings.bibliocommons.com/v2/search?query=,&searchType=smart,1,cedarsprings,,Online
+746,Charlevoix Public Library,Michigan,,https://charlevoix.bibliocommons.com/v2/search?query=,&searchType=smart,1,charlevoix,,Online
+747,Cheboygan Area Public Library,Michigan,,https://cheboygan.bibliocommons.com/v2/search?query=,&searchType=smart,1,cheboygan,,Online
+748,Coleman Area Library,Michigan,,https://col.bibliocommons.com/v2/search?query=,&searchType=smart,1,col,,Offline - Site Disabled (HTTP 410)
+749,Community District Library,Michigan,,https://cdl.bibliocommons.com/v2/search?query=,&searchType=smart,1,cdl,,Offline - Site Disabled (HTTP 410)
+750,Coopersville Area District Library,Michigan,,https://coopersville.bibliocommons.com/v2/search?query=,&searchType=smart,1,coopersville,,Online
+751,Crooked Tree District Library,Michigan,,https://ctdl.bibliocommons.com/v2/search?query=,&searchType=smart,1,ctdl,,Online
+752,Croton Township Library,Michigan,,https://croton.bibliocommons.com/v2/search?query=,&searchType=smart,1,croton,,Online
+753,Delta College Library,Michigan,,https://delta.bibliocommons.com/v2/search?query=,&searchType=smart,1,delta,,Offline - Site Disabled (HTTP 410)
+754,Dorr Township Library,Michigan,,https://dorr.bibliocommons.com/v2/search?query=,&searchType=smart,1,dorr,,Online
+755,Dryden Township Library,Michigan,,https://dry.bibliocommons.com/v2/search?query=,&searchType=smart,1,dry,,Offline - Site Disabled (HTTP 410)
+82,East Lansing Public Library,Michigan,,https://elpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,elpl,,Online
+756,Fennville District Library,Michigan,,https://fennville.bibliocommons.com/v2/search?query=,&searchType=smart,1,fennville,,Online
+757,Flat River Community Library,Michigan,,https://flatriver.bibliocommons.com/v2/search?query=,&searchType=smart,1,flatriver,,Online
+758,Frankenmuth James E. Wickson District Library,Michigan,,https://fkm.bibliocommons.com/v2/search?query=,&searchType=smart,1,fkm,,Offline - Site Disabled (HTTP 410)
+759,Freeport District Library,Michigan,,https://freeport.bibliocommons.com/v2/search?query=,&searchType=smart,1,freeport,,Online
+760,Fremont Area District Library,Michigan,,https://fremont.bibliocommons.com/v2/search?query=,&searchType=smart,1,fremont,,Online
+761,Fruitport District Library,Michigan,,https://fruitport.bibliocommons.com/v2/search?query=,&searchType=smart,1,fruitport,,Online
+762,Gary Byker Memorial Library,Michigan,,https://garybyker.bibliocommons.com/v2/search?query=,&searchType=smart,1,garybyker,,Online
+763,Georgetown Township Public Library,Michigan,,https://georgetown.bibliocommons.com/v2/search?query=,&searchType=smart,1,georgetown,,Online
+764,Gladwin County District Library,Michigan,,https://gcdl.bibliocommons.com/v2/search?query=,&searchType=smart,1,gcdl,,Offline - Site Disabled (HTTP 410)
+79,Grand Rapids Public Library,Michigan,,https://grpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,grpl,,Online
+765,Grant Area District Library,Michigan,,https://grant.bibliocommons.com/v2/search?query=,&searchType=smart,1,grant,,Online
+766,Hackley Public Library,Michigan,,https://hackley.bibliocommons.com/v2/search?query=,&searchType=smart,1,hackley,,Online
+767,Harrison District Library,Michigan,,https://hdl.bibliocommons.com/v2/search?query=,&searchType=smart,1,hdl,,Offline - Site Disabled (HTTP 410)
+768,Hastings Public Library,Michigan,,https://hastings.bibliocommons.com/v2/search?query=,&searchType=smart,1,hastings,,Online
+769,Henika District Library,Michigan,,https://henika.bibliocommons.com/v2/search?query=,&searchType=smart,1,henika,,Online
+770,Home Township Library,Michigan,,https://hometownship.bibliocommons.com/v2/search?query=,&searchType=smart,1,hometownship,,Online
+771,Hopkins District Library,Michigan,,https://hopkins.bibliocommons.com/v2/search?query=,&searchType=smart,1,hopkins,,Online
+772,Houghton Lake Public Library,Michigan,,https://hlpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,hlpl,,Offline - Site Disabled (HTTP 410)
+773,Howard Miller Public Library,Michigan,,https://howardmiller.bibliocommons.com/v2/search?query=,&searchType=smart,1,howardmiller,,Online
+774,Ionia Community Library,Michigan,,https://ionia.bibliocommons.com/v2/search?query=,&searchType=smart,1,ionia,,Online
+775,Iosco-Arenac District Library,Michigan,,https://iadl.bibliocommons.com/v2/search?query=,&searchType=smart,1,iadl,,Offline - Site Disabled (HTTP 410)
+425,Kent District Library - Godfrey Lee Schools,Michigan,,https://godfrey-leeccclib.bibliocommons.com/v2/search?query=,&searchType=smart,1,godfrey-lee,,"Offline - Page not found (HTTP 404); URL typo, godfrey-lee.bibliocommons.com is online"
+80,Lakeland Library Cooperative,Michigan,,https://llc.bibliocommons.com/v2/search?query=,&searchType=smart,1,llc,,Online
+776,Lake Odessa Community Library,Michigan,,https://lakeodessa.bibliocommons.com/v2/search?query=,&searchType=smart,1,lakeodessa,,Online
+777,Lapeer District Library,Michigan,,https://ldl.bibliocommons.com/v2/search?query=,&searchType=smart,1,ldl,,Offline - Site Disabled (HTTP 410)
+778,Leighton Township Library,Michigan,,https://leighton.bibliocommons.com/v2/search?query=,&searchType=smart,1,leighton,,Online
+779,Loutit District Library,Michigan,,https://loutit.bibliocommons.com/v2/search?query=,&searchType=smart,1,loutit,,Online
+780,Mackinaw Area Public Library,Michigan,,https://mackinaw.bibliocommons.com/v2/search?query=,&searchType=smart,1,mackinaw,,Online
+781,Marlette District Library,Michigan,,https://mar.bibliocommons.com/v2/search?query=,&searchType=smart,1,mar,,Offline - Site Disabled (HTTP 410)
+782,Mid Michigan College,Michigan,,https://midmich.bibliocommons.com/v2/search?query=,&searchType=smart,1,midmich,,Offline - Site Disabled (HTTP 410)
+783,Montmorency County Public Library,Michigan,,https://mcpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,mcpl,,Online
+784,Muskegon Area District Library,Michigan,,https://muskegonadl.bibliocommons.com/v2/search?query=,&searchType=smart,1,muskegonadl,,Online
+785,Newaygo Area District Library,Michigan,,https://newaygo.bibliocommons.com/v2/search?query=,&searchType=smart,1,newaygo,,Online
+786,North Branch Township Library,Michigan,,https://nbr.bibliocommons.com/v2/search?query=,&searchType=smart,1,nbr,,Offline - Site Disabled (HTTP 410)
+787,Northwood University,Michigan,,https://nor.bibliocommons.com/v2/search?query=,&searchType=smart,1,nor,,Offline - Site Disabled (HTTP 410)
+81,PAC2 Library Consortium,Michigan,,https://pac2.bibliocommons.com/v2/search?query=,&searchType=smart,1,pac2,,Online
+788,Patmos Library,Michigan,,https://patmos.bibliocommons.com/v2/search?query=,&searchType=smart,1,patmos,,Online
+789,Pere Marquette District Library,Michigan,,https://pmdl.bibliocommons.com/v2/search?query=,&searchType=smart,1,pmdl,,Offline - Site Disabled (HTTP 410)
+790,Petoskey District Library,Michigan,,https://petoskey.bibliocommons.com/v2/search?query=,&searchType=smart,1,petoskey,,Online
+791,Pigeon District Library,Michigan,,https://pgn.bibliocommons.com/v2/search?query=,&searchType=smart,1,pgn,,Offline - Site Disabled (HTTP 410)
+792,Plymouth District Library,Michigan,,https://plymouthlibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,plymouthlibrary,,Online
+793,Presque Isle District Library,Michigan,,https://pidl.bibliocommons.com/v2/search?query=,&searchType=smart,1,pidl,,Online
+794,Public Libraries of Saginaw,Michigan,,https://sge.bibliocommons.com/v2/search?query=,&searchType=smart,1,sge,,Offline - Site Disabled (HTTP 410)
+795,River Rapids District Library,Michigan,,https://che.bibliocommons.com/v2/search?query=,&searchType=smart,1,che,,Offline - Site Disabled (HTTP 410)
+796,Ruth Hughes Memorial District Library,Michigan,,https://ruthhughes.bibliocommons.com/v2/search?query=,&searchType=smart,1,ruthhughes,,Offline - Site Disabled (HTTP 410)
+797,Salem Township Library,Michigan,,https://salem.bibliocommons.com/v2/search?query=,&searchType=smart,1,salem,,Online
+798,Sandusky District Library,Michigan,,https://san.bibliocommons.com/v2/search?query=,&searchType=smart,1,san,,Offline - Site Disabled (HTTP 410)
+799,Saranac Clarksville District Library,Michigan,,https://saranac-clarksville.bibliocommons.com/v2/search?query=,&searchType=smart,1,saranac-clarksville,,Online
+800,Saugatuck-Douglas District Library,Michigan,,https://saugatuck-douglas.bibliocommons.com/v2/search?query=,&searchType=smart,1,saugatuck-douglas,,Online
+801,Sparta Carnegie Township Library,Michigan,,https://spartacarnegie.bibliocommons.com/v2/search?query=,&searchType=smart,1,spartacarnegie,,Online
+802,Spring Lake District Library,Michigan,,https://springlake.bibliocommons.com/v2/search?query=,&searchType=smart,1,springlake,,Online
+803,Tahquamenon Area School-Public Library,Michigan,,https://tahq.bibliocommons.com/v2/search?query=,&searchType=smart,1,tahq,,Online
+804,Tamarack District Library,Michigan,,https://tamarack.bibliocommons.com/v2/search?query=,&searchType=smart,1,tamarack,,Online
+805,Thornapple Kellogg School &amp; Community Library,Michigan,,https://thornapplekellogg.bibliocommons.com/v2/search?query=,&searchType=smart,1,thornapplekellogg,,Online
+806,Timothy C. Hauenstein Reynolds Township Library,Michigan,,https://tchreynolds.bibliocommons.com/v2/search?query=,&searchType=smart,1,tchreynolds,,Online
+807,Valley Library Consortium,Michigan,,https://vlc.bibliocommons.com/v2/search?query=,&searchType=smart,1,vlc,,Offline - Site Disabled (HTTP 410)
+808,West Branch District Library,Michigan,,https://wbr.bibliocommons.com/v2/search?query=,&searchType=smart,1,wbr,,Offline - Site Disabled (HTTP 410)
+809,White Cloud Community Library,Michigan,,https://whitecloud.bibliocommons.com/v2/search?query=,&searchType=smart,1,whitecloud,,Online
+810,White Lake Community Library,Michigan,,https://whitelake.bibliocommons.com/v2/search?query=,&searchType=smart,1,whitelake,,Online
+1,Hennepin County Library,Minnesota,,https://hclib.bibliocommons.com/v2/search?query=,&searchType=smart,1,hclib,,Online
+84,Ramsey County Library,Minnesota,,https://rclreads.bibliocommons.com/v2/search?query=,&searchType=smart,1,rclreads,,Online
+3,St Paul Public Library,Minnesota,,https://sppl.bibliocommons.com/v2/search?query=,&searchType=smart,1,sppl,,Online
+85,Daniel Boone Regional Library,Missouri,,https://dbrl.bibliocommons.com/v2/search?query=,&searchType=smart,1,dbrl,,Online
+83,Kansas City Public Library,Missouri,,https://kclibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,kclibrary,,Online
+811,Mid-Continent Public Library,Missouri,,https://mymcpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,mymcpl,,Online
+86,St. Louis Public Library,Missouri,,https://slpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,slpl,,Online
+90,Fulton County Library System,Nebraska,,https://fulcolibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,fulcolibrary,,Online
+91,Omaha Public Library,Nebraska,,https://omaha.bibliocommons.com/v2/search?query=,&searchType=smart,1,omaha,,Online
+812,Carson City Public Library,Nevada,,https://carsoncity.bibliocommons.com/v2/search?query=,&searchType=smart,1,carsoncity,,Online
+92,Las Vegas-Clark County Library District,Nevada,,https://lvccld.bibliocommons.com/v2/search?query=,&searchType=smart,1,lvccld,,Online
+813,Burlington County Library System,New Jersey,,https://bclsnj.bibliocommons.com/v2/search?query=,&searchType=smart,1,bclsnj,,Online
+94,Margate City Public Library,New Jersey,,https://margate.bibliocommons.com/v2/search?query=,&searchType=smart,1,margate,,Online
+95,Ocean City Free Public Library,New Jersey,,https://oceancity.bibliocommons.com/v2/search?query=,&searchType=smart,1,oceancity,,Online
+93,Princeton Public Library (NJ),New Jersey,,https://princetonlibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,princetonlibrary,,Online
+96,Multnomah County Library,New Mexico,,https://multcolib.bibliocommons.com/v2/search?query=,&searchType=smart,1,multcolib,,Online
+814,Chapel Hill Public Library,North Carolina,,https://chpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,chpl,,Online
+815,Charlotte Mecklenburg Library,North Carolina,,https://cmlibrary-horizon.bibliocommons.com/v2/search?query=,&searchType=smart,1,cmlibrary-horizon,,Online
+88,Durham County Library,North Carolina,,https://durhamcounty.bibliocommons.com/v2/search?query=,&searchType=smart,1,durhamcounty,,Online
+816,Orange County Public Library,North Carolina,,https://orangecountync.bibliocommons.com/v2/search?query=,&searchType=smart,1,orangecountync,,Online
+89,Public Library of Charlotte &amp; Mecklenburg County,North Carolina,,https://cmlibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,cmlibrary,,Online
+99,Annapolis Valley Regional Library,Nova Scotia,,https://samepageavrl.bibliocommons.com/v2/search?query=,&searchType=smart,1,samepageavrl,,Online
+100,Cape Breton Regional Library,Nova Scotia,,https://samepagecbrl.bibliocommons.com/v2/search?query=,&searchType=smart,1,samepagecbrl,,Online
+101,Colchester-East Hants Public Library,Nova Scotia,,https://samepagecehpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,samepagecehpl,,Online
+102,Cumberland Public Libraries,Nova Scotia,,https://samepagecpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,samepagecpl,,Online
+103,Eastern Counties Regional Library,Nova Scotia,,https://samepageecrl.bibliocommons.com/v2/search?query=,&searchType=smart,1,samepageecrl,,Online
+98,Halifax Public Libraries,Nova Scotia,,https://halifax.bibliocommons.com/v2/search?query=,&searchType=smart,1,halifax,,Online
+104,Pictou-Antigonish Regional Library,Nova Scotia,,https://samepageparl.bibliocommons.com/v2/search?query=,&searchType=smart,1,samepageparl,,Online
+105,South Shore Public Libraries,Nova Scotia,,https://samepagesspl.bibliocommons.com/v2/search?query=,&searchType=smart,1,samepagesspl,,Online
+106,Western Counties Regional Library,Nova Scotia,,https://samepagewcrl.bibliocommons.com/v2/search?query=,&searchType=smart,1,samepagewcrl,,Online
+817,Bradford Public Library,Ohio,,https://bradford.bibliocommons.com/v2/search?query=,&searchType=smart,1,bradford,,Online
+113,Cincinnati and Hamilton County Public Library,Ohio,,https://cincinnatilibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,cincinnatilibrary,,Online
+107,Clark County Public Library (OH),Ohio,,https://ccplohio.bibliocommons.com/v2/search?query=,&searchType=smart,1,ccplohio,,Online
+114,Columbus Metropolitan Library,Ohio,,https://cml.bibliocommons.com/v2/search?query=,&searchType=smart,1,cml,,Online
+115,Dayton Metro Library,Ohio,,https://dayton.bibliocommons.com/v2/search?query=,&searchType=smart,1,dayton,,Online
+108,Greene County Public Library,Ohio,,https://greenelibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,greenelibrary,,Online
+109,Public Library of Youngstown and Mahoning County,Ohio,,https://plymc.bibliocommons.com/v2/search?query=,&searchType=smart,1,plymc,,Online
+110,Stark County District Library,Ohio,,https://starklibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,starklibrary,,Online
+111,Toledo Lucas County Public Library,Ohio,,https://toledo.bibliocommons.com/v2/search?query=,&searchType=smart,1,toledo,,Online
+818,Troy-Miami County Public Library,Ohio,,https://troy-miami.bibliocommons.com/v2/search?query=,&searchType=smart,1,troy-miami,,Offline - Site Disabled (HTTP 410)
+819,Westerville Public Library,Ohio,,https://westervillelibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,westervillelibrary,,Online
+820,Tulsa City-County Library,Oklahoma,,https://tccl.bibliocommons.com/v2/search?query=,&searchType=smart,1,tccl,,Offline - Site Disabled (HTTP 410)
+117,Aurora Public Library (ON),Ontario,,https://aurora.bibliocommons.com/v2/search?query=,&searchType=smart,1,aurora,,Online
+118,Barrie Public Library,Ontario,,https://barrie.bibliocommons.com/v2/search?query=,&searchType=smart,1,barrie,,Online
+137,Belleville,Ontario,,https://belleville.bibliocommons.com/v2/search?query=,&searchType=smart,1,belleville,,Online
+155,Brant,Ontario,,https://brant.bibliocommons.com/v2/search?query=,&searchType=smart,1,brant,,Online
+119,Brantford Public Library,Ontario,,https://brantford.bibliocommons.com/v2/search?query=,&searchType=smart,1,brantford,,Online
+821,Brighton Public Library,Ontario,,https://brighton.bibliocommons.com/v2/search?query=,&searchType=smart,1,brighton,,Online
+138,Brockville,Ontario,,https://brockville.bibliocommons.com/v2/search?query=,&searchType=smart,1,brockville,,Online
+822,Bruce County Public Library,Ontario,,https://brucecounty.bibliocommons.com/v2/search?query=,&searchType=smart,1,brucecounty,,Online
+120,Burlington Public Library,Ontario,,https://burlington.bibliocommons.com/v2/search?query=,&searchType=smart,1,burlington,,Online
+156,Caledon,Ontario,,https://caledon.bibliocommons.com/v2/search?query=,&searchType=smart,1,caledon,,Online
+157,Carleton Place,Ontario,,https://carletonplace.bibliocommons.com/v2/search?query=,&searchType=smart,1,carletonplace,,Online
+121,City of Vaughan Public Libraries,Ontario,,https://vaughanpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,vaughanpl,,Online
+147,East Gwillimbury,Ontario,,https://egpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,egpl,,Online
+823,Georgina Public Library,Ontario,,https://georgina.bibliocommons.com/v2/search?query=,&searchType=smart,1,georgina,,Online
+122,Greater Sudbury Public Library,Ontario,,https://gspl.bibliocommons.com/v2/search?query=,&searchType=smart,1,gspl,,Online
+824,Guelph Public Library,Ontario,,https://guelphpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,guelphpl,,Online
+825,Haldimand County Public Library,Ontario,,https://haldimand.bibliocommons.com/v2/search?query=,&searchType=smart,1,haldimand,,Online
+140,Haliburton County,Ontario,,https://haliburton.bibliocommons.com/v2/search?query=,&searchType=smart,1,haliburton,,Online
+123,Hamilton Public Library (ON),Ontario,,https://hpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,hpl,,Online
+148,Huron County,Ontario,,https://huron.bibliocommons.com/v2/search?query=,&searchType=smart,1,huron,,Online
+124,Idea Exchange (Cambridge Libraries),Ontario,,https://ideaexchange.bibliocommons.com/v2/search?query=,&searchType=smart,1,ideaexchange,,Online
+125,Innisfil Public Library,Ontario,,https://innisfil.bibliocommons.com/v2/search?query=,&searchType=smart,1,innisfil,,Online
+826,John McRae Secondary School,Ontario,,https://johnmccrae.bibliocommons.com/v2/search?query=,&searchType=smart,1,johnmccrae,,Online
+158,Kawartha Lakes,Ontario,,https://kawarthalibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,kawarthalibrary,,Online
+149,King Township,Ontario,,https://king.bibliocommons.com/v2/search?query=,&searchType=smart,1,king,,Online
+141,Leeds & 1000 Islands,Ontario,,https://lti.bibliocommons.com/v2/search?query=,&searchType=smart,1,lti,,Online
+163,Lennox & Addington County,Ontario,,https://countylibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,countylibrary,,Online
+126,Markham Public Library,Ontario,,https://markham.bibliocommons.com/v2/search?query=,&searchType=smart,1,markham,,Online
+827,Mississauga Library,Ontario,,https://mississauga.bibliocommons.com/v2/search?query=,&searchType=smart,1,mississauga,,Online
+142,Mississippi Mills,Ontario,,https://missmills.bibliocommons.com/v2/search?query=,&searchType=smart,1,missmills,,Online
+127,Newmarket Public Library (ON),Ontario,,https://newmarketpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,newmarketpl,,Online
+150,North Grenville,Ontario,,https://ngpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,ngpl,,Online
+828,North Perth Public Library,Ontario,,https://nppl.bibliocommons.com/v2/search?query=,&searchType=smart,1,nppl,,Online
+128,Oakville Public Library,Ontario,,https://opl.bibliocommons.com/v2/search?query=,&searchType=smart,1,opl,,Online
+829,Ontario Library Consortium,Ontario,,https://olc-parent.bibliocommons.com/v2/search?query=,&searchType=smart,1,olc-parent,,Online
+159,Orangeville,Ontario,,https://orangeville.bibliocommons.com/v2/search?query=,&searchType=smart,1,orangeville,,Online
+129,Oshawa Public Libraries,Ontario,,https://oshlib.bibliocommons.com/v2/search?query=,&searchType=smart,1,oshlib,,Online
+130,Ottawa Public Library,Ontario,,https://ottawa.bibliocommons.com/v2/search?query=,&searchType=smart,1,ottawa,,Online
+143,Owen Sound,Ontario,,https://osngupl.bibliocommons.com/v2/search?query=,&searchType=smart,1,osngupl,,Online
+151,Oxford County,Ontario,,https://ocl.bibliocommons.com/v2/search?query=,&searchType=smart,1,ocl,,Online
+160,Petawawa,Ontario,,https://petawawa.bibliocommons.com/v2/search?query=,&searchType=smart,1,petawawa,,Online
+131,Pickering Public Library,Ontario,,https://pickering.bibliocommons.com/v2/search?query=,&searchType=smart,1,pickering,,Online
+144,Port Hope,Ontario,,https://porthope.bibliocommons.com/v2/search?query=,&searchType=smart,1,porthope,,Online
+164,Prince Edward County,Ontario,,https://pec.bibliocommons.com/v2/search?query=,&searchType=smart,1,pec,,Online
+152,Quinte West,Ontario,,https://quintewest.bibliocommons.com/v2/search?query=,&searchType=smart,1,quintewest,,Online
+830,Richmond Hill Public Library,Ontario,,https://rhpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,rhpl,,Online
+153,Rideau Lakes,Ontario,,https://rideau.bibliocommons.com/v2/search?query=,&searchType=smart,1,rideau,,Online
+831,St. Marys Public Library,Ontario,,https://stmarys.bibliocommons.com/v2/search?query=,&searchType=smart,1,stmarys,,Online
+133,"Stormont, Dundas and Glengarry County Library",Ontario,,https://sdglibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,sdglibrary,,Online
+832,Stouffville Library,Ontario,,https://wsplibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,wsplibrary,,Online
+134,Stratford Public Library,Ontario,,https://spl.bibliocommons.com/v2/search?query=,&searchType=smart,1,spl,,Online
+132,St. Thomas Public Library,Ontario,,https://stthomas.bibliocommons.com/v2/search?query=,&searchType=smart,1,stthomas,,Online
+833,Thunder Bay Public Library,Ontario,,https://tbaypl.bibliocommons.com/v2/search?query=,&searchType=smart,1,tbaypl,,Online
+834,Toronto Public Library,Ontario,,https://tpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,tpl,,Online
+145,Trent Hills,Ontario,,https://trenthills.bibliocommons.com/v2/search?query=,&searchType=smart,1,trenthills,,Online
+161,Waterloo Region,Ontario,,https://rwlibrary.bibliocommons.com/v2/search?query=,&searchType=smart,1,rwlibrary,,Online
+154,Wellington County,Ontario,,https://wellington.bibliocommons.com/v2/search?query=,&searchType=smart,1,wellington,,Online
+135,Wellington County Public Library,Ontario,,https://wellington.bibliocommons.com/v2/search?query=,&searchType=smart,1,wellington,,Online
+835,West Perth Public Library,Ontario,,https://wppl.bibliocommons.com/v2/search?query=,&searchType=smart,1,wppl,,Online
+136,Whitby Public Library,Ontario,,https://whitby.bibliocommons.com/v2/search?query=,&searchType=smart,1,whitby,,Offline - Site Disabled (HTTP 410)
+162,Woodstock,Ontario,,https://woodstock.bibliocommons.com/v2/search?query=,&searchType=smart,1,woodstock,,Online
+165,Deschutes Public Library,Oregon,,https://dpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,dpl,,Online
+166,Washington County Cooperative Library Services,Oregon,,https://wccls.bibliocommons.com/v2/search?query=,&searchType=smart,1,wccls,,Online
+167,Allegheny County Library Association,Pennsylvania,,https://acl.bibliocommons.com/v2/search?query=,&searchType=smart,1,acl,,Online
+168,Christchurch City Libraries,South Island,,https://christchurch.bibliocommons.com/v2/search?query=,&searchType=smart,1,christchurch,,Online
+169,Austin Public Library (TX),Texas,,https://austin.bibliocommons.com/v2/search?query=,&searchType=smart,1,austin,,Online
+170,Denton Public Library,Texas,,https://denton.bibliocommons.com/v2/search?query=,&searchType=smart,1,denton,,Online
+171,Harris County Public Library,Texas,,https://hcpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,hcpl,,Online
+172,San Antonio Public Library,Texas,,https://mysapl.bibliocommons.com/v2/search?query=,&searchType=smart,1,mysapl,,Online
+173,Central Rappahannock Regional Library,Virginia,,https://librarypoint.bibliocommons.com/v2/search?query=,&searchType=smart,1,librarypoint,,Online
+836,Fort Vancouver Regional Libraries,Washington,,https://fvrlibraries.bibliocommons.com/v2/search?query=,&searchType=smart,1,fvrlibraries,,Online
+837,King County Library System,Washington,,https://kcls.bibliocommons.com/v2/search?query=,&searchType=smart,1,kcls,,Online
+175,Kitsap Regional Library,Washington,,https://krl.bibliocommons.com/v2/search?query=,&searchType=smart,1,krl,,Online
+176,Sno-Isle Libraries,Washington,,https://sno-isle.bibliocommons.com/v2/search?query=,&searchType=smart,1,sno-isle,,Online
+177,Tacoma Public Library,Washington,,https://tacoma.bibliocommons.com/v2/search?query=,&searchType=smart,1,tacoma,,Online
+178,The Seattle Public Library,Washington,,https://seattle.bibliocommons.com/v2/search?query=,&searchType=smart,1,seattle,,Online
+838,Timberland Regional Library,Washington,,https://timberland.bibliocommons.com/v2/search?query=,&searchType=smart,1,timberland,,Online
+180,Whatcom County Library System,Washington,,https://wcls.bibliocommons.com/v2/search?query=,&searchType=smart,1,wcls,,Online
+839,Bellingham Public Library,Wisconsin,,https://bellingham.bibliocommons.com/v2/search?query=,&searchType=smart,1,bellingham,,Online
+181,IFLS Library System (MORE Consortium),Wisconsin,,https://more.bibliocommons.com/v2/search?query=,&searchType=smart,1,more,,Online
+182,Kenosha Public Library,Wisconsin,,https://mykpl.bibliocommons.com/v2/search?query=,&searchType=smart,1,mykpl,,Online
+183,OWLSnet,Wisconsin,,https://infosoup.bibliocommons.com/v2/search?query=,&searchType=smart,1,infosoup,,Online

@@ -4,16 +4,6 @@
 <div class="container">
     <h1>Author List</h1>
 
-    {% if messages %}
-    <div class="messages mb-4">
-        {% for message in messages %}
-        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
     <div class="card mb-4">
         <div class="card-header bg-primary text-white">
             Consolidate Authors
