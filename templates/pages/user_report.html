@@ -43,6 +43,9 @@
     </tbody>
 </table>
 
+{% if suggested_books %}
+    {% include "pages/partials/xp_suggested_books.html" with suggestions=suggested_books %}
+{% endif %}
 
 {% if completed_lists %}
     <h3>Completed Reading Lists</h3>

@@ -1,0 +1,47 @@
+{% load humanize %}
+<h3>Best Next Reads</h3>
+<p class="text-muted">
+    Books that move you furthest toward list bonuses. Each book gets a share of
+    the 500 XP for every list it's on (the fewer books left on a list, the bigger
+    the share), so books on several nearly-finished lists rank highest.
+</p>
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Book</th>
+            <th>Helps Finish</th>
+            <th class="text-end">XP When Read</th>
+            <th class="text-end"></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for s in suggestions %}
+        <tr>
+            <td>{% if s.book.image %}<img src="{{ s.book.image.url }}" alt="{{ s.book.title }}" style="max-width: 40px;"/>{% endif %}</td>
+            <td>
+                <a href="{% url 'book_detail' s.book.slug %}">{{ s.book.title }}</a><br/>
+                <small class="text-muted">{{ s.book.author.full_name }}{% if s.pages %} &middot; {{ s.pages }} pages{% endif %}</small>
+            </td>
+            <td>
+                {% for l in s.lists %}
+                    <div>
+                        <a href="{% url 'category_detail' slug=l.category_slug %}#{{ l.year }}">{{ l.category }} - {{ l.year }}</a>
+                        {% if l.completes_list %}
+                            <span class="badge bg-success">{% if l.liked %}Finishes list +500{% else %}Finishes list (like it for +500){% endif %}</span>
+                        {% else %}
+                            <span class="badge {% if l.liked %}bg-primary{% else %}bg-secondary{% endif %}">{{ l.remaining }} left{% if not l.liked %} &middot; not liked{% endif %}</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </td>
+            <td class="text-end">
+                {{ s.immediate_xp|intcomma }}{% if not s.pages %}+{% endif %}
+            </td>
+            <td class="text-end">
+                {% include 'pages/partials/book_read_button.html' with book=s.book completed=False %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

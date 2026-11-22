@@ -50,6 +50,7 @@ from .services import (
 
 
 from .forms import BookCategoryForm
+from .recommendations import suggest_books
 from .models import (
     Author,
     AwardLevel,
@@ -1059,7 +1060,15 @@ def xp_report(request):
         len(completed_lists) * 500
     )  # Updated to use length of completed_lists
     total_points = points_from_pages + points_from_books + points_from_awards
+    suggested_books = suggest_books(
+        books_by_list,
+        user_completed_books,
+        liked_award_years,
+        categories_info,
+        limit=10,
+    )
     context = {
+        "suggested_books": suggested_books,
         "completed_books_count": completed_books_count,
         "completed_books_pages": completed_books_pages,
         "completed_lists": completed_lists,  # Add completed lists to context
