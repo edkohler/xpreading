@@ -802,6 +802,7 @@ def _get_availability(library_id, book_ids):
     return availability
 
 
+@login_required
 def get_unique_books_per_branch(request, library_id):
     """
     Render the Power Search page right away. The page's JavaScript then calls
@@ -840,6 +841,9 @@ def library_availability_batch(request, library_id):
     {"availability": {book_id: [{branchName, collection, callNumber}, ...]},
      "failed": [book_id, ...]}
     """
+    # JSON endpoint: answer 401 instead of redirecting to the login page.
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Login required"}, status=401)
     book_ids = _parse_book_ids(request.GET.get("books", ""))[
         : AVAILABILITY_BATCH_SIZE * 2
     ]
