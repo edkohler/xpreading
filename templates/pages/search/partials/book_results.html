@@ -1,15 +1,17 @@
 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mb-3">
     {% for book in books %}
         <div class="col">
-            <div class="book-card p-3 border rounded h-100">
+            <div class="book-card card border-3 p-3 h-100 d-flex flex-row gap-3 align-items-start">
                 {% if book.image %}
-                    <a href="{% url 'book_detail' book.slug %}"><img src="{{ book.image.url }}" alt="{{ book.title }}" class="object-fit-cover rounded mb-2" style="width: 8rem; height: 12rem;"></a>
+                    <a href="{% url 'book_detail' book.slug %}" tabindex="-1" aria-hidden="true"><img src="{{ book.image.url }}" alt="" class="xp-cover-thumb" style="width: 4.5rem; height: 6.75rem;" loading="lazy"></a>
                 {% endif %}
-                <h4 class="h6 fw-bold"><a href="{% url 'book_detail' book.slug %}">{{ book.title }}</a></h4>
-                <p class="text-body-secondary mb-1">by {{ book.author }}</p>
-                {% if book.illustrator %}
-                <p class="text-body-secondary mb-0">Illustrator: {{ book.illustrator }}</p>
-                {% endif %}
+                <div class="min-w-0">
+                    <h3 class="h6 fs-5 fw-bold mb-1"><a href="{% url 'book_detail' book.slug %}" class="link-dark link-underline-opacity-0 link-underline-opacity-100-hover">{{ book.title }}</a></h3>
+                    <p class="fw-bold text-body-secondary mb-1">by {{ book.author }}</p>
+                    {% if book.illustrator %}
+                    <p class="small text-body-secondary mb-0">Illustrated by {{ book.illustrator }}</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
     {% endfor %}

@@ -4,7 +4,7 @@
 {% with url_name=request.resolver_match.url_name %}
 <div class="row g-4 my-2 my-md-4">
   <div class="col-md-4 col-lg-3">
-    <div class="list-group">
+    <div class="list-group fw-bold">
       <a href="{% url 'account_profile' %}" class="list-group-item list-group-item-action{% if url_name == 'account_profile' %} active{% endif %}">My profile</a>
       <a href="{% url 'account_email' %}" class="list-group-item list-group-item-action{% if url_name == 'account_email' %} active{% endif %}">Email addresses</a>
       <a href="{% url 'socialaccount_connections' %}" class="list-group-item list-group-item-action{% if url_name == 'socialaccount_connections' %} active{% endif %}">Connected accounts</a>

@@ -3,6 +3,20 @@
 {% block title %}Forbidden (403){% endblock title %}
 
 {% block content %}
-<h1>Forbidden (403)</h1>
-<p>CSRF verification failed. Request aborted.</p>
+<div class="row justify-content-center text-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card xp-chunky-lg rounded-5">
+      <div class="card-body p-4 p-md-5">
+        <div class="d-flex justify-content-center gap-2 mb-4" aria-hidden="true">
+          <span class="xp-tile bg-primary text-white">4</span>
+          <span class="xp-tile bg-warning text-dark">0</span>
+          <span class="xp-tile bg-success text-dark">3</span>
+        </div>
+        <h1 class="display-6 fw-bold mb-3">Your session expired</h1>
+        <p class="fs-5 xp-text-soft mb-4">For your security we couldn't complete that request (CSRF verification failed). Go back, refresh the page, and try again.</p>
+        <a href="/" class="btn btn-primary btn-lg xp-chunky px-4">Back to home</a>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock content %}

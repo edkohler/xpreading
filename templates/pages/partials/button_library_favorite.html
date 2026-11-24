@@ -4,22 +4,23 @@
             hx-post="{% url 'remove_favorite_library' library.id %}"
             hx-target="this"
             hx-swap="outerHTML"
-            class="btn btn-danger"
+            class="btn btn-sm btn-warning"
+            title="Remove from your favorites"
         >
-            Remove from Favorites
+            <span aria-hidden="true">&#9733;</span> Favorite
         </button>
     {% else %}
         <button
             hx-post="{% url 'add_favorite_library' library.id %}"
             hx-target="this"
             hx-swap="outerHTML"
-            class="btn btn-primary"
+            class="btn btn-sm btn-outline-primary bg-white"
         >
-            Add to Favorites
+            <span aria-hidden="true">&#9734;</span> Add to favorites
         </button>
     {% endif %}
 {% else %}
-    <a href="{% url 'account_login' %}" class="btn btn-secondary">
-        Log in to Add to Favorites
+    <a href="{% url 'account_login' %}?next={{ request.get_full_path|urlencode }}" class="btn btn-sm btn-outline-secondary bg-white">
+        Log in to add
     </a>
 {% endif %}

@@ -1,60 +1,56 @@
 {% extends "_base.html" %}
 {% block title %}Choose Your Favorite Libraries{% endblock %}
 {% block content %}
-<h1>Libraries</h1>
-<p>Adding libraries to your favorites creates links on book pages to book lookups for those books.</p>
-<p> This makes it quicker to find books at libraries near you.</p>
-<p>If your local library is missing from this list, and it has a searchable online catalog, please let us know about it so we can add it to our directory.</p>
+<header class="mb-4">
+  <span class="xp-kicker mb-3">Find books near you</span>
+  <h1 class="display-5 fw-bold mb-3">Libraries</h1>
+  <p class="fs-5 xp-text-soft mb-1" style="max-width: 48rem;">Add your libraries to your favorites and every book page will link straight to that book in their catalog.</p>
+  <p class="xp-text-soft mb-0" style="max-width: 48rem;">Library missing? If it has a searchable online catalog, let us know and we'll add it.</p>
+</header>
 
-<h2>Your Favorites</h2>
-<table class="table table-striped">
-    <thead>
-      <tr>
-        <th scope="col">Name</th>
-        <th scope="col">Location</th>
-        <th scope="col">Favorites</th>
+<section class="mb-5" aria-labelledby="fav-heading">
+  <h2 id="fav-heading" class="h3 fw-bold mb-3">Your favorites</h2>
+  {% if favorite_libraries %}
+    <div class="xp-table-wrap xp-chunky">
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead><tr><th scope="col">Name</th><th scope="col">Location</th><th scope="col" class="text-end">Favorite</th></tr></thead>
+          <tbody>
+          {% for library in favorite_libraries %}
+            <tr>
+              <td class="fw-bold">{{ library.name }}</td>
+              <td>{{ library.state }}</td>
+              <td class="text-end">{% include "pages/partials/button_library_favorite.html" with library=library is_favorite=True %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-info mb-0">No favorite libraries yet. Add some from the list below.</div>
+  {% endif %}
+</section>
 
-      </tr>
-    </thead>
-    <tbody>
-    {% for library in favorite_libraries %}
-    <tr>
-        <td><strong>{{ library.name }}</strong></td><td>{{ library.state }}</td>
-        <td>
-          <td>
-            {% include "pages/partials/button_library_favorite.html" with library=library is_favorite=True %}
-        </td>
-
-        </td></tr>
-    {% endfor %}
-</tbody>
-</table>
-    {% if not favorite_libraries %}
-    <li>No favorite libraries yet.</li>
-    {% endif %}
-
-
-<h2>All Libraries</h2>
-<table class="table table-striped">
-    <thead>
-      <tr>
-        <th scope="col">Name</th>
-        <th scope="col">Location</th>
-        <th scope="col">Favorites</th>
-
-      </tr>
-    </thead>
-    <tbody>
-    {% for library in non_favorite_libraries %}
-    <tr>
-        <td><strong>{{ library.name }}</strong></td><td>{{ library.state }}</td><td>
-
-          {% include "pages/partials/button_library_favorite.html" with library=library is_favorite=False %}
-        </td>
-    </tr>
-    {% endfor %}
-</tbody>
-</table>
+<section aria-labelledby="all-heading">
+  <h2 id="all-heading" class="h3 fw-bold mb-3">All libraries</h2>
+  <div class="xp-table-wrap">
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead><tr><th scope="col">Name</th><th scope="col">Location</th><th scope="col" class="text-end">Favorite</th></tr></thead>
+        <tbody>
+        {% for library in non_favorite_libraries %}
+          <tr>
+            <td class="fw-bold">{{ library.name }}</td>
+            <td>{{ library.state }}</td>
+            <td class="text-end">{% include "pages/partials/button_library_favorite.html" with library=library is_favorite=False %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
 <script>
   document.body.addEventListener('htmx:afterSwap', function(evt) {
       if (evt.detail.xhr.getResponseHeader('Content-Type') === 'application/json') {

@@ -1,8 +1,22 @@
 {% extends '_base.html' %}
 
-{% block title %}500 Server Error{% endblock %}
+{% block title %}500 Server Error{% endblock title %}
 
 {% block content %}
-<h1>500 Server Error</h1>
-<p>Looks like something went wrong!</p>
+<div class="row justify-content-center text-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card xp-chunky-lg rounded-5">
+      <div class="card-body p-4 p-md-5">
+        <div class="d-flex justify-content-center gap-2 mb-4" aria-hidden="true">
+          <span class="xp-tile bg-primary text-white">5</span>
+          <span class="xp-tile bg-warning text-dark">0</span>
+          <span class="xp-tile bg-success text-dark">0</span>
+        </div>
+        <h1 class="display-6 fw-bold mb-3">Something went wrong</h1>
+        <p class="fs-5 xp-text-soft mb-4">Our server tripped over a stack of books. Please try again in a minute.</p>
+        <a href="/" class="btn btn-primary btn-lg xp-chunky px-4">Back to home</a>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock content %}

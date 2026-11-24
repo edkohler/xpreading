@@ -4,20 +4,22 @@
             hx-post="{% url 'remove_award_like' award.category award.year %}"
             hx-target="this"
             hx-swap="outerHTML"
-            class="btn btn-danger"
+            class="btn btn-warning"
+            title="Remove this list from your challenges"
         >
-            Unlike
+            <span aria-hidden="true">&#9733;</span> Liked
         </button>
     {% else %}
         <button
             hx-post="{% url 'add_award_like' award.category award.year %}"
             hx-target="this"
             hx-swap="outerHTML"
-            class="btn btn-primary"
+            class="btn btn-outline-primary bg-white"
+            title="Add this list to your challenges"
         >
-            Like
+            <span aria-hidden="true">&#9734;</span> Like
         </button>
     {% endif %}
 {% else %}
-    <a href="{% url 'account_login' %}" class="btn btn-secondary">Log In to Like</a>
+    <a href="{% url 'account_login' %}?next={{ request.get_full_path|urlencode }}" class="btn btn-outline-secondary bg-white">Log in to like</a>
 {% endif %}

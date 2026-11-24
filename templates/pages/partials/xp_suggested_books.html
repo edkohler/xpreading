@@ -1,10 +1,11 @@
 {% load humanize %}
-<h3>Best Next Reads</h3>
-<p class="text-muted">
+<h2 class="h3 fw-bold mb-2">Best Next Reads</h2>
+<p class="xp-text-soft" style="max-width: 48rem;">
     Books that move you furthest toward list bonuses. Each book gets a share of
     the 500 XP for every list it's on (the fewer books left on a list, the bigger
     the share), so books on several nearly-finished lists rank highest.
 </p>
+<div class="xp-table-wrap xp-chunky mb-3"><div class="table-responsive">
 <table class="table table-striped align-middle">
     <thead>
         <tr>
@@ -18,9 +19,9 @@
     <tbody>
     {% for s in suggestions %}
         <tr>
-            <td>{% if s.book.image %}<img src="{{ s.book.image.url }}" alt="{{ s.book.title }}" style="max-width: 40px;"/>{% endif %}</td>
+            <td>{% if s.book.image %}<img src="{{ s.book.image.url }}" alt="" class="xp-cover-thumb" style="width: 2.5rem; height: 3.75rem;" loading="lazy">{% endif %}</td>
             <td>
-                <a href="{% url 'book_detail' s.book.slug %}">{{ s.book.title }}</a><br/>
+                <a href="{% url 'book_detail' s.book.slug %}" class="fw-bold">{{ s.book.title }}</a><br/>
                 <small class="text-muted">{{ s.book.author.full_name }}{% if s.pages %} &middot; {{ s.pages }} pages{% endif %}</small>
             </td>
             <td>
@@ -28,14 +29,14 @@
                     <div>
                         <a href="{% url 'category_detail' slug=l.category_slug %}#{{ l.year }}">{{ l.category }} - {{ l.year }}</a>
                         {% if l.completes_list %}
-                            <span class="badge bg-success">{% if l.liked %}Finishes list +500{% else %}Finishes list (like it for +500){% endif %}</span>
+                            <span class="badge text-bg-success">{% if l.liked %}Finishes list +500{% else %}Finishes list (like it for +500){% endif %}</span>
                         {% else %}
-                            <span class="badge {% if l.liked %}bg-primary{% else %}bg-secondary{% endif %}">{{ l.remaining }} left{% if not l.liked %} &middot; not liked{% endif %}</span>
+                            <span class="badge {% if l.liked %}text-bg-primary{% else %}text-bg-light border{% endif %}">{{ l.remaining }} left{% if not l.liked %} &middot; not liked{% endif %}</span>
                         {% endif %}
                     </div>
                 {% endfor %}
             </td>
-            <td class="text-end">
+            <td class="text-end xp-display fs-5 fw-bold text-primary">
                 {{ s.immediate_xp|intcomma }}{% if not s.pages %}+{% endif %}
             </td>
             <td class="text-end">
@@ -45,3 +46,4 @@
     {% endfor %}
     </tbody>
 </table>
+</div></div>

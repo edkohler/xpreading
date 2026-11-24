@@ -3,66 +3,64 @@
 {% load custom_filters %}
 {% block title %}XP Earned on XP Reading{% endblock %}
 {% block content %}
-<h1>Your XP Reading Report</h1>
+<header class="mb-4">
+  <span class="xp-kicker mb-3">XP report</span>
+  <h1 class="display-5 fw-bold mb-0">Your reading report</h1>
+</header>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th colspan="2">Reading Progress</th>
-            <th colspan="2">XP Earned</th>
-
-        </tr>
-    </thead>
-    <tbody>
-
-        <tr>
-            <td><strong>Books Completed:</strong></td>
-            <td>{{ completed_books_count }}</td>
-            <td><strong>Points from Books:</strong></td>
-            <td>{{ points_from_books|intcomma }}</td>
-        </tr>
-        <tr>
-            <td><strong>Pages Read:</strong></td>
-            <td>{{ completed_books_pages|intcomma }}</td>
-            <td><strong>Points from Pages:</strong></td>
-            <td>{{ points_from_pages|intcomma }}</td>
-        </tr>
-        <tr>
-            <td><strong>Book Lists Completed:</strong></td>
-            <td>{{ completed_lists|length }}</td>
-            <td><strong>Points from Lists:</strong></td>
-            <td>{{ points_from_awards|intcomma }}</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td></td>
-            <td><strong>Total XP:</strong></td>
-            <td><strong>{{ total_points|intcomma }}</strong></td>
-        </tr>
-
-    </tbody>
-</table>
+<section class="row g-3 g-md-4 mb-5" aria-label="XP totals">
+  <div class="col-12 col-lg-4">
+    <div class="card h-100 xp-chunky-lg bg-primary text-white rounded-5">
+      <div class="card-body p-4 d-flex flex-column justify-content-center">
+        <span class="fw-bold text-uppercase small" style="letter-spacing: .08em;">Total XP</span>
+        <span class="xp-display display-3 fw-bold lh-1">{{ total_points|intcomma }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-8">
+    <div class="row g-3 g-md-4 h-100">
+      <div class="col-sm-4">
+        <div class="card h-100 xp-chunky xp-bg-seafoam rounded-5"><div class="card-body p-4">
+          <span class="fw-bold text-uppercase small text-body-secondary">Books completed</span>
+          <div class="xp-display fs-1 fw-bold lh-1 my-1">{{ completed_books_count }}</div>
+          <span class="fw-bold">+{{ points_from_books|intcomma }} XP</span>
+        </div></div>
+      </div>
+      <div class="col-sm-4">
+        <div class="card h-100 xp-chunky xp-bg-peach rounded-5"><div class="card-body p-4">
+          <span class="fw-bold text-uppercase small text-body-secondary">Pages read</span>
+          <div class="xp-display fs-1 fw-bold lh-1 my-1">{{ completed_books_pages|intcomma }}</div>
+          <span class="fw-bold">+{{ points_from_pages|intcomma }} XP</span>
+        </div></div>
+      </div>
+      <div class="col-sm-4">
+        <div class="card h-100 xp-chunky xp-bg-butter rounded-5"><div class="card-body p-4">
+          <span class="fw-bold text-uppercase small text-body-secondary">Lists completed</span>
+          <div class="xp-display fs-1 fw-bold lh-1 my-1">{{ completed_lists|length }}</div>
+          <span class="fw-bold">+{{ points_from_awards|intcomma }} XP</span>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
 
 {% if suggested_books %}
     {% include "pages/partials/xp_suggested_books.html" with suggestions=suggested_books %}
 {% endif %}
 
 {% if completed_lists %}
-    <h3>Completed Reading Lists</h3>
+    <h2 class="h3 fw-bold mb-3 mt-5">Completed reading lists</h2>
     {% include "pages/partials/xp_list_table.html" with lists=completed_lists is_liked=True %}
 {% endif %}
 
 {% if near_complete_lists %}
-    <h3>Reading Lists In Progress</h3>
+    <h2 class="h3 fw-bold mb-3 mt-5">Reading lists in progress</h2>
     {% include "pages/partials/xp_list_table.html" with lists=near_complete_lists is_liked=True %}
 {% endif %}
 
 {% if discoverable_lists %}
-    <h3>Other Lists with Books You've Already Read</h3>
+    <h2 class="h3 fw-bold mb-3 mt-5">Other lists with books you've already read</h2>
     {% include "pages/partials/xp_list_table.html" with lists=discoverable_lists is_liked=False %}
 {% endif %}
-
-<hr>
-<br/>
 
 {% endblock %}

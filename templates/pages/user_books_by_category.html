@@ -2,42 +2,57 @@
 {% load custom_filters %}
 {% block title %}Books You've Read by Category List - XP Reading{% endblock %}
 {% block content %}
-<h1>My Book Challenges</h1>
-<p>Here are the books you've read, sorted by category and year. Some books will appear in more than one category because they've won or been nominated for multiple awards. We're not going to make you read them twice (unless you want to).</p>
+<header class="mb-5">
+  <span class="xp-kicker mb-3">Your progress</span>
+  <h1 class="display-5 fw-bold mb-3">My challenges</h1>
+  <p class="fs-5 xp-text-soft mb-0" style="max-width: 48rem;">The books you've read, sorted by list and year. A book can count toward more than one list, because it may have won or been nominated for several awards. We won't make you read it twice (unless you want to).</p>
+</header>
 
 {% for category, years in books_by_category.items %}
-    <h2><a href="{% url 'category_detail' category.slug %}">{{ category.name }}</a></h2>
-
+  <section class="mb-5">
+    <h2 class="h2 fw-bold mb-3"><a href="{% url 'category_detail' category.slug %}" class="link-dark link-underline-opacity-0 link-underline-opacity-100-hover">{{ category.name }}</a></h2>
 
     {% for year, data in years.items %}
-        <h3>
-            {{ year }} - {{ data.read_books|percent_complete:data.total_books }}% Complete
-
-
-            <div class="progress">
-                <div class="progress-bar bg-success" role="progressbar" style="width: {{ data.read_books|percent_complete:data.total_books }}%;" aria-valuenow="{{ data.read_books|percent_complete:data.total_books }}" aria-valuemin="0" aria-valuemax="100">{{ data.read_books|percent_complete:data.total_books }}%</div>
-              </div>
-        </h3>
-        <table class="table">
-            <tr class="table-light">
-                <th></th>
-                <th>Book</th>
-                <th>Author</th>
-                <th>Award Level</th>
-                <th>Completed</th>
-            </tr>
-            {% for book_category in data.book_list %}
+      {% with pct=data.read_books|percent_complete:data.total_books %}
+      <div class="card border-3 rounded-5 mb-3">
+        <div class="card-body p-3 p-md-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+            <h3 class="h4 fw-bold mb-0">{{ year }}</h3>
+            <span class="badge rounded-pill {% if pct == 100 %}text-bg-success{% else %}xp-bg-lilac text-dark{% endif %} border border-2 border-dark fs-6">{{ pct }}% complete</span>
+          </div>
+          <div class="progress mb-3" role="progressbar" aria-label="{{ category.name }} {{ year }} progress" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" style="width: {{ pct }}%;"></div>
+          </div>
+          <div class="table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
                 <tr>
-                    <td class="col-2">{% if book_category.book.image %}<a href="{% url 'book_detail' book_category.book.slug %}"><img src="{{ book_category.book.image.url }}" alt="{{ book_category.book.title }}" style="max-width: 50px;"/></a>{%endif%}</td>
-                    <td class="col-6"><a href="{% url 'book_detail' book_category.book.slug %}">{{ book_category.book.title }}</a></td>
-                    <td class="col-2"><a href="{% url 'author_detail' book_category.book.author.id %}">{{ book_category.book.author.full_name }}</a></td>
-                    <td class="col-1">{% if book_category.award_level %}{{ book_category.award_level.name }}{% endif %}</td>
-                    <td class="col-1">
-                        {% if book_category.book.id in user_completed_books %}Yes{% else %}No{% endif %}</td>
+                  <th><span class="visually-hidden">Cover</span></th>
+                  <th>Book</th>
+                  <th>Author</th>
+                  <th>Award level</th>
+                  <th>Read</th>
                 </tr>
-            {% endfor %}
-        </table>
-
+              </thead>
+              <tbody>
+              {% for book_category in data.book_list %}
+                <tr>
+                  <td style="width: 4rem;">{% if book_category.book.image %}<a href="{% url 'book_detail' book_category.book.slug %}" tabindex="-1" aria-hidden="true"><img src="{{ book_category.book.image.url }}" alt="" class="xp-cover-thumb" style="width: 2.5rem; height: 3.75rem;" loading="lazy"></a>{% endif %}</td>
+                  <td><a href="{% url 'book_detail' book_category.book.slug %}" class="fw-bold">{{ book_category.book.title }}</a></td>
+                  <td><a href="{% url 'author_detail' book_category.book.author.id %}" class="text-body-secondary fw-bold">{{ book_category.book.author.full_name }}</a></td>
+                  <td>{% if book_category.award_level %}<span class="badge text-bg-warning">{{ book_category.award_level.name }}</span>{% endif %}</td>
+                  <td>{% if book_category.book.id in user_completed_books %}<span class="badge text-bg-success">&#10003; Yes</span>{% else %}<span class="badge text-bg-light border">No</span>{% endif %}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {% endwith %}
     {% endfor %}
+  </section>
+{% empty %}
+  <div class="alert alert-info">No challenges yet. <a href="{% url 'award_year_list' %}">Pick a book list</a> to start one.</div>
 {% endfor %}
 {% endblock %}

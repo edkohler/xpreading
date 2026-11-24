@@ -1,4 +1,5 @@
 {% load custom_filters %}
+<div class="xp-table-wrap mb-3"><div class="table-responsive">
 <table class="table table-striped align-middle">
     <thead>
         <tr>
@@ -11,12 +12,12 @@
     {% for list in lists %}
         <tr>
             <td>
-                <a href="{% url 'category_detail' slug=list.category_slug %}#{{ list.year }}">{{ list.category }} - {{ list.year }}</a>
+                <a href="{% url 'category_detail' slug=list.category_slug %}#{{ list.year }}" class="fw-bold">{{ list.category }} - {{ list.year }}</a>
             </td>
             <td style="min-width: 12rem;">
-                {{ list.completed_count }}/{{ list.total_books }} books
-                <div class="progress">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ list.completed_count|percent_complete:list.total_books }}%;" aria-valuenow="{{ list.completed_count|percent_complete:list.total_books }}" aria-valuemin="0" aria-valuemax="100">{{ list.completed_count|percent_complete:list.total_books }}%</div>
+                <span class="small fw-bold">{{ list.completed_count }}/{{ list.total_books }} books</span>
+                <div class="progress" role="progressbar" aria-label="{{ list.category }} {{ list.year }} progress" aria-valuenow="{{ list.completed_count|percent_complete:list.total_books }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar" style="width: {{ list.completed_count|percent_complete:list.total_books }}%;"></div>
                 </div>
             </td>
             <td class="text-end">
@@ -26,3 +27,4 @@
     {% endfor %}
     </tbody>
 </table>
+</div></div>

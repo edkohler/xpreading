@@ -4,28 +4,39 @@
 
 {% block content %}
 
-<h1>My Award Lists</h1>
-<ul>
-    {% for award in liked_awards %}
-        <li>
-            {{ award.category.name }} - {{ award.year }}
-            <h3>Completed Books:</h3>
-            <ul>
-                {% for book in award.completed_books %}
-                    <li><a href="{% url 'book_detail' book.book_category.book.slug %}">{{ book.book_category.book.title }}</a>/li>
-                {% endfor %}
-            </ul>
-            <h3>Not Completed Books:</h3>
-            <ul>
-                {% for book in award.not_completed_books %}
-                    <li><a href="{% url 'book_detail' book.book.slug %}">{{ book.book.title }}</a></li>
-                {% endfor %}
-            </ul>
-        </li>
-    {% endfor %}
-</ul>
+<header class="mb-4">
+  <span class="xp-kicker mb-3">Liked lists</span>
+  <h1 class="display-5 fw-bold mb-0">My award lists</h1>
+</header>
 
-
-
+<div class="row row-cols-1 row-cols-lg-2 g-4">
+  {% for award in liked_awards %}
+    <div class="col">
+      <section class="card h-100 xp-chunky rounded-5">
+        <div class="card-body p-4">
+          <h2 class="h4 fw-bold mb-3">{{ award.category.name }} <span class="xp-text-soft">{{ award.year }}</span></h2>
+          <h3 class="h6 text-uppercase text-body-secondary fw-bold mb-2">Completed</h3>
+          <ul class="list-unstyled mb-3">
+            {% for book in award.completed_books %}
+              <li class="mb-1"><span class="text-success fw-bold" aria-hidden="true">&#10003;</span> <a href="{% url 'book_detail' book.book_category.book.slug %}">{{ book.book_category.book.title }}</a></li>
+            {% empty %}
+              <li class="xp-text-soft">None yet.</li>
+            {% endfor %}
+          </ul>
+          <h3 class="h6 text-uppercase text-body-secondary fw-bold mb-2">Still to read</h3>
+          <ul class="list-unstyled mb-0">
+            {% for book in award.not_completed_books %}
+              <li class="mb-1"><a href="{% url 'book_detail' book.book.slug %}">{{ book.book.title }}</a></li>
+            {% empty %}
+              <li class="xp-text-soft">All done!</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </section>
+    </div>
+  {% empty %}
+    <div class="col"><div class="alert alert-info">You haven't liked any lists yet. <a href="{% url 'award_year_list' %}">Browse book lists</a>.</div></div>
+  {% endfor %}
+</div>
 
 {% endblock content %}

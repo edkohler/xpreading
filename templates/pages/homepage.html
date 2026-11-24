@@ -4,151 +4,205 @@
 {% block title %}XP Reading - Student Reading List Challenges{% endblock %}
 
 {% block content %}
-<div class="row">
-<div class="col-md-7">
-<h1>XP Reading</h1>
-<ul>
-<li>Find great lists of award winning books to read.</li>
-<li>Find what you haven't read at your local libraries, bookstores, or online.</li>
-<li>Keep track of what you've read and what you want to read.</li>
-<li>Earn points for reading challenges.</li>
 
-</ul>
-
- <h3 class="mb-2">Most Read Books</h3>
-
-                        {% if completed_books %}
-                            <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">Rank</th>
-                                            <th scope="col">Title</th>
-                                            <th scope="col">Author</th>
-
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for book in completed_books %}
-                                        <tr>
-                                            <td class="text-nowrap top">{{ forloop.counter }}. {%if book.image%}<a href="{% url 'book_detail' book.slug %}"><img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-width: 50px;"/></a>{%endif%}</td>
-                                            <td><a href="{% url 'book_detail' book.slug %}">{{ book.title }}</a></td>
-                                            <td><a href="{% url 'author_detail' book.author.id %}">{{ book.author.full_name }}</a></td>
-
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                                <a href="{%url 'most_completed_books'%}">View Top 100</a>
-                            </div>
-                        {% else %}
-                            <div class="alert alert-info">
-                                No completed books found in the database.
-                            </div>
-                        {% endif %}
-
-<h3 class="mb-3 mt-4">Most Popular Book Lists</h3>
-
-{% if popular_categories %}
-  {% for category in popular_categories %}
-    <div class="mb-4">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h4 class="h5 mb-0">
-          <span class="badge text-bg-secondary me-1">#{{ forloop.counter }}</span>
-          <a href="{% url 'category_detail' category.slug %}">{{ category.name }}</a>
-        </h4>
-        {% if category.book_slides|length > 1 %}
-          <div class="btn-group btn-group-sm" role="group" aria-label="Browse {{ category.name }} books">
-            <button class="btn btn-outline-secondary" type="button" data-bs-target="#popular-list-{{ category.id }}" data-bs-slide="prev">
-              <span aria-hidden="true">&lsaquo;</span>
-              <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="btn btn-outline-secondary" type="button" data-bs-target="#popular-list-{{ category.id }}" data-bs-slide="next">
-              <span aria-hidden="true">&rsaquo;</span>
-              <span class="visually-hidden">Next</span>
-            </button>
+{# ---------------------------------------------------------------- Hero #}
+<section class="row g-4 g-lg-5 align-items-center mb-5">
+  <div class="col-lg-6">
+    <span class="xp-kicker mb-3">Student reading list challenges</span>
+    <h1 class="display-3 fw-bold lh-1 mb-3">Read award winners.<br><span class="text-primary">Earn XP.</span></h1>
+    <p class="fs-5 xp-text-soft mb-4">Track your award-winning book reading progress. Pick a list, check off what you've read, and find your next book at a library near you.</p>
+    <div class="d-flex flex-wrap gap-3">
+      {% if user.is_authenticated %}
+        <a href="{% url 'my_books' %}" class="btn btn-primary btn-lg xp-chunky px-4">My challenges</a>
+      {% else %}
+        <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg xp-chunky px-4">Start a challenge</a>
+      {% endif %}
+      <a href="{% url 'award_year_list' %}" class="btn btn-light bg-white btn-lg xp-chunky px-4">Browse book lists</a>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="row row-cols-1 row-cols-sm-2 g-3">
+      <div class="col">
+        <div class="card h-100 xp-chunky xp-bg-lilac xp-tilt-l">
+          <div class="card-body">
+            <span class="xp-tile bg-white mb-2" aria-hidden="true">1</span>
+            <h2 class="h5 mb-1">Award-winning lists</h2>
+            <p class="mb-0 fw-bold">Great lists of award-winning books to read.</p>
           </div>
-        {% endif %}
+        </div>
       </div>
-
-      <div id="popular-list-{{ category.id }}" class="carousel slide" data-bs-ride="false" data-bs-wrap="false" data-bs-touch="true">
-        <div class="carousel-inner">
-          {% for slide in category.book_slides %}
-            <div class="carousel-item{% if forloop.first %} active{% endif %}">
-              <div class="row row-cols-4 g-2">
-                {% for book in slide %}
-                  <div class="col">
-                    <a href="{% url 'book_detail' book.slug %}" class="d-block">
-                      <div class="ratio" style="--bs-aspect-ratio: 150%;">
-                        {% if book.image %}
-                          <img src="{{ book.image.url }}" class="object-fit-contain bg-body-tertiary rounded" alt="{{ book.title }}" loading="lazy">
-                        {% else %}
-                          <img src="{% static 'images/no-image.svg' %}" class="object-fit-contain bg-body-tertiary rounded" alt="No image available for {{ book.title }}">
-                        {% endif %}
-                      </div>
-                    </a>
-                    <a href="{% url 'book_detail' book.slug %}" class="d-block small mt-1 lh-sm link-underline link-underline-opacity-0 link-underline-opacity-100-hover">{{ book.title }}</a>
-                  </div>
-                {% endfor %}
-              </div>
-            </div>
-          {% empty %}
-            <p class="text-muted small mb-0">No books in this list yet.</p>
-          {% endfor %}
+      <div class="col">
+        <div class="card h-100 xp-chunky xp-bg-peach xp-tilt-r">
+          <div class="card-body">
+            <span class="xp-tile bg-white mb-2" aria-hidden="true">2</span>
+            <h2 class="h5 mb-1">Find it nearby</h2>
+            <p class="mb-0 fw-bold">Spot what you haven't read at libraries, bookstores, or online.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100 xp-chunky xp-bg-seafoam xp-tilt-r">
+          <div class="card-body">
+            <span class="xp-tile bg-white mb-2" aria-hidden="true">3</span>
+            <h2 class="h5 mb-1">Track your reads</h2>
+            <p class="mb-0 fw-bold">Keep track of what you've read and what you want to read.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100 xp-chunky xp-bg-butter xp-tilt-l">
+          <div class="card-body">
+            <span class="xp-tile bg-white mb-2" aria-hidden="true">4</span>
+            <h2 class="h5 mb-1">Earn XP</h2>
+            <p class="mb-0 fw-bold">Score points for every reading challenge.</p>
+          </div>
         </div>
       </div>
     </div>
-  {% endfor %}
-{% else %}
-  <div class="alert alert-info">
-    No saved categories yet.
   </div>
-{% endif %}
+</section>
 
+{# ---------------------------------------------------------- Most read #}
+<section class="mb-5" aria-labelledby="most-read-heading">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+    <div>
+      <h2 id="most-read-heading" class="display-6 fw-bold mb-1">Most read books</h2>
+      <p class="fs-5 xp-text-soft mb-0">What XP Reading readers are finishing most.</p>
+    </div>
+    <a href="{% url 'most_completed_books' %}" class="btn btn-warning xp-chunky">View Top 100</a>
+  </div>
 
-                    </div>
+  {% if completed_books %}
+    <ol class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mb-0">
+      {% for book in completed_books %}
+        <li class="col">
+          <div class="card h-100 {% if forloop.counter <= 3 %}xp-chunky{% else %}border-3{% endif %}">
+            <div class="card-body d-flex align-items-center gap-3 py-2">
+              <span class="xp-rank{% if forloop.counter <= 3 %} xp-rank-{{ forloop.counter }}{% endif %}">{{ forloop.counter }}</span>
+              <a href="{% url 'book_detail' book.slug %}" tabindex="-1" aria-hidden="true">
+                {% if book.image %}
+                  <img src="{{ book.image.url }}" alt="" class="xp-cover-thumb" loading="lazy">
+                {% else %}
+                  <img src="{% static 'images/no-image.svg' %}" alt="" class="xp-cover-thumb">
+                {% endif %}
+              </a>
+              <div class="min-w-0">
+                <a href="{% url 'book_detail' book.slug %}" class="d-block fw-bold fs-6 link-dark link-underline-opacity-0 link-underline-opacity-100-hover">{{ book.title }}</a>
+                {% if book.author %}
+                  <a href="{% url 'author_detail' book.author.id %}" class="small fw-bold text-body-secondary link-underline-opacity-0 link-underline-opacity-100-hover">{{ book.author.full_name }}</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <div class="alert alert-info">No completed books found in the database.</div>
+  {% endif %}
+</section>
 
-                    <div class="col-md-5">
+{# ------------------------------------------------------ Popular lists #}
+<section class="mb-5" aria-labelledby="popular-lists-heading">
+  <h2 id="popular-lists-heading" class="display-6 fw-bold mb-1">Most popular book lists</h2>
+  <p class="fs-5 xp-text-soft mb-3">Each list is a challenge. Pick one and start racking up XP.</p>
 
-        <nav id="sidebar">
-                <div class="container my-2">
-                        <h2>Get Started</h2>
-<ol>
-<li><a href="{%url 'account_signup' %}">Sign up</a> for an account (or <a href="{%url 'account_login'%}">login).</li>
-<li>Select a <a href="{%url 'award_year_list' %}">book list or lists</a> that interest you.</li>
-<li>Mark the books on your lists that you've already read as read.</li>
-<li>Select your <a href="{%url 'library_list'%}">local library or libraries</a>. We'll use this to check what's in stock.</li>
-<li><a href="{%url 'my_books'%}">Track your progress</a> on book list challenges.</li>
-<li>Review your <a href="{%url 'my_to_read_list'%}">to-read list</a>, use <strong>Power Search</strong> to look up which books from your reading list are available at each library branch in your community.</li>
-</ol>
-<hr/>
-                </nav>
+  {% if popular_categories %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 row-cols-xl-5 g-3">
+      {% for category in popular_categories %}
+        <div class="col">
+          <a href="{% url 'category_detail' category.slug %}" class="card h-100 xp-chunky text-decoration-none overflow-hidden">
+            <div class="xp-shelf {% cycle 'xp-bg-lilac' 'xp-bg-peach' 'xp-bg-seafoam' 'xp-bg-butter' %}" aria-hidden="true">
+              {% with slide=category.book_slides.0 %}
+                {% for book in slide|slice:":3" %}
+                  {% if book.image %}
+                    <img src="{{ book.image.url }}" alt="" loading="lazy">
+                  {% else %}
+                    <img src="{% static 'images/no-image.svg' %}" alt="">
+                  {% endif %}
+                {% endfor %}
+              {% endwith %}
+            </div>
+            <div class="card-body">
+              <span class="small fw-bold text-body-secondary">#{{ forloop.counter }}</span>
+              <h3 class="h6 fs-5 mb-0 text-body">{{ category.name }}</h3>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">No saved categories yet.</div>
+  {% endif %}
+</section>
 
-</div>
+{# ------------------------------------------------------- Get started #}
+<section class="xp-bg-ink rounded-5 p-4 p-md-5 mb-5" aria-labelledby="get-started-heading">
+  <h2 id="get-started-heading" class="display-6 fw-bold mb-1">Get started in six steps</h2>
+  <p class="fs-5 xp-text-on-ink mb-4">Your path from sign-up to your next great book.</p>
+  <ol class="list-unstyled row row-cols-2 row-cols-md-3 row-cols-xl-6 g-4 mb-0 text-center">
+    <li class="col d-flex flex-column align-items-center gap-2">
+      <a href="{% if user.is_authenticated %}{% url 'account_profile' %}{% else %}{% url 'account_signup' %}{% endif %}" class="xp-step bg-warning">1</a>
+      <h3 class="h5 mb-0">Sign up or log in</h3>
+      <p class="small xp-text-on-ink mb-0"><a href="{% url 'account_signup' %}" class="link-light">Make your account</a>, or <a href="{% url 'account_login' %}" class="link-light">log in</a>.</p>
+    </li>
+    <li class="col d-flex flex-column align-items-center gap-2">
+      <a href="{% url 'award_year_list' %}" class="xp-step" style="background:#ffd43b">2</a>
+      <h3 class="h5 mb-0">Pick book lists</h3>
+      <p class="small xp-text-on-ink mb-0">Select one or more lists that interest you.</p>
+    </li>
+    <li class="col d-flex flex-column align-items-center gap-2">
+      <a href="{% url 'award_year_list' %}" class="xp-step bg-success">3</a>
+      <h3 class="h5 mb-0">Mark what you've read</h3>
+      <p class="small xp-text-on-ink mb-0">Check off the books you've already finished.</p>
+    </li>
+    <li class="col d-flex flex-column align-items-center gap-2">
+      <a href="{% url 'library_list' %}" class="xp-step" style="background:#9bc8ff">4</a>
+      <h3 class="h5 mb-0">Choose libraries</h3>
+      <p class="small xp-text-on-ink mb-0">Pick your local libraries so we can check what's in stock.</p>
+    </li>
+    <li class="col d-flex flex-column align-items-center gap-2">
+      <a href="{% url 'my_books' %}" class="xp-step xp-bg-lilac">5</a>
+      <h3 class="h5 mb-0">Track your challenges</h3>
+      <p class="small xp-text-on-ink mb-0">Watch your progress and XP grow.</p>
+    </li>
+    <li class="col d-flex flex-column align-items-center gap-2">
+      <a href="{% url 'my_to_read_list' %}" class="xp-step" style="background:#ff8fb1">6</a>
+      <h3 class="h5 mb-0">Power Search</h3>
+      <p class="small xp-text-on-ink mb-0">See which books on your to-read list are at each library branch.</p>
+    </li>
+  </ol>
+</section>
 
-                </div>
+{# -------------------------------------------------------- Categories #}
+<section class="mb-5" aria-labelledby="categories-heading">
+  <h2 id="categories-heading" class="display-6 fw-bold mb-1">Book categories</h2>
+  <p class="fs-5 xp-text-soft mb-3">{{ sorted_categories|length }} awards and lists to explore.</p>
+  <div class="d-flex flex-wrap gap-2">
+    {% for category, book_categories in sorted_categories.items %}
+      {% if forloop.counter == 19 %}<div class="collapse w-100" id="more-categories"><div class="d-flex flex-wrap gap-2">{% endif %}
+      <a href="{% url 'category_detail' category.slug %}" class="btn btn-sm rounded-pill border-2 border-dark fw-bold px-3 py-2 {% cycle 'xp-bg-lilac' 'xp-bg-peach' 'xp-bg-seafoam' 'xp-bg-butter' 'bg-white' %}">{{ category.name }}</a>
+      {% if forloop.last and forloop.counter >= 19 %}</div></div>{% endif %}
+    {% endfor %}
+  </div>
+  {% if sorted_categories|length > 18 %}
+    <button class="btn btn-dark rounded-pill mt-3 px-4" type="button" data-bs-toggle="collapse" data-bs-target="#more-categories" aria-expanded="false" aria-controls="more-categories">
+      Show all {{ sorted_categories|length }} categories
+    </button>
+  {% endif %}
+</section>
 
+{# ----------------------------------------------------------- Mission #}
+<section class="card border-0 bg-primary-subtle rounded-5">
+  <div class="card-body p-4 p-md-5 d-flex flex-wrap align-items-center justify-content-between gap-4">
+    <div style="max-width: 44rem;">
+      <h2 class="h1 fw-bold mb-2">Love a book? Follow its awards.</h2>
+      <p class="fs-5 xp-text-soft mb-0">We aim to help motivated readers stay interested through project-based reading. Find a book you like, find out what awards it has won, and use those awards as your path to more great reads.</p>
+    </div>
+    {% if not user.is_authenticated %}
+      <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg xp-chunky px-4">Sign up</a>
+    {% endif %}
+  </div>
+</section>
 
-        <div class="row">
-            <!-- Blog Posts -->
-            <div class="col-md-7">
-
-
-<h2>Book Categories</h2>
-<ul>
-{% for category, book_categories in sorted_categories.items %}
-
-        <li><a href="{% url 'category_detail' category.slug %}">{{ category.name }}</a></li>
-
-{% endfor %}
-</ul>
-
-<hr>
-
-We aim to help motivated readers stay interested through project based reading. Find a book you like? Find out what awards it has won and use that as your path to more interesting reads.
-</div>
-
-</main>
-</container>
 {% endblock content %}
-

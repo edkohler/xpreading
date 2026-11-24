@@ -1,20 +1,23 @@
 {% extends '_base.html' %}
 
 {% block content %}
-<div class="search-results py-4">
+<div class="search-results">
     {% if query %}
-        <h2 class="mb-3">Search results for "{{ query }}"</h2>
+        <header class="mb-4">
+            <span class="xp-kicker mb-3">Search</span>
+            <h1 class="display-6 fw-bold mb-0">Results for “{{ query }}”</h1>
+        </header>
 
         {% if authors %}
             <div class="authors-section mb-5">
-                <h3 class="h4 mb-3">Authors</h3>
+                <h2 class="h4 fw-bold mb-3">Authors</h2>
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
                     {% for author in authors %}
                         <div class="col">
-                            <div class="author-card p-3 border rounded h-100">
-                                <h4 class="h6 fw-bold mb-1">
+                            <div class="author-card card border-3 p-3 h-100">
+                                <h3 class="h6 fs-5 fw-bold mb-1">
                                     <a href="{% url 'author_detail' author.id %}">{{ author }}</a>
-                                </h4>
+                                </h3>
                                 <p class="text-body-secondary mb-0">{{ author.books.count }} books</p>
                             </div>
                         </div>
@@ -25,14 +28,14 @@
 
         {% if illustrators %}
             <div class="authors-section mb-5">
-                <h3 class="h4 mb-3">Illustrators</h3>
+                <h2 class="h4 fw-bold mb-3">Illustrators</h2>
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
                     {% for illustrator in illustrators %}
                         <div class="col">
-                            <div class="author-card p-3 border rounded h-100">
-                                <h4 class="h6 fw-bold mb-1">
+                            <div class="author-card card border-3 p-3 h-100">
+                                <h3 class="h6 fs-5 fw-bold mb-1">
                                     <a href="{% url 'illustrator_detail' illustrator.id %}">{{ illustrator }}</a>
-                                </h4>
+                                </h3>
                                 <p class="text-body-secondary mb-0">{{ illustrator.books.count }} books</p>
                             </div>
                         </div>
@@ -42,13 +45,13 @@
         {% endif %}
 
         <div class="books-section">
-            <h3 class="h4 mb-3">Books ({{ total_books }} results)</h3>
+            <h2 class="h4 fw-bold mb-3">Books <span class="badge rounded-pill xp-bg-lilac text-dark border border-2 border-dark">{{ total_books }}</span></h2>
             <div id="books-container">
                 {% include 'pages/search/partials/book_results.html' %}
             </div>
         </div>
     {% else %}
-        <p>Enter a search term to begin</p>
+        <div class="alert alert-info">Type a book title or author name in the search box above to get started.</div>
     {% endif %}
 </div>
 {% endblock %}

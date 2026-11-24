@@ -33,13 +33,24 @@
     aspect-ratio: 2 / 3;
     object-fit: contain;
     background-color: var(--bs-tertiary-bg);
+    border: 3px solid var(--xp-ink, #1e1b3a);
+    border-radius: 0.75rem !important;
+    box-shadow: 0 5px 0 var(--xp-ink, #1e1b3a);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .book-flex-cover:hover img {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 0 var(--xp-ink, #1e1b3a);
   }
   .book-flex-title {
+    font-family: "Nunito", system-ui, sans-serif;
+    font-weight: 800;
     font-size: 1rem;
     line-height: 1.3;
     overflow-wrap: anywhere;
   }
   .book-flex-title a {
+    color: var(--bs-body-color);
     text-decoration: none;
   }
   .book-flex-title a:hover {

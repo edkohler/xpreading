@@ -163,6 +163,9 @@ STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
 STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"  # Local directory for collectstatic
+# The project-level static/ folder (css/base.css, js/base.js, images) wasn't
+# listed here before, so collectstatic never picked up edits to it.
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Media files
 DEFAULT_FILE_STORAGE = "django_project.storage_backends.MediaStorage"

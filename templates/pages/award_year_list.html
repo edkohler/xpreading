@@ -4,38 +4,40 @@
 
 {% block content %}
 
-<h1>Book Lists</h1>
-<p>Liking a book list (typically a list for a given year) adds the books from that year to your reading list.</p>
-<p>Books you've already marked as read for that list year will already be marked as read.</p>
+<header class="mb-4">
+  <span class="xp-kicker mb-3">Pick your challenge</span>
+  <h1 class="display-5 fw-bold mb-3">Book lists</h1>
+  <p class="fs-5 xp-text-soft mb-1" style="max-width: 48rem;">Liking a book list (usually one year of an award) adds its books to your reading list.</p>
+  <p class="xp-text-soft mb-0" style="max-width: 48rem;">Books you've already marked as read will already count toward that list.</p>
+</header>
 
-<ul>
-{% for category_name, awards in grouped_awards.items %}
-<li><a href="#{{category_slugs|get_item:category_name}}">{{ category_name }}</a></li>
-{%endfor%}
-<ul>
-    <hr/>
-
-<div class="container">
+<nav aria-label="Jump to an award" class="card border-3 rounded-5 p-3 p-md-4 mb-5">
+  <h2 class="h5 mb-3">Jump to an award</h2>
+  <div class="d-flex flex-wrap gap-2">
     {% for category_name, awards in grouped_awards.items %}
-        <div class="mb-3"><div id="{{ category_slugs|get_item:category_name}}"></div>
-            <h3><a href="{%url 'category_detail' category_slugs|get_item:category_name %}">{{ category_name }}</a></h3>
-
-        </div>
-
-        <div class="d-flex flex-wrap gap-2">  {# Flexbox for side-by-side cards with wrapping #}
-            {% for award in awards %}
-                <div class="card small-card p-2">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">
-                            <a href="{% url 'category_detail' award.category__slug %}#{{ award.year }}">{{ award.year }}</a>
-                        </h5>
-                        {% include "pages/partials/award_like_button.html" with award=award is_liked=award.liked %}
-                    </div>
-                </div>
-            {% endfor %}
-        </div><br/>
+      <a href="#{{ category_slugs|get_item:category_name }}" class="btn btn-sm rounded-pill border-2 border-dark fw-bold {% cycle 'xp-bg-lilac' 'xp-bg-peach' 'xp-bg-seafoam' 'xp-bg-butter' 'bg-white' %}">{{ category_name }}</a>
     {% endfor %}
+  </div>
+</nav>
 
-</div>
+{% for category_name, awards in grouped_awards.items %}
+  <section id="{{ category_slugs|get_item:category_name }}" class="mb-5" style="scroll-margin-top: 1rem;">
+    <h2 class="h2 fw-bold mb-3">
+      <a href="{% url 'category_detail' category_slugs|get_item:category_name %}" class="link-dark link-underline-opacity-0 link-underline-opacity-100-hover">{{ category_name }}</a>
+    </h2>
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+      {% for award in awards %}
+        <div class="col">
+          <div class="card h-100 text-center {% if award.liked %}xp-chunky xp-bg-butter{% else %}border-3{% endif %}">
+            <div class="card-body d-flex flex-column align-items-center gap-2 p-3">
+              <a href="{% url 'category_detail' award.category__slug %}#{{ award.year }}" class="xp-display fs-3 fw-bold link-dark link-underline-opacity-0 link-underline-opacity-100-hover">{{ award.year }}</a>
+              {% include "pages/partials/award_like_button.html" with award=award is_liked=award.liked %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endfor %}
 
 {% endblock content %}

@@ -9,7 +9,7 @@
 {% if provider.id == "google" %}
 <form method="post" action="{% provider_login_url 'google' process='login' %}">
   {% csrf_token %}
-  <button type="submit" class="btn btn-outline-dark btn-lg w-100">{{ label|default:"Continue with Google" }}</button>
+  <button type="submit" class="btn btn-light bg-white btn-lg w-100 xp-chunky">{{ label|default:"Continue with Google" }}</button>
 </form>
 <div class="d-flex align-items-center my-4 text-body-secondary">
   <hr class="flex-grow-1 my-0"><span class="px-3 small">or</span><hr class="flex-grow-1 my-0">

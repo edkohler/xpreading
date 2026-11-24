@@ -1,17 +1,39 @@
 {% extends "_base.html" %}
+{% load static %}
 {% block title %}Most Read Award Winning Childrens Books{% endblock %}
 {% block content %}
 
-<h1>Most Read Books by XP Reading Readers</h1>
-    <ol>
-        {% for book in most_completed_books %}
-            <li>{%if book.image%}<a href="{% url 'book_detail' book.slug %}"><img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-width: 50px;"/></a>{%endif%} <a href="{% url 'book_detail' book.slug%}">{{ book.book.title }}</a> by <a href="{%url 'author_detail' book.author.id%}">{{ book.author.full_name}}</a></li><br/>
-        {% empty %}
-            <li>No books found.</li>
-        {% endfor %}
-    </ol>
+<header class="mb-4">
+  <span class="xp-kicker mb-3">Top 100</span>
+  <h1 class="display-5 fw-bold mb-2">Most read books</h1>
+  <p class="fs-5 xp-text-soft mb-0">The books XP Reading readers have finished most.</p>
+</header>
 
-
-
+<ol class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mb-0">
+  {% for book in most_completed_books %}
+    <li class="col">
+      <div class="card h-100 {% if forloop.counter <= 3 %}xp-chunky{% else %}border-3{% endif %}">
+        <div class="card-body d-flex align-items-center gap-3 py-2">
+          <span class="xp-rank{% if forloop.counter <= 3 %} xp-rank-{{ forloop.counter }}{% endif %}">{{ forloop.counter }}</span>
+          <a href="{% url 'book_detail' book.slug %}" tabindex="-1" aria-hidden="true">
+            {% if book.image %}
+              <img src="{{ book.image.url }}" alt="" class="xp-cover-thumb" loading="lazy">
+            {% else %}
+              <img src="{% static 'images/no-image.svg' %}" alt="" class="xp-cover-thumb">
+            {% endif %}
+          </a>
+          <div class="min-w-0">
+            <a href="{% url 'book_detail' book.slug %}" class="d-block fw-bold link-dark link-underline-opacity-0 link-underline-opacity-100-hover">{{ book.title }}</a>
+            {% if book.author %}
+              <a href="{% url 'author_detail' book.author.id %}" class="small fw-bold text-body-secondary">{{ book.author.full_name }}</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </li>
+  {% empty %}
+    <li class="col"><div class="alert alert-info mb-0">No books found.</div></li>
+  {% endfor %}
+</ol>
 
 {% endblock content %}

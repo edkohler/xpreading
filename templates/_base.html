@@ -43,57 +43,56 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-yEPZ7jP9S0QKiUQ0m3jjsO4ProIW7wvR9gXkI7JOGa2XVsw53Yke2bsdkBbjmmiX" crossorigin="anonymous">
 
+  <!-- Fonts: Fredoka (headings) and Nunito (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   {% endblock %}
 </head>
 
-<body>
-  <nav class="navbar navbar-expand-lg bg-body-tertiary">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="{%url 'home'%}">XP Reading</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+<body class="d-flex flex-column min-vh-100">
+  {% with url_name=request.resolver_match.url_name %}
+  <nav class="navbar navbar-expand-xl xp-navbar py-2" aria-label="Main">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-1 me-4" href="{% url 'home' %}" aria-label="XP Reading home">
+        <span class="xp-tile bg-primary text-white" aria-hidden="true">X</span>
+        <span class="xp-tile bg-warning text-dark" aria-hidden="true">P</span>
+        <span class="fs-4 fw-bold ms-2">Reading</span>
+      </a>
+      <button class="navbar-toggler border-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <ul class="navbar-nav me-auto mb-3 mb-xl-0 gap-xl-1">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{%url 'my_books' %}">My Challenges</a>
+            <a class="nav-link{% if url_name == 'my_books' %} active" aria-current="page{% endif %}" href="{% url 'my_books' %}">My Challenges</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{%url 'my_to_read_list' %}">My To-Read List</a>
+            <a class="nav-link{% if url_name == 'my_to_read_list' %} active" aria-current="page{% endif %}" href="{% url 'my_to_read_list' %}">My To-Read List</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{%url 'library_list' %}">Choose Libraries</a>
+            <a class="nav-link{% if url_name == 'library_list' %} active" aria-current="page{% endif %}" href="{% url 'library_list' %}">Choose Libraries</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{%url 'award_year_list' %}">Book Lists</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="{%url 'xp_report' %}">XP Report</a>
-              </li>
-
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'about' %}">About</a>
+            <a class="nav-link{% if url_name == 'award_year_list' or url_name == 'category_detail' %} active" aria-current="page{% endif %}" href="{% url 'award_year_list' %}">Book Lists</a>
           </li>
-
-
-        <li class="nav-item">
-
-
-        </li>
-
-
-
+          <li class="nav-item">
+            <a class="nav-link{% if url_name == 'xp_report' %} active" aria-current="page{% endif %}" href="{% url 'xp_report' %}">XP Report</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link{% if url_name == 'about' %} active" aria-current="page{% endif %}" href="{% url 'about' %}">About</a>
+          </li>
         </ul>
-
-
 
         {% if user.is_authenticated %}
         <ul class="navbar-nav">
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown"
               aria-expanded="false">
+              <span class="xp-tile bg-warning text-dark rounded-circle" aria-hidden="true">{{ user.username|first|upper }}</span>
               {{ user.username }}
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
@@ -122,57 +121,69 @@
           </li>
         </ul>
         {% else %}
-        <div class="d-flex gap-2">
-          <a href="{% url 'account_login' %}{% if request.path != '/' and 'accounts/' not in request.path %}?next={{ request.get_full_path|urlencode }}{% endif %}" class="btn btn-outline-secondary">Log in</a>
-          <a href="{% url 'account_signup' %}" class="btn btn-primary">Sign up</a>
+        <div class="d-flex gap-2 pb-2 pb-xl-0">
+          <a href="{% url 'account_login' %}{% if request.path != '/' and 'accounts/' not in request.path %}?next={{ request.get_full_path|urlencode }}{% endif %}" class="btn btn-light bg-white xp-chunky">Log in</a>
+          <a href="{% url 'account_signup' %}" class="btn btn-primary xp-chunky">Sign up</a>
         </div>
         {% endif %}
       </div>
     </div>
-
   </nav>
-  <form class="search-form position-relative w-100 mx-auto my-3 px-3" action="{% url 'search' %}" method="get">
-    <div class="position-relative">
+  {% endwith %}
+
+  <div class="xp-searchband py-3">
+    <form class="search-form position-relative w-100 mx-auto px-3" action="{% url 'search' %}" method="get" role="search">
+      <div class="position-relative">
+        <label for="site-search" class="visually-hidden">Search books and authors</label>
         <input
-            type="text"
+            id="site-search"
+            type="search"
             name="q"
+            value="{{ query|default:'' }}"
             placeholder="Search books and authors..."
-            class="form-control form-control-lg"
+            class="form-control form-control-lg rounded-pill px-4"
             hx-get="{% url 'search_autocomplete' %}"
             hx-trigger="keyup changed delay:500ms"
             hx-target="#search-results"
             hx-indicator=".htmx-indicator"
         >
         <div id="search-results"
-             class="position-absolute w-100 bg-body border rounded-bottom shadow mt-1">
-        </div>
+             class="position-absolute w-100 bg-body border rounded-4 shadow mt-1 overflow-hidden"></div>
         <div class="htmx-indicator position-absolute top-0 end-0 mt-2 me-3">
             <div class="spinner"></div>
         </div>
-    </div>
-</form>
-
-  <div class="container">
-    {% if messages %}
-    <div class="mt-2">
-      {% for message in messages %}
-      <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
-      {% endfor %}
-    </div>
-    {% endif %}
-    {% block content_wrapper %}
-    {% block content %}
-    <p>Default content...</p>
-    {% endblock content %}
-    {% endblock content_wrapper %}
+    </form>
   </div>
 
-  <footer class="footer">
-    <div class="container">
-      <span class="text-muted">Copyright © 2024-{% now "Y" %} | <a class="text-muted" aria-current="page" href="{%url 'terms_and_conditions' %}">Terms and Conditions</a> | <a class="text-muted" aria-current="page" href="{%url 'privacy_policy' %}">Privacy Policy</a></span>
+  <main class="flex-grow-1">
+    <div class="container py-4 py-md-5">
+      {% if messages %}
+      <div class="mb-3">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% block content_wrapper %}
+      {% block content %}
+      <p>Default content...</p>
+      {% endblock content %}
+      {% endblock content_wrapper %}
+    </div>
+  </main>
+
+  <footer class="footer mt-auto">
+    <div class="container py-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <span class="xp-text-soft fw-bold">Copyright © 2024–{% now "Y" %} XP Reading</span>
+      <ul class="nav gap-3 fw-bold">
+        <li><a href="{% url 'about' %}">About</a></li>
+        <li><a href="{% url 'terms_and_conditions' %}">Terms and Conditions</a></li>
+        <li><a href="{% url 'privacy_policy' %}">Privacy Policy</a></li>
+      </ul>
     </div>
   </footer>
 

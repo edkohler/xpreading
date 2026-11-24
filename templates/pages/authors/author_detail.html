@@ -8,15 +8,16 @@
 {% endblock css %}
 
 {% block content %}
-<div class="py-4">
-    <!-- Author Header -->
-    <div class="mb-4">
-        <h1 class="mb-2">{{ author.full_name }}</h1>
+<div>
+    <header class="mb-5">
+        <span class="xp-kicker mb-3">{% if illustrator %}Illustrator{% else %}Author{% endif %}</span>
         {% if illustrator %}
-        <h1 class="mb-2">Books illustrated by {{ illustrator.full_name }}</h1>
+        <h1 class="display-5 fw-bold mb-3">Books illustrated by {{ illustrator.full_name }}</h1>
+        {% else %}
+        <h1 class="display-5 fw-bold mb-3">{{ author.full_name }}</h1>
         {% endif %}
-        <p class="text-body-secondary">{{ total_books }} {% if total_books == 1 %}book{% else %}books{% endif %}</p>
-    </div>
+        <span class="badge rounded-pill xp-bg-butter text-dark border border-2 border-dark fs-6">{{ total_books }} award-listed {% if total_books == 1 %}book{% else %}books{% endif %}</span>
+    </header>
 
     <!-- Books Section -->
     <div class="books-section">

@@ -4,62 +4,56 @@
 {% load static %}
 {% block content %}
 
-<h1>Library Lookups</h1>
-<p>Use the buttons below to look up which books on your reading list are available at each of your local library brances.</p>
-<table class="table table-striped">
-    <thead>
-      <tr>
-        <th scope="col">Name</th>
-        <th scope="col">Location</th>
-        <th scope="col">Favorites</th>
+<header class="mb-4">
+  <span class="xp-kicker mb-3">Up next</span>
+  <h1 class="display-5 fw-bold mb-0">My to-read list</h1>
+</header>
 
-      </tr>
-    </thead>
-    <tbody>
-    {% for library in favorite_libraries %}
-    <tr>
-        <td><strong>{{ library.name }}</strong></td><td>{{ library.state }}</td>
-        <td><a class="btn btn-primary btn-sm" href="{% url 'get_unique_books_per_branch' library.bibliocommons_id %}?books={% for book in to_read_books %}{{ book.book.bibliocommons_id }}{% if not forloop.last %},{% endif %}{% endfor %}">
-            Power Search</a>
+<section class="card border-0 bg-primary-subtle rounded-5 p-3 p-md-4 mb-5" aria-labelledby="power-heading">
+  <h2 id="power-heading" class="h3 fw-bold mb-2">Power Search</h2>
+  <p class="xp-text-soft mb-3">Check which books on your reading list are available at each branch of your favorite libraries.</p>
+  {% if favorite_libraries %}
+    <div class="d-flex flex-wrap gap-2">
+      {% for library in favorite_libraries %}
+        <a class="btn btn-primary xp-chunky" href="{% url 'get_unique_books_per_branch' library.bibliocommons_id %}?books={% for book in to_read_books %}{{ book.book.bibliocommons_id }}{% if not forloop.last %},{% endif %}{% endfor %}">
+          Power Search {{ library.name }}
         </a>
-            </td></tr>
-    {% endfor %}
-</tbody>
-</table>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="fw-bold mb-0"><a href="{% url 'library_list' %}">Pick your favorite libraries</a> to use Power Search.</p>
+  {% endif %}
+</section>
 
-
-<h1>My Reading List</h1>
-<table class="table">
-    <thead>
-        <tr>
-            <th></th>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Purchase</th>
-
-
-        </tr>
-    </thead>
-    <tbody>
-        {% for book in to_read_books %}
+<section aria-labelledby="list-heading">
+  <h2 id="list-heading" class="h3 fw-bold mb-3">Reading list <span class="badge rounded-pill xp-bg-lilac text-dark border border-2 border-dark">{{ to_read_books|length }}</span></h2>
+  {% if to_read_books %}
+  <div class="xp-table-wrap">
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr><th><span class="visually-hidden">Cover</span></th><th>Title</th><th>Author</th><th>Buy</th></tr>
+        </thead>
+        <tbody>
+          {% for book in to_read_books %}
             <tr>
-                <td>{% if book.book.image %}<img src="{{ book.book.image.url }}" alt="{{ book.book.title }}" style="max-width: 30px;"/>{% endif %}</td>
-                <td><a href="{% url 'book_detail' book.book.slug %}">{{ book.book.title }}</a></td>
-                <td><a href="{% url 'author_detail' book.book.author.id %}">{{ book.book.author.full_name }}</a></td>
-
-                <td><a href="https://bookshop.org/search?keywords={{ book.book.title }}+{{ book.book.author.full_name }}" target="_blank"><img src="{% static 'images/IndieBound-18px-18px.png' %}" class="img-fluid" alt="buy {{ book.book.title }} at local US bookstores" width="18" height="18"/></a>
-                    <a href="https://bookmanager.com/tbm/?searchtype=keyword&qs={{ book.book.title }}+{{ book.book.author }}" target="_blank"><img src="{% static 'images/canada_icon_18_18.png' %}" class="img-fluid" alt="buy {{ book.book.title }} at local Canadian bookstores" width="18" height="18"/></a>
-                    <a href="https://www.amazon.com/dp/{{ book.asin }}/?xpreading-20" target="_blank"><img src="{% static 'images/amazon.svg' %}" class="img-fluid" alt="buy {{ book.book.title }} at Amazon" width="18" height="18"/></a>
-
-                </td>
+              <td style="width: 4rem;">{% if book.book.image %}<img src="{{ book.book.image.url }}" alt="" class="xp-cover-thumb" style="width: 2.5rem; height: 3.75rem;" loading="lazy">{% endif %}</td>
+              <td><a href="{% url 'book_detail' book.book.slug %}" class="fw-bold">{{ book.book.title }}</a></td>
+              <td><a href="{% url 'author_detail' book.book.author.id %}" class="text-body-secondary fw-bold">{{ book.book.author.full_name }}</a></td>
+              <td class="text-nowrap">
+                <a href="https://bookshop.org/search?keywords={{ book.book.title }}+{{ book.book.author.full_name }}" target="_blank" rel="noopener" class="btn btn-sm btn-light bg-white border-2"><img src="{% static 'images/IndieBound-18px-18px.png' %}" alt="Buy {{ book.book.title }} at local US bookstores" width="18" height="18"></a>
+                <a href="https://bookmanager.com/tbm/?searchtype=keyword&qs={{ book.book.title }}+{{ book.book.author }}" target="_blank" rel="noopener" class="btn btn-sm btn-light bg-white border-2"><img src="{% static 'images/canada_icon_18_18.png' %}" alt="Buy {{ book.book.title }} at local Canadian bookstores" width="18" height="18"></a>
+                {% if book.book.asin %}<a href="https://www.amazon.com/dp/{{ book.book.asin }}/?xpreading-20" target="_blank" rel="noopener" class="btn btn-sm btn-light bg-white border-2"><img src="{% static 'images/amazon.svg' %}" alt="Buy {{ book.book.title }} at Amazon" width="18" height="18"></a>{% endif %}
+              </td>
             </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-
-
-
-
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+    <div class="alert alert-info">Your reading list is empty. <a href="{% url 'award_year_list' %}">Like a book list</a> to fill it up.</div>
+  {% endif %}
+</section>
 
 {% endblock content %}

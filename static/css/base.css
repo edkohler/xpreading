@@ -1,57 +1,399 @@
-/* Sticky footer styles
--------------------------------------------------- */
-html {
-  position: relative;
-  min-height: 100%;
-  font-size: 14px;
-  font-family: Georgia, 'Times New Roman', Times, serif;
-}
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+/* ==========================================================================
+   XP Reading theme for Bootstrap 5.3
+   --------------------------------------------------------------------------
+   Most of the look comes from overriding Bootstrap's own CSS variables, so
+   standard Bootstrap markup (btn, card, badge, table, list-group, progress,
+   navbar, form-control) picks up the theme automatically.
+   The few "xp-" classes below add the chunky outline + solid drop shadow
+   that Bootstrap has no built-in for.
+   ========================================================================== */
+
+:root,
+[data-bs-theme="light"] {
+  /* Palette */
+  --xp-ink: #1e1b3a;          /* outlines, headings, dark sections */
+  --xp-ink-soft: #45416a;     /* body copy on light backgrounds */
+  --xp-muted: #5e5a85;        /* small labels */
+  --xp-grape: #5b3fd9;        /* primary */
+  --xp-grape-dark: #4a2fc9;
+  --xp-grape-tint: #eeebff;
+  --xp-orange: #ff9f43;       /* "pop" accent */
+  --xp-orange-dark: #e2621b;
+  --xp-orange-tint: #fff1e6;
+  --xp-mint: #2bb673;
+  --xp-mint-dark: #157a47;
+  --xp-mint-tint: #eaf8f0;
+  --xp-lilac: #d9d2ff;
+  --xp-peach: #ffe0c2;
+  --xp-seafoam: #c9f0da;
+  --xp-butter: #fff3b8;
+  --xp-line: #e4e1f5;
+  --xp-bg: #f6f5ff;
+
+  /* Bootstrap overrides */
+  --bs-body-font-family: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --bs-body-color: var(--xp-ink);
+  --bs-body-color-rgb: 30, 27, 58;
+  --bs-body-bg: var(--xp-bg);
+  --bs-body-bg-rgb: 246, 245, 255;
+  --bs-emphasis-color: var(--xp-ink);
+  --bs-secondary-color: var(--xp-muted);
+  --bs-tertiary-bg: var(--xp-grape-tint);
+  --bs-border-color: var(--xp-line);
+  --bs-border-radius: 0.75rem;
+  --bs-border-radius-sm: 0.5rem;
+  --bs-border-radius-lg: 1rem;
+  --bs-border-radius-xl: 1.25rem;
+  --bs-border-radius-xxl: 1.75rem;
+
+  --bs-primary: var(--xp-grape);
+  --bs-primary-rgb: 91, 63, 217;
+  --bs-primary-text-emphasis: #3a2399;
+  --bs-primary-bg-subtle: var(--xp-grape-tint);
+  --bs-primary-border-subtle: var(--xp-lilac);
+  --bs-success: var(--xp-mint);
+  --bs-success-rgb: 43, 182, 115;
+  --bs-success-text-emphasis: #145c38;
+  --bs-success-bg-subtle: var(--xp-mint-tint);
+  --bs-warning: var(--xp-orange);
+  --bs-warning-rgb: 255, 159, 67;
+  --bs-warning-text-emphasis: #8a3a00;
+  --bs-warning-bg-subtle: var(--xp-orange-tint);
+  --bs-dark: var(--xp-ink);
+  --bs-dark-rgb: 30, 27, 58;
+
+  --bs-link-color: var(--xp-grape-dark);
+  --bs-link-color-rgb: 74, 47, 201;
+  --bs-link-hover-color: #2e1a8f;
+  --bs-link-hover-color-rgb: 46, 26, 143;
+  --bs-heading-color: var(--xp-ink);
+  --bs-focus-ring-color: rgba(91, 63, 217, 0.35);
 }
 
 body {
-  margin-bottom: 60px; /* Margin bottom by footer height */
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-* {
-  font-family: inherit;
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6,
+.navbar-brand,
+.xp-display {
+  font-family: "Fredoka", "Nunito", system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .container {
-  max-width: 960px;
+  max-width: 1200px;
 }
 
-.pricing-header {
-  max-width: 700px;
+/* ---- Buttons: Bootstrap variants re-pointed at the palette ---------------- */
+.btn {
+  --bs-btn-font-weight: 800;
+  --bs-btn-border-width: 2px;
+}
+.btn-primary {
+  --bs-btn-bg: var(--xp-grape);
+  --bs-btn-border-color: var(--xp-grape);
+  --bs-btn-hover-bg: var(--xp-grape-dark);
+  --bs-btn-hover-border-color: var(--xp-grape-dark);
+  --bs-btn-active-bg: #3a2399;
+  --bs-btn-active-border-color: #3a2399;
+  --bs-btn-disabled-bg: var(--xp-grape);
+  --bs-btn-disabled-border-color: var(--xp-grape);
+}
+.btn-outline-primary {
+  --bs-btn-color: var(--xp-grape-dark);
+  --bs-btn-border-color: var(--xp-grape);
+  --bs-btn-hover-bg: var(--xp-grape);
+  --bs-btn-hover-border-color: var(--xp-grape);
+  --bs-btn-active-bg: var(--xp-grape-dark);
+  --bs-btn-active-border-color: var(--xp-grape-dark);
+}
+.btn-success {
+  --bs-btn-color: var(--xp-ink);
+  --bs-btn-bg: var(--xp-mint);
+  --bs-btn-border-color: var(--xp-mint);
+  --bs-btn-hover-color: var(--xp-ink);
+  --bs-btn-hover-bg: #25a466;
+  --bs-btn-hover-border-color: #25a466;
+  --bs-btn-active-color: var(--xp-ink);
+  --bs-btn-active-bg: #1f8f58;
+  --bs-btn-active-border-color: #1f8f58;
+}
+.btn-warning {
+  --bs-btn-color: var(--xp-ink);
+  --bs-btn-bg: var(--xp-orange);
+  --bs-btn-border-color: var(--xp-orange);
+  --bs-btn-hover-color: var(--xp-ink);
+  --bs-btn-hover-bg: #ff8f24;
+  --bs-btn-hover-border-color: #ff8f24;
+  --bs-btn-active-color: var(--xp-ink);
+  --bs-btn-active-bg: #f57f0e;
+  --bs-btn-active-border-color: #f57f0e;
+}
+.btn-light {
+  --bs-btn-color: var(--xp-ink);
+  --bs-btn-bg: #fff;
+  --bs-btn-border-color: var(--xp-line);
+  --bs-btn-hover-color: var(--xp-ink);
+  --bs-btn-hover-bg: var(--xp-grape-tint);
+  --bs-btn-hover-border-color: var(--xp-lilac);
+  --bs-btn-active-color: var(--xp-ink);
+  --bs-btn-active-bg: var(--xp-lilac);
+  --bs-btn-active-border-color: var(--xp-lilac);
+}
+.btn-dark {
+  --bs-btn-bg: var(--xp-ink);
+  --bs-btn-border-color: var(--xp-ink);
+  --bs-btn-hover-bg: #2c2850;
+  --bs-btn-hover-border-color: #2c2850;
+}
+.btn-outline-dark,
+.btn-outline-secondary {
+  --bs-btn-color: var(--xp-ink);
+  --bs-btn-border-color: var(--xp-ink);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--xp-ink);
+  --bs-btn-hover-border-color: var(--xp-ink);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--xp-ink);
+  --bs-btn-active-border-color: var(--xp-ink);
 }
 
+/* The signature look: thick ink outline + solid shadow that "presses" ----- */
+.xp-chunky {
+  border: 3px solid var(--xp-ink) !important;
+  box-shadow: 0 5px 0 var(--xp-ink);
+}
+.btn.xp-chunky {
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.btn.xp-chunky:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 0 var(--xp-ink);
+}
+.btn.xp-chunky:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--xp-ink);
+}
+.xp-chunky-lg {
+  border: 3px solid var(--xp-ink) !important;
+  box-shadow: 0 8px 0 var(--xp-ink);
+}
+a.xp-chunky,
+a.xp-chunky-lg {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+a.card.xp-chunky:hover,
+a.xp-hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 0 var(--xp-ink);
+}
+.xp-tilt-l { transform: rotate(-1deg); }
+.xp-tilt-r { transform: rotate(1deg); }
+
+/* Tinted surfaces, for cards and tiles */
+.xp-bg-lilac { background-color: var(--xp-lilac) !important; }
+.xp-bg-peach { background-color: var(--xp-peach) !important; }
+.xp-bg-seafoam { background-color: var(--xp-seafoam) !important; }
+.xp-bg-butter { background-color: var(--xp-butter) !important; }
+.xp-bg-ink { background-color: var(--xp-ink) !important; color: #fff; }
+.xp-bg-ink h1, .xp-bg-ink h2, .xp-bg-ink h3 { color: #fff; }
+.xp-text-soft { color: var(--xp-ink-soft) !important; }
+.xp-text-on-ink { color: #d6d2f0 !important; }
+
+/* Kicker label above headings */
+.xp-kicker {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--xp-ink);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Letter-tile logo */
+.xp-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.55rem;
+  font-family: "Fredoka", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  line-height: 1;
+  box-shadow: 0 3px 0 var(--xp-ink);
+}
+
+/* Big numbered circle used for steps and ranks */
+.xp-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  font-family: "Fredoka", sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  color: var(--xp-ink);
+  text-decoration: none;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.45);
+}
+.xp-rank {
+  width: 2.5rem;
+  text-align: center;
+  font-family: "Fredoka", sans-serif;
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: var(--xp-muted);
+}
+.xp-rank-1 { color: #b88600; }
+.xp-rank-2 { color: #77748f; }
+.xp-rank-3 { color: #b8662e; }
+
+/* Small book cover thumbnail with an outline */
+.xp-cover-thumb {
+  width: 3rem;
+  height: 4.5rem;
+  object-fit: cover;
+  border: 2px solid var(--xp-ink);
+  border-radius: 0.375rem;
+  background: var(--xp-grape-tint);
+  flex-shrink: 0;
+}
+
+/* Stack of mini covers on book list cards */
+.xp-shelf {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.35rem;
+  height: 7.5rem;
+  padding-top: 1rem;
+  border-bottom: 3px solid var(--xp-ink);
+}
+.xp-shelf img {
+  width: 3.25rem;
+  height: 5rem;
+  object-fit: cover;
+  border: 2px solid var(--xp-ink);
+  border-bottom: 0;
+  border-radius: 0.3rem 0.3rem 0 0;
+  background: #fff;
+}
+.xp-shelf img:nth-child(2) { height: 5.75rem; }
+.xp-shelf img:nth-child(3) { height: 4.6rem; }
+
+/* Cards, tables, progress, forms --------------------------------------------- */
+.card {
+  --bs-card-border-color: var(--xp-line);
+  --bs-card-border-radius: 1.25rem;
+  --bs-card-inner-border-radius: calc(1.25rem - 3px);
+  --bs-card-cap-bg: #fff;
+}
+.table {
+  --bs-table-bg: #fff;
+  --bs-table-striped-bg: #faf9ff;
+  --bs-table-border-color: var(--xp-line);
+}
+.xp-table-wrap {
+  background: #fff;
+  border: 3px solid var(--xp-line);
+  border-radius: 1.25rem;
+  overflow: hidden;
+}
+.xp-table-wrap .table { margin-bottom: 0; }
+.xp-table-wrap .table > :not(caption) > * > * { padding: 0.75rem 1rem; }
+.table > thead th {
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--xp-muted);
+}
+.progress {
+  --bs-progress-height: 1.1rem;
+  --bs-progress-bg: var(--xp-line);
+  --bs-progress-border-radius: 999px;
+  --bs-progress-bar-bg: var(--xp-mint);
+  --bs-progress-bar-color: var(--xp-ink);
+  font-weight: 800;
+}
+.progress-bar {
+  border-radius: 999px;
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.12);
+}
+.form-control,
+.form-select {
+  border-width: 2px;
+  border-color: var(--xp-line);
+}
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--xp-grape);
+}
+.badge {
+  --bs-badge-font-weight: 800;
+  --bs-badge-padding-y: 0.4em;
+  --bs-badge-padding-x: 0.7em;
+  --bs-badge-border-radius: 999px;
+}
+.list-group {
+  --bs-list-group-active-bg: var(--xp-grape);
+  --bs-list-group-active-border-color: var(--xp-grape);
+}
+
+/* Navbar ---------------------------------------------------------------------- */
+.xp-navbar {
+  background: #fff;
+  border-bottom: 3px solid var(--xp-line);
+  --bs-navbar-color: var(--xp-ink);
+  --bs-navbar-hover-color: var(--xp-grape-dark);
+  --bs-navbar-active-color: var(--xp-ink);
+  --bs-navbar-nav-link-padding-x: 0.85rem;
+}
+.xp-navbar .nav-link {
+  font-weight: 800;
+  border-radius: 0.75rem;
+}
+.xp-navbar .nav-link.active {
+  background: var(--xp-grape-tint);
+}
+.xp-searchband {
+  background: #fff;
+  border-bottom: 3px solid var(--xp-line);
+}
+
+/* Legal pages ship with their own inline styles; keep them readable */
+.xp-legal [data-custom-class] * { font-family: inherit !important; }
+
+/* Sticky footer: Bootstrap flex utilities on <body> do the work now. -------- */
 .footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 60px; /* Set the fixed height of the footer here */
-  line-height: 60px; /* Vertically center the text there */
-  background-color: #f5f5f5;
+  background: #fff;
+  border-top: 3px solid var(--xp-line);
 }
 
-
-
-/*search results*/
+/* Search results (htmx) -------------------------------------------------------- */
 .htmx-indicator {
   display: none;
 }
-.htmx-request .htmx-indicator {
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
   display: block;
 }
 .spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #3498db;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--xp-line);
+  border-top: 2px solid var(--xp-grape);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 10px auto;
@@ -65,19 +407,9 @@ body {
   max-height: 400px;
   overflow-y: auto;
 }
-
 .autocomplete-results a {
   text-decoration: none;
   color: inherit;
-}
-
-.spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
 }
 
 .book-card:hover {
@@ -101,4 +433,9 @@ body {
 }
 .autocomplete-item a:hover {
   text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xp-tilt-l, .xp-tilt-r { transform: none; }
+  .btn.xp-chunky, a.xp-chunky, a.xp-chunky-lg { transition: none; }
 }
