@@ -432,7 +432,15 @@ class BooksByCategoryView(LoginRequiredMixin, TemplateView):
             book_categories = (
                 BookCategory.objects.filter(category=category, year__in=liked_years)
                 .select_related("book", "book__author", "award_level")
-                .order_by("-year", "book__title")
+                # Within each year: award level first (winners before honors;
+                # books with no level, i.e. nominees, last), then author last name
+                .order_by(
+                    "-year",
+                    F("award_level__order").asc(nulls_last=True),
+                    "book__author__last_name",
+                    "book__author__first_name",
+                    "book__title",
+                )
             )
 
             # Group by year
