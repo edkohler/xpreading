@@ -3,6 +3,11 @@
 
 {% block title %}XP Reading - Student Reading List Challenges{% endblock %}
 
+{% block css %}
+{{ block.super }}
+{% include 'pages/partials/book_flex_styles.html' %}
+{% endblock css %}
+
 {% block content %}
 
 {# ---------------------------------------------------------------- Hero #}
@@ -73,30 +78,28 @@
   </div>
 
   {% if completed_books %}
-    <ol class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mb-0">
+    <div class="book-flex" style="--book-count: {{ completed_books|length }};">
       {% for book in completed_books %}
-        <li class="col">
-          <div class="card h-100 {% if forloop.counter <= 3 %}xp-chunky{% else %}border-3{% endif %}">
-            <div class="card-body d-flex align-items-center gap-3 py-2">
-              <span class="xp-rank{% if forloop.counter <= 3 %} xp-rank-{{ forloop.counter }}{% endif %}">{{ forloop.counter }}</span>
-              <a href="{% url 'book_detail' book.slug %}" tabindex="-1" aria-hidden="true">
-                {% if book.image %}
-                  <img src="{{ book.image.url }}" alt="" class="xp-cover-thumb" loading="lazy">
-                {% else %}
-                  <img src="{% static 'images/no-image.svg' %}" alt="" class="xp-cover-thumb">
-                {% endif %}
-              </a>
-              <div class="min-w-0">
-                <a href="{% url 'book_detail' book.slug %}" class="d-block fw-bold fs-6 link-dark link-underline-opacity-0 link-underline-opacity-100-hover">{{ book.title }}</a>
-                {% if book.author %}
-                  <a href="{% url 'author_detail' book.author.id %}" class="small fw-bold text-body-secondary link-underline-opacity-0 link-underline-opacity-100-hover">{{ book.author.full_name }}</a>
-                {% endif %}
-              </div>
-            </div>
+        <div class="book-flex-item">
+          <a href="{% url 'book_detail' book.slug %}" class="book-flex-cover d-block">
+            {% if book.image %}
+              <img src="{{ book.image.url }}" class="rounded-3" alt="{{ book.title }}" loading="lazy">
+            {% else %}
+              <img src="{% static 'images/no-image.svg' %}" class="rounded-3" alt="No image available for {{ book.title }}">
+            {% endif %}
+          </a>
+          <div class="book-flex-body mt-2">
+            <span class="badge {% if forloop.counter <= 3 %}text-bg-warning{% else %}text-bg-light border{% endif %} mb-2">#{{ forloop.counter }}</span>
+            <h3 class="book-flex-title mb-1">
+              <a href="{% url 'book_detail' book.slug %}">{{ book.title }}</a>
+            </h3>
+            {% if book.author %}
+              <p class="small fw-bold mb-0"><a class="text-body-secondary" href="{% url 'author_detail' book.author.id %}">{{ book.author.full_name }}</a></p>
+            {% endif %}
           </div>
-        </li>
+        </div>
       {% endfor %}
-    </ol>
+    </div>
   {% else %}
     <div class="alert alert-info">No completed books found in the database.</div>
   {% endif %}
@@ -108,29 +111,41 @@
   <p class="fs-5 xp-text-soft mb-3">Each list is a challenge. Pick one and start racking up XP.</p>
 
   {% if popular_categories %}
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 row-cols-xl-5 g-3">
-      {% for category in popular_categories %}
-        <div class="col">
-          <a href="{% url 'category_detail' category.slug %}" class="card h-100 xp-chunky text-decoration-none overflow-hidden">
-            <div class="xp-shelf {% cycle 'xp-bg-lilac' 'xp-bg-peach' 'xp-bg-seafoam' 'xp-bg-butter' %}" aria-hidden="true">
-              {% with slide=category.book_slides.0 %}
-                {% for book in slide|slice:":3" %}
-                  {% if book.image %}
-                    <img src="{{ book.image.url }}" alt="" loading="lazy">
-                  {% else %}
-                    <img src="{% static 'images/no-image.svg' %}" alt="">
-                  {% endif %}
-                {% endfor %}
-              {% endwith %}
-            </div>
-            <div class="card-body">
-              <span class="small fw-bold text-body-secondary">#{{ forloop.counter }}</span>
-              <h3 class="h6 fs-5 mb-0 text-body">{{ category.name }}</h3>
-            </div>
-          </a>
+    {% for category in popular_categories %}
+      <div class="card border-3 rounded-5 p-3 p-md-4 mb-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+          <h3 class="h4 fw-bold mb-0">
+            <span class="badge text-bg-warning me-1">#{{ forloop.counter }}</span>
+            <a href="{% url 'category_detail' category.slug %}" class="link-dark link-underline-opacity-0 link-underline-opacity-100-hover">{{ category.name }}</a>
+          </h3>
+          <a href="{% url 'category_detail' category.slug %}" class="btn btn-sm btn-outline-primary bg-white">See the whole list</a>
         </div>
-      {% endfor %}
-    </div>
+        {% with slide=category.book_slides.0 %}
+          {% if slide %}
+            <div class="book-flex" style="--book-count: 6;">
+              {% for book in slide %}
+                <div class="book-flex-item">
+                  <a href="{% url 'book_detail' book.slug %}" class="book-flex-cover d-block">
+                    {% if book.image %}
+                      <img src="{{ book.image.url }}" class="rounded-3" alt="{{ book.title }}" loading="lazy">
+                    {% else %}
+                      <img src="{% static 'images/no-image.svg' %}" class="rounded-3" alt="No image available for {{ book.title }}">
+                    {% endif %}
+                  </a>
+                  <div class="book-flex-body mt-2">
+                    <h4 class="book-flex-title mb-0">
+                      <a href="{% url 'book_detail' book.slug %}">{{ book.title }}</a>
+                    </h4>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-body-secondary small mb-0">No books in this list yet.</p>
+          {% endif %}
+        {% endwith %}
+      </div>
+    {% endfor %}
   {% else %}
     <div class="alert alert-info">No saved categories yet.</div>
   {% endif %}

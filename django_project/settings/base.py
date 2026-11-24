@@ -159,9 +159,20 @@ AWS_S3_REGION_NAME = "us-east-1"  # replace with your region
 AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
 # Static files
-STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+# Served by WhiteNoise from the app (collectstatic runs in the Dockerfile).
+# Django 5.1 ignores the old STATICFILES_STORAGE setting, so static storage is
+# configured through STORAGES. Hashed filenames (base.abc123.css) mean browsers
+# always get the newest CSS after a deploy.
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    },
+}
+# Don't 500 a page if a template references a static file that's missing.
+WHITENOISE_MANIFEST_STRICT = False
 
-STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"  # Local directory for collectstatic
 # The project-level static/ folder (css/base.css, js/base.js, images) wasn't
 # listed here before, so collectstatic never picked up edits to it.
