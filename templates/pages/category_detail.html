@@ -18,9 +18,7 @@
     {% if category.min_age or category.max_age %}
       <span class="badge rounded-pill xp-bg-butter text-dark border border-2 border-dark fs-6">Ages {% if category.min_age %}{{ category.min_age }}{% else %}?{% endif %}–{% if category.max_age %}{{ category.max_age }}{% else %}?{% endif %}</span>
     {% endif %}
-    {% if books_by_year %}
-      <span class="badge rounded-pill xp-bg-lilac text-dark border border-2 border-dark fs-6">{{ books_by_year|length }} year{{ books_by_year|length|pluralize }}</span>
-    {% endif %}
+    
   </div>
   {% if category.description %}<p class="fs-5 xp-text-soft mb-3" style="max-width: 48rem;">{{ category.description }}</p>{% endif %}
   {% if books_by_year|length > 1 %}
