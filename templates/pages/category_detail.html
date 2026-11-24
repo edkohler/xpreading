@@ -16,7 +16,7 @@
   <h1 class="display-5 fw-bold mb-3">{{ category.name }}</h1>
   <div class="d-flex flex-wrap gap-2 mb-3">
     {% if category.min_age or category.max_age %}
-      <span class="badge rounded-pill xp-bg-butter text-dark border border-2 border-dark fs-6">Ages {% if category.min_age %}{{ category.min_age }}{% else %}?{% endif %}–{% if category.max_age %}{{ category.max_age }}{% else %}?{% endif %}</span>
+      <span class="badge rounded-pill xp-bg-butter text-dark border border-2 border-dark fs-6">Ages {{ category.min_age }}{% else %}0{% endif %}–{% if category.max_age %}{{ category.max_age }}{% else %}?{% endif %}</span>
     {% endif %}
     
   </div>

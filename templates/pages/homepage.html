@@ -118,7 +118,7 @@
             <span class="badge text-bg-warning me-1">#{{ forloop.counter }}</span>
             <a href="{% url 'category_detail' category.slug %}" class="link-dark link-underline-opacity-0 link-underline-opacity-100-hover">{{ category.name }}</a>
           {% if category.min_age or category.max_age %}
-      <span class="badge rounded-pill xp-bg-butter text-dark border border-2 border-dark fs-6">Ages {% if category.min_age %}{{ category.min_age }}{% else %}?{% endif %}–{% if category.max_age %}{{ category.max_age }}{% else %}?{% endif %}</span>
+      <span class="badge rounded-pill xp-bg-butter text-dark border border-2 border-dark fs-6">Ages {% if category.min_age %}{{ category.min_age }}{% else %}0{% endif %}–{% if category.max_age %}{{ category.max_age }}{% else %}?{% endif %}</span>
     {% endif %}</h3>
           <a href="{% url 'category_detail' category.slug %}" class="btn btn-sm btn-outline-primary bg-white">See the whole list</a>
         </div>
